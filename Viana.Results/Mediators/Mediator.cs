@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Viana.Results.Mediators
 {
+    /// <summary>
+    /// Implementation of the mediator pattern for dispatching requests to their corresponding handlers.
+    /// </summary>
     public class Mediator : IMediator
     {
 #if NET8_0_OR_GREATER
@@ -15,11 +18,23 @@ namespace Viana.Results.Mediators
         private readonly ConcurrentDictionary<Type, HandlerInfo> _handleCache = new();
         private readonly IServiceProvider _serviceProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Mediator"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider used to resolve handler instances.</param>
         public Mediator(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
+        /// <summary>
+        /// Sends a request to the appropriate handler and returns the result.
+        /// </summary>
+        /// <typeparam name="TResult">The type of the result returned by the handler.</typeparam>
+        /// <param name="request">The request to send.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the handler result.</returns>
+        /// <exception cref="HandlerNotFoundException">Thrown when no handler is registered for the request type.</exception>
         public async Task<TResult> SendAsync<TResult>(IRequest<TResult> request, CancellationToken cancellationToken = default) where TResult : IResult
         {
             var requestType = request.GetType();
@@ -44,9 +59,7 @@ namespace Viana.Results.Mediators
 
                 activity?.SetTag("result.success", result.Error == null);
                 activity?.SetTag("result.statusCode", (int)result.StatusCode);
-
-                if (result.Error != null)
-                    activity?.SetTag("result.error", result.Error.Message);
+                activity?.SetOk();
 
                 return result;
             }

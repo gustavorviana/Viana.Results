@@ -3,6 +3,9 @@ using System.Net;
 
 namespace Viana.Results.AspNetCore
 {
+    /// <summary>
+    /// Provides utility methods for working with HTTP status codes and their descriptions.
+    /// </summary>
     public class HttpStatusInfo
     {
         private static readonly Dictionary<int, string> httpCodes = new Dictionary<int, string>()
@@ -72,11 +75,21 @@ namespace Viana.Results.AspNetCore
             {511, "Network Authentication "}
         };
 
+        /// <summary>
+        /// Gets the description message for an HTTP status code.
+        /// </summary>
+        /// <param name="status">The HTTP status code.</param>
+        /// <returns>The description message for the status code.</returns>
         public static string GetMessage(HttpStatusCode status)
         {
             return GetMessage((int)status) ?? "";
         }
 
+        /// <summary>
+        /// Gets the description message for an HTTP status code.
+        /// </summary>
+        /// <param name="code">The HTTP status code as an integer.</param>
+        /// <returns>The description message for the status code, or "Unknow" if not found.</returns>
         public static string GetMessage(int code)
         {
             return httpCodes.TryGetValue(code, out var message) ? message : "Unknow";

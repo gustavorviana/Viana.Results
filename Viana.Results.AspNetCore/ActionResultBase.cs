@@ -10,12 +10,30 @@ using System.Threading.Tasks;
 
 namespace Viana.Results.AspNetCore
 {
+    /// <summary>
+    /// Base class for custom action results that return JSON responses.
+    /// </summary>
     public abstract class ActionResultBase(HttpStatusCode status) : ActionResult
     {
+        /// <summary>
+        /// Gets the HTTP status code for the response.
+        /// </summary>
         public int? StatusCode { get; } = (int)status;
+
+        /// <summary>
+        /// Gets or sets the error information for the response.
+        /// </summary>
         public ResultError Error { get; set; }
+
+        /// <summary>
+        /// Gets the collection of HTTP headers to include in the response.
+        /// </summary>
         public HeaderDictionary Headers { get; } = [];
 
+        /// <summary>
+        /// Gets the object to be serialized and returned in the response.
+        /// </summary>
+        /// <returns>The object to serialize.</returns>
         protected abstract object GetReturnObject();
 
         public override Task ExecuteResultAsync(ActionContext context)
@@ -45,6 +63,11 @@ namespace Viana.Results.AspNetCore
                 ?? new JsonSerializerOptions();
         }
 
+        /// <summary>
+        /// Converts an IResult instance to an appropriate ActionResultBase implementation.
+        /// </summary>
+        /// <param name="result">The result to convert.</param>
+        /// <returns>An ActionResultBase instance representing the result.</returns>
         public static ActionResultBase FromResult(IResult result)
         {
             var type = result.GetType();

@@ -5,8 +5,16 @@ using System.Net;
 
 namespace Viana.Results.AspNetCore.Filters
 {
+    /// <summary>
+    /// Action filter that transforms action results into custom result types for consistent API responses.
+    /// </summary>
     public class CustomResultFilter : ActionFilterAttribute
     {
+        /// <summary>
+        /// Called after the action method is executed.
+        /// Converts the result to a custom result type if applicable.
+        /// </summary>
+        /// <param name="context">The context for the action executed.</param>
         public override void OnActionExecuted(ActionExecutedContext context)
         {
             if (context.Result is Microsoft.AspNetCore.Mvc.ObjectResult objectResult)
