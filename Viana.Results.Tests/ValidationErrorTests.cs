@@ -42,7 +42,7 @@
         public void ValidationError_Constructor_WithNullDictionary_InitializesEmptyDictionary()
         {
             // Act
-            var error = new ValidationError(null);
+            var error = new ValidationError((Dictionary<string, string[]>)null);
 
             // Assert
             Assert.NotNull(error.Errors);

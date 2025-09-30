@@ -42,7 +42,7 @@ namespace Viana.Results.Tests
             var message = "Success message";
 
             // Act
-            var result = Results.Success(data, message);
+            var result = Results.Success(message, data);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -184,7 +184,7 @@ namespace Viana.Results.Tests
             };
 
             // Act
-            var result = Results.Success(data, "Retrieved successfully");
+            var result = Results.Success("Retrieved successfully", data);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -442,7 +442,7 @@ namespace Viana.Results.Tests
         public void Results_Validation_WithNullErrors_WorksCorrectly()
         {
             // Act
-            var result = Results.Validation(null);
+            var result = Results.Validation((Dictionary<string, string[]>)null);
 
             // Assert
             Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);

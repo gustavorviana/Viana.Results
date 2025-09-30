@@ -26,7 +26,7 @@ namespace Viana.Results
         /// <returns>A successful result.</returns>
         public static Result Success(object data)
         {
-            return new Result(data);
+            return new Result(string.Empty, data);
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace Viana.Results
         /// <param name="data">The result data.</param>
         /// <param name="message">The success message.</param>
         /// <returns>A successful result.</returns>
-        public static Result Success(object data, string message)
+        public static Result Success(string message, object data)
         {
-            return new Result(data, message);
+            return new Result(message, data);
         }
 
         /// <summary>

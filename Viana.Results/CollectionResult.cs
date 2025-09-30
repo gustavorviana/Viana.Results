@@ -49,7 +49,7 @@ namespace Viana.Results
 
         public static implicit operator Result(CollectionResult<TValue> value)
         {
-            return new Result(value.Data, value.Message, value.StatusCode);
+            return new Result(value.Message, value.Data, value.StatusCode);
         }
     }
 }

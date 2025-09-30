@@ -106,7 +106,7 @@ namespace Viana.Results.Tests
         public void ResultT_ImplicitConversionFromResult_WithData_CreatesResultT()
         {
             // Arrange
-            var originalResult = new Result("test data", "Success message");
+            var originalResult = new Result("Success message", "test data");
 
             // Act
             Result<string> result = originalResult;

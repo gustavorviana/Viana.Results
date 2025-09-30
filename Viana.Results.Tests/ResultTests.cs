@@ -24,7 +24,7 @@ namespace Viana.Results.Tests
             var data = new { Id = 1, Name = "Test" };
 
             // Act
-            var result = new Result(data);
+            var result = new Result(null, data);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -40,7 +40,7 @@ namespace Viana.Results.Tests
             var message = "Operation successful";
 
             // Act
-            var result = new Result(data, message);
+            var result = new Result(message, data);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -111,7 +111,7 @@ namespace Viana.Results.Tests
             var result = new Result((string)null);
 
             // Assert
-            Assert.Null(result.Message);
+            Assert.Equal(string.Empty, result.Message);
         }
 
         [Fact]
