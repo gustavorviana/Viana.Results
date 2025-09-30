@@ -391,7 +391,7 @@ namespace Viana.Results.Tests
             var result = Results.Validation(errors);
 
             // Assert
-            Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
             Assert.NotNull(result.Error);
             Assert.IsType<ValidationError>(result.Error);
             Assert.Equal("Validation failed", result.Error.Message);
@@ -413,7 +413,7 @@ namespace Viana.Results.Tests
             var result = Results.Validation(errors, message);
 
             // Assert
-            Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
             Assert.NotNull(result.Error);
             Assert.IsType<ValidationError>(result.Error);
             Assert.Equal(message, result.Error.Message);
@@ -431,7 +431,7 @@ namespace Viana.Results.Tests
             var result = Results.Validation(errors);
 
             // Assert
-            Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
             Assert.NotNull(result.Error);
             Assert.IsType<ValidationError>(result.Error);
             var validationError = (ValidationError)result.Error;
@@ -445,7 +445,7 @@ namespace Viana.Results.Tests
             var result = Results.Validation((Dictionary<string, string[]>)null);
 
             // Assert
-            Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
+            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
             Assert.NotNull(result.Error);
             Assert.IsType<ValidationError>(result.Error);
             var validationError = (ValidationError)result.Error;
