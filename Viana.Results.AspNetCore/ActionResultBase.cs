@@ -25,11 +25,11 @@ namespace Viana.Results.AspNetCore
 
         public async Task WriteToAsync(HttpResponse response)
         {
-            response.StatusCode = StatusCode ?? 500;
+            response.StatusCode = StatusCode ?? 200;
             response.ContentType = "application/json";
 
             foreach (var header in Headers)
-                if (header.Key.ToLower() != "content-type")
+                if (!header.Key.Equals("content-type", System.StringComparison.CurrentCultureIgnoreCase))
                     response.Headers[header.Key] = header.Value;
 
             var jsonOptions = GetJsonSerializerOptions(response);

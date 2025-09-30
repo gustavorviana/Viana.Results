@@ -14,11 +14,10 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
-    <PackageReference Include="Moq" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Viana.Results.Web\Viana.Results.AspNetCore.csproj" />
+    <ProjectReference Include="..\Viana.Results.AspNetCore\Viana.Results.AspNetCore.csproj" />
     <ProjectReference Include="..\Viana.Results\Viana.Results.csproj" />
   </ItemGroup>
 
