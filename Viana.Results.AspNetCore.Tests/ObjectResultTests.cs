@@ -32,10 +32,10 @@ namespace Viana.Results.AspNetCore.Tests
             var data = new { Id = 1, Name = "Test" };
 
             // Act
-            var result = new ObjectResult { Result = data };
+            var result = new ObjectResult { Data = data };
 
             // Assert
-            Assert.Equal(data, result.Result);
+            Assert.Equal(data, result.Data);
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Viana.Results.AspNetCore.Tests
 
             // Assert
             Assert.Equal((int)HttpStatusCode.BadRequest, result.StatusCode);
-            Assert.Equal(errorData, result.Result);
+            Assert.Equal(errorData, result.Data);
             Assert.NotNull(result.Error);
             Assert.IsType<DataResultError>(result.Error);
         }
@@ -114,12 +114,12 @@ namespace Viana.Results.AspNetCore.Tests
             // Act
             var result = new ObjectResult
             {
-                Result = data,
+                Data = data,
                 Message = message
             };
 
             // Assert
-            Assert.Equal(data, result.Result);
+            Assert.Equal(data, result.Data);
             Assert.Equal(message, result.Message);
         }
 
@@ -137,10 +137,10 @@ namespace Viana.Results.AspNetCore.Tests
         public void ObjectResult_WithNullResult_AllowsNull()
         {
             // Act
-            var result = new ObjectResult { Result = null };
+            var result = new ObjectResult { Data = null };
 
             // Assert
-            Assert.Null(result.Result);
+            Assert.Null(result.Data);
         }
 
         [Fact]
@@ -169,10 +169,10 @@ namespace Viana.Results.AspNetCore.Tests
             };
 
             // Act
-            var result = new ObjectResult { Result = complexData };
+            var result = new ObjectResult { Data = complexData };
 
             // Assert
-            Assert.Equal(complexData, result.Result);
+            Assert.Equal(complexData, result.Data);
         }
     }
 }

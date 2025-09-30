@@ -84,7 +84,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Assert
             Assert.IsType<ObjectResult>(actionResult);
             var objectResult = (ObjectResult)actionResult;
-            Assert.Equal(data, objectResult.Result);
+            Assert.Equal(data, objectResult.Data);
             Assert.Equal("Success", objectResult.Message);
         }
 
@@ -100,7 +100,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Assert
             Assert.IsType<ObjectResult>(actionResult);
             var objectResult = (ObjectResult)actionResult;
-            Assert.Equal("test data", objectResult.Result);
+            Assert.Equal("test data", objectResult.Data);
         }
 
         [Fact]
@@ -154,7 +154,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Assert
             Assert.IsType<ObjectResult>(actionResult);
             var objectResult = (ObjectResult)actionResult;
-            Assert.Equal(data, objectResult.Result);
+            Assert.Equal(data, objectResult.Data);
         }
 
         [Fact]
@@ -205,7 +205,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Assert
             Assert.IsType<ObjectResult>(actionResult);
             var objectResult = (ObjectResult)actionResult;
-            Assert.Equal(42, objectResult.Result);
+            Assert.Equal(42, objectResult.Data);
         }
     }
 }

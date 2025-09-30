@@ -155,7 +155,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Assert
             Assert.NotNull(returnObject);
             var properties = returnObject.GetType().GetProperties();
-            Assert.Contains(properties, p => p.Name == "Items");
+            Assert.Contains(properties, p => p.Name == "Data");
         }
 
         [Fact]

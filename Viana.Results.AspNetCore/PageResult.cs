@@ -38,7 +38,7 @@ namespace Viana.Results.AspNetCore
             if (Error != null)
                 obj.Error = Error.GetResponse();
 
-            obj.Items = Items ?? [];
+            obj.Data = Items ?? [];
 
             return obj;
         }

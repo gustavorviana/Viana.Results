@@ -97,7 +97,7 @@ namespace Viana.Results.AspNetCore
 
             return new ObjectResult(result.StatusCode)
             {
-                Result = result.Data!,
+                Data = result.Data!,
                 Message = result.Message,
                 Error = result.Error
             };

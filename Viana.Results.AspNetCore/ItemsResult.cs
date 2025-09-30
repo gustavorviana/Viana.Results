@@ -39,9 +39,9 @@ namespace Viana.Results.AspNetCore
             Items ??= [];
 
             if (string.IsNullOrEmpty(Message))
-                return new { Items };
+                return new { Data = Items };
 
-            return new { Message, Items };
+            return new { Message, Data = Items };
         }
     }
 }

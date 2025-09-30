@@ -11,7 +11,7 @@ namespace Viana.Results.AspNetCore
         /// <summary>
         /// Gets or sets the result object to return.
         /// </summary>
-        public object Result { get; set; }
+        public object Data { get; set; }
 
         /// <summary>
         /// Gets or sets the message to return.
@@ -44,7 +44,7 @@ namespace Viana.Results.AspNetCore
         {
             return new ObjectResult(status)
             {
-                Result = obj,
+                Data = obj,
                 Error = new DataResultError(obj)
             };
         }
@@ -55,7 +55,7 @@ namespace Viana.Results.AspNetCore
             if (Error != null)
                 obj.Error = Error.GetResponse();
 
-            obj.Result = Result;
+            obj.Data = Data;
 
             if (!string.IsNullOrEmpty(Message))
                 obj.Message = Message;
