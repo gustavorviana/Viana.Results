@@ -1,4 +1,7 @@
 ﻿using System.Net;
+#if NET5_0_OR_GREATER
+using System.Text.Json.Serialization;
+#endif
 
 namespace Viana.Results
 {
@@ -107,6 +110,9 @@ namespace Viana.Results
         /// <summary>
         /// Gets the HTTP status code.
         /// </summary>
+#if NET5_0_OR_GREATER
+        [JsonIgnore]
+#endif
         public HttpStatusCode StatusCode { get; }
 
         /// <summary>

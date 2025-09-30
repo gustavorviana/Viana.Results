@@ -14,7 +14,7 @@ namespace Viana.Results
         /// </summary>
         /// <param name="message">The success message.</param>
         /// <returns>A successful result.</returns>
-        public static Result Success(string message)
+        public static Result Success(string message = "Ok")
         {
             return new Result(message);
         }
@@ -26,7 +26,7 @@ namespace Viana.Results
         /// <returns>A successful result.</returns>
         public static Result Success(object data)
         {
-            return new Result(string.Empty, data);
+            return new Result("Ok", data);
         }
 
         /// <summary>
@@ -41,12 +41,14 @@ namespace Viana.Results
         }
 
         /// <summary>
-        /// Creates a successful result.
+        /// Creates a failure result with a message.
         /// </summary>
-        /// <returns>A successful result.</returns>
-        public static Result Success()
+        /// <param name="message">The error message.</param>
+        /// <param name="statusCode">The HTTP status code. Defaults to 422 (Unprocessable Entity).</param>
+        /// <returns>A failure result.</returns>
+        public static Result Failure(string message, HttpStatusCode statusCode)
         {
-            return new Result();
+            return new Result(message, statusCode);
         }
 
         /// <summary>
@@ -55,9 +57,9 @@ namespace Viana.Results
         /// <param name="message">The error message.</param>
         /// <param name="statusCode">The HTTP status code. Defaults to 422 (Unprocessable Entity).</param>
         /// <returns>A failure result.</returns>
-        public static Result Failure(string message, HttpStatusCode statusCode = (HttpStatusCode)422)
+        public static Result Failure(ResultError error, string message = null, object data = null, HttpStatusCode statusCode = (HttpStatusCode)422)
         {
-            return new Result(new ResultError(message), null, statusCode);
+            return new Result(error, message, data, statusCode);
         }
 
         /// <summary>
@@ -78,9 +80,9 @@ namespace Viana.Results
         /// <param name="message">An optional additional message.</param>
         /// <param name="data">Optional data related to the error.</param>
         /// <returns>A result indicating a bad request (HTTP 400).</returns>
-        public static Result BadRequest(string error = "Bad request", string message = null, object data = null)
+        public static Result BadRequest(string message = "Bad request", object data = null)
         {
-            return new Result(new ResultError(error), message, data, HttpStatusCode.BadRequest);
+            return new Result(message, data, HttpStatusCode.BadRequest);
         }
 
         /// <summary>
@@ -91,10 +93,7 @@ namespace Viana.Results
         /// <returns>A business rule violated result with HTTP 422 status.</returns>
         public static Result BusinessRuleViolated(string message, object data = null)
         {
-            if (data == null)
-                return new Result(new ResultError(message), message, (HttpStatusCode)422);
-
-            return new Result(new DataResultError(data, message), message, (HttpStatusCode)422);
+            return new Result(message, data, (HttpStatusCode)422);
         }
 
         /// <summary>
@@ -104,7 +103,7 @@ namespace Viana.Results
         /// <returns>A Result with NotFound status (HTTP 404).</returns>
         public static Result NotFound(string message = "The requested resource was not found.")
         {
-            return new Result(new ResultError(message), message, HttpStatusCode.NotFound);
+            return new Result(message, HttpStatusCode.NotFound);
         }
 
         /// <summary>
@@ -114,7 +113,7 @@ namespace Viana.Results
         /// <returns>A Result with Unauthorized status (HTTP 401).</returns>
         public static Result Unauthorized(string message = "Unauthorized access.")
         {
-            return new Result(new ResultError(message), message, HttpStatusCode.Unauthorized);
+            return new Result(message, HttpStatusCode.Unauthorized);
         }
 
         /// <summary>
@@ -124,7 +123,7 @@ namespace Viana.Results
         /// <returns>A Result with Forbidden status (HTTP 403).</returns>
         public static Result Forbidden(string message = "Forbidden access.")
         {
-            return new Result(new ResultError(message), message, HttpStatusCode.Forbidden);
+            return new Result(message, HttpStatusCode.Forbidden);
         }
 
         /// <summary>
@@ -134,7 +133,7 @@ namespace Viana.Results
         /// <returns>A Result with Conflict status (HTTP 409).</returns>
         public static Result Conflict(string message = "Conflict occurred.")
         {
-            return new Result(new ResultError(message), message, HttpStatusCode.Conflict);
+            return new Result(message, HttpStatusCode.Conflict);
         }
 
         /// <summary>
@@ -145,7 +144,7 @@ namespace Viana.Results
         /// <returns>A Result with Conflict status (HTTP 409) containing validation errors.</returns>
         public static Result Validation(Dictionary<string, string[]> errors, string message = "Validation failed")
         {
-            return new Result(new ValidationError(errors, message), HttpStatusCode.BadRequest);
+            return new Result(new ValidationError(errors), message, HttpStatusCode.BadRequest);
         }
 
         /// <summary>
@@ -156,7 +155,7 @@ namespace Viana.Results
         /// <returns>A Result with Conflict status (HTTP 409) containing validation errors.</returns>
         public static Result Validation(Dictionary<string, List<string>> errors, string message = "Validation failed")
         {
-            return new Result(new ValidationError(errors, message), HttpStatusCode.BadRequest);
+            return new Result(new ValidationError(errors), message, HttpStatusCode.BadRequest);
         }
     }
 }

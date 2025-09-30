@@ -11,14 +11,12 @@
                 { "Email", new[] { "Email is required", "Email is invalid" } },
                 { "Password", new[] { "Password is too short" } }
             };
-            var message = "Validation failed";
 
             // Act
-            var error = new ValidationError(errors, message);
+            var error = new ValidationError(errors);
 
             // Assert
             Assert.Equal(errors, error.Errors);
-            Assert.Equal(message, error.Message);
         }
 
         [Fact]
@@ -35,7 +33,7 @@
 
             // Assert
             Assert.Equal(errors, error.Errors);
-            Assert.Equal("Validation failed", error.Message);
+            Assert.Null(error.Message);
         }
 
         [Fact]
@@ -47,7 +45,7 @@
             // Assert
             Assert.NotNull(error.Errors);
             Assert.Empty(error.Errors);
-            Assert.Equal("Validation failed", error.Message);
+            Assert.Null(error.Message);
         }
 
         [Fact]
@@ -128,11 +126,11 @@
             };
 
             // Act
-            var error = new ValidationError(errors, "Multiple validation errors");
+            var error = new ValidationError(errors);
 
             // Assert
             Assert.Equal(4, error.Errors.Count);
-            Assert.Equal("Multiple validation errors", error.Message);
+            Assert.Null(error.Message);
             Assert.Equal(new[] { "First name is required" }, error.Errors["FirstName"]);
             Assert.Equal(new[] { "Last name is required" }, error.Errors["LastName"]);
             Assert.Equal(new[] { "Email is required", "Email format is invalid" }, error.Errors["Email"]);
@@ -150,7 +148,7 @@
 
             // Assert
             Assert.Empty(error.Errors);
-            Assert.Equal("Validation failed", error.Message);
+            Assert.Null(error.Message);
         }
 
         [Fact]

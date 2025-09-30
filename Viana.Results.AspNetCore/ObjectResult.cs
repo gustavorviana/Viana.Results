@@ -53,7 +53,7 @@ namespace Viana.Results.AspNetCore
         {
             dynamic obj = new ExpandoObject();
             if (Error != null)
-                obj.Error = Error;
+                obj.Error = Error.GetResponse();
 
             obj.Result = Result;
 

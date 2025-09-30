@@ -249,15 +249,20 @@ public async Task<IResult> GetUsers()
 
 | Method | Status Code | Description |
 |--------|-------------|-------------|
-| `Success()` | 200 | Successful operation |
-| `Failure(message)` | 422 | Generic failure |
-| `NotFound()` | 404 | Resource not found |
-| `BadRequest()` | 400 | Invalid request |
-| `Unauthorized()` | 401 | Unauthorized |
-| `Forbidden()` | 403 | Forbidden access |
-| `Conflict()` | 409 | Conflict |
-| `BusinessRuleViolated()` | 422 | Business rule violated |
-| `Validation()` | 400 | Validation error |
+| `Success(string message = "Ok")` | 200 | Successful operation with message |
+| `Success(object data)` | 200 | Successful operation with data |
+| `Success(string message, object data)` | 200 | Successful operation with message and data |
+| `Failure(string message, HttpStatusCode statusCode)` | Custom | Generic failure with custom status code |
+| `Failure(ResultError error, string message = null, object data = null, HttpStatusCode statusCode = 422)` | 422 | Failure with error details |
+| `Failure(Exception exception, HttpStatusCode statusCode = 500)` | 500 | Failure from exception |
+| `NotFound(string message = "The requested resource was not found.")` | 404 | Resource not found |
+| `BadRequest(string message = "Bad request", object data = null)` | 400 | Invalid request |
+| `Unauthorized(string message = "Unauthorized access.")` | 401 | Unauthorized |
+| `Forbidden(string message = "Forbidden access.")` | 403 | Forbidden access |
+| `Conflict(string message = "Conflict occurred.")` | 409 | Conflict |
+| `BusinessRuleViolated(string message, object data = null)` | 422 | Business rule violated |
+| `Validation(Dictionary<string, string[]> errors, string message = "Validation failed")` | 400 | Validation error with string arrays |
+| `Validation(Dictionary<string, List<string>> errors, string message = "Validation failed")` | 400 | Validation error with string lists |
 
 ## Advanced Examples
 

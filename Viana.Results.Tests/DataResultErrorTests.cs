@@ -28,7 +28,7 @@
 
             // Assert
             Assert.Equal(data, error.Data);
-            Assert.Equal("Ocorreu um erro", error.Message);
+            Assert.Null(error.Message);
         }
 
         [Fact]
@@ -42,7 +42,7 @@
 
             // Assert
             Assert.Equal(data, error.Data);
-            Assert.Equal("Ocorreu um erro", error.Message);
+            Assert.Null(error.Message);
         }
 
         [Fact]

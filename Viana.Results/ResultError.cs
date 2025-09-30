@@ -17,7 +17,7 @@ namespace Viana.Results
         /// Initializes a new instance of the <see cref="ValidationError"/> class.
         /// </summary>
         /// <param name="errors">The validation errors grouped by field name.</param>
-        public ValidationError(Dictionary<string, List<string>> errors, string message = "Validation failed") : base(message)
+        public ValidationError(Dictionary<string, List<string>> errors) : base(null)
         {
             Errors = errors?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray()) ?? [];
         }
@@ -26,7 +26,7 @@ namespace Viana.Results
         /// Initializes a new instance of the <see cref="ValidationError"/> class.
         /// </summary>
         /// <param name="errors">The validation errors grouped by field name.</param>
-        public ValidationError(Dictionary<string, string[]> errors, string message = "Validation failed") : base(message)
+        public ValidationError(Dictionary<string, string[]> errors) : base(null)
         {
             Errors = errors ?? [];
         }
@@ -42,6 +42,11 @@ namespace Viana.Results
             {
                 { field, messages ?? [] }
             };
+        }
+
+        protected internal override object GetResponse()
+        {
+            return Errors;
         }
     }
 
@@ -59,10 +64,19 @@ namespace Viana.Results
         /// Initializes a new instance of the <see cref="DataResultError"/> class.
         /// </summary>
         /// <param name="data">The data associated with the error.</param>
-        /// <param name="message">The error message. Defaults to "Ocorreu um erro" if not provided.</param>
-        public DataResultError(object data, string message = null) : base(message ?? "Ocorreu um erro")
+        /// <param name="message">The error message.</param>
+        public DataResultError(object data, string message = null) : base(message)
         {
             Data = data;
+        }
+
+        protected internal override object GetResponse()
+        {
+            return new
+            {
+                Message,
+                Data
+            };
         }
     }
 
@@ -83,6 +97,15 @@ namespace Viana.Results
         public ResultError(string message)
         {
             Message = message;
+        }
+
+        /// <summary>
+        /// Gets the error response object containing the error message.
+        /// </summary>
+        /// <returns>An anonymous object with the error message.</returns>
+        protected internal virtual object GetResponse()
+        {
+            return new { Message };
         }
     }
 }
