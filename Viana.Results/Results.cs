@@ -145,7 +145,7 @@ namespace Viana.Results
         /// <returns>A Result with Conflict status (HTTP 409) containing validation errors.</returns>
         public static Result Validation(Dictionary<string, string[]> errors, string message = "Validation failed")
         {
-            return new Result(new ValidationError(errors, message), HttpStatusCode.Conflict);
+            return new Result(new ValidationError(errors, message), HttpStatusCode.BadRequest);
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace Viana.Results
         /// <returns>A Result with Conflict status (HTTP 409) containing validation errors.</returns>
         public static Result Validation(Dictionary<string, List<string>> errors, string message = "Validation failed")
         {
-            return new Result(new ValidationError(errors, message), HttpStatusCode.Conflict);
+            return new Result(new ValidationError(errors, message), HttpStatusCode.BadRequest);
         }
     }
 }
