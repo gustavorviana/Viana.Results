@@ -27,18 +27,12 @@ namespace Viana.Results
 
         public static Result Failure(string message, HttpStatusCode statusCode = (HttpStatusCode)422)
         {
-            return new Result(new ResultError(message))
-            {
-                StatusCode = statusCode
-            };
+            return new Result(new ResultError(message), null, statusCode);
         }
 
         public static Result Failure(Exception exception, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
         {
-            return new Result(new ExceptionError(exception))
-            {
-                StatusCode = statusCode
-            };
+            return new Result(new ExceptionError(exception), statusCode);
         }
     }
 }
