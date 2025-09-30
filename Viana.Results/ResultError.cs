@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Viana.Results
 {
@@ -11,6 +12,15 @@ namespace Viana.Results
         /// Gets the validation errors grouped by field name.
         /// </summary>
         public Dictionary<string, string[]> Errors { get; private set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ValidationError"/> class.
+        /// </summary>
+        /// <param name="errors">The validation errors grouped by field name.</param>
+        public ValidationError(Dictionary<string, List<string>> errors, string message = "Validation failed") : base(message)
+        {
+            Errors = errors?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray()) ?? [];
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ValidationError"/> class.

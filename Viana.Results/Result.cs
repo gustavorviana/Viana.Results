@@ -151,7 +151,7 @@ namespace Viana.Results
         /// <param name="error">The error information.</param>
         /// <param name="message">The error message.</param>
         /// <param name="status">The HTTP status code.</param>
-        public Result(ResultError error, string message, HttpStatusCode status = HttpStatusCode.InternalServerError) : this(status)
+        public Result(ResultError error, string message, object data = null, HttpStatusCode status = HttpStatusCode.InternalServerError) : this(data, message, status)
         {
             Error = error;
             Message = message ?? string.Empty;

@@ -70,21 +70,17 @@ namespace Viana.Results.AspNetCore
         /// <returns>An ActionResultBase instance representing the result.</returns>
         public static ActionResultBase FromResult(IResult result)
         {
-            var type = result.GetType();
-            if (!type.IsGenericType)
+            if (result.Data == null)
                 return new MessageResult(result.StatusCode)
                 {
                     Message = result.Message,
                     Error = result.Error
                 };
 
-            var dataProperty = result.GetType().GetProperty("Data");
-            var value = dataProperty?.GetValue(result);
-
             if (result is IPaginatedResult paginated)
                 return new PageResult
                 {
-                    Items = [.. (value as IEnumerable)?.Cast<object>() ?? []],
+                    Items = [.. (result.Data as IEnumerable)?.Cast<object>() ?? []],
                     Message = result.Message,
                     TotalItems = paginated.TotalCount,
                     Pages = paginated.Pages,
@@ -94,14 +90,14 @@ namespace Viana.Results.AspNetCore
             if (result is ICollectionResult)
                 return new ItemsResult
                 {
-                    Items = ((IEnumerable)value)?.Cast<object>().ToList(),
+                    Items = ((IEnumerable)result.Data)?.Cast<object>().ToList(),
                     Message = result.Message,
                     Error = result.Error
                 };
 
             return new ObjectResult(result.StatusCode)
             {
-                Result = value!,
+                Result = result.Data!,
                 Message = result.Message,
                 Error = result.Error
             };

@@ -72,6 +72,18 @@ namespace Viana.Results
         }
 
         /// <summary>
+        /// Creates a bad request result with error, message, and optional data.
+        /// </summary>
+        /// <param name="error">The error message.</param>
+        /// <param name="message">An optional additional message.</param>
+        /// <param name="data">Optional data related to the error.</param>
+        /// <returns>A result indicating a bad request (HTTP 400).</returns>
+        public static Result BadRequest(string error = "Bad request", string message = null, object data = null)
+        {
+            return new Result(new ResultError(error), message, data, HttpStatusCode.BadRequest);
+        }
+
+        /// <summary>
         /// Creates a business rule violated result with a message.
         /// </summary>
         /// <param name="message">The business rule violation message.</param>
@@ -132,6 +144,17 @@ namespace Viana.Results
         /// <param name="message">The general validation error message. Default: "Validation failed"</param>
         /// <returns>A Result with Conflict status (HTTP 409) containing validation errors.</returns>
         public static Result Validation(Dictionary<string, string[]> errors, string message = "Validation failed")
+        {
+            return new Result(new ValidationError(errors, message), HttpStatusCode.Conflict);
+        }
+
+        /// <summary>
+        /// Creates a Result indicating validation failure with detailed error information.
+        /// </summary>
+        /// <param name="errors">Dictionary containing field names as keys and arrays of validation error messages as values.</param>
+        /// <param name="message">The general validation error message. Default: "Validation failed"</param>
+        /// <returns>A Result with Conflict status (HTTP 409) containing validation errors.</returns>
+        public static Result Validation(Dictionary<string, List<string>> errors, string message = "Validation failed")
         {
             return new Result(new ValidationError(errors, message), HttpStatusCode.Conflict);
         }
