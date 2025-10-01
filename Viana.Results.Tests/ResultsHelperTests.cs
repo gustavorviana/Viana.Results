@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 
 namespace Viana.Results.Tests
 {
@@ -209,48 +210,15 @@ namespace Viana.Results.Tests
         }
 
         [Fact]
-        public void Results_BusinessRuleViolated_WithMessage_ReturnsBusinessRuleViolatedResult()
+        public void Results_BusinessRuleViolated_WithMessage_ReturnsDataResultError()
         {
-            // Arrange
-            var message = "Cannot delete an active user";
-
             // Act
-            var result = Results.BusinessRuleViolated(message);
+            var result = Results.BusinessRuleViolated("User is locked");
 
             // Assert
             Assert.Equal((HttpStatusCode)422, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(message, result.Data);
-        }
-
-        [Fact]
-        public void Results_BusinessRuleViolated_WithMessageAndData_ReturnsDataResultError()
-        {
-            // Arrange
-            var data = new { Reason = "User is locked", UserId = 123 };
-
-            // Act
-            var result = Results.BusinessRuleViolated(data);
-
-            // Assert
-            Assert.Equal((HttpStatusCode)422, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(data, result.Data);
-        }
-
-        [Fact]
-        public void Results_BusinessRuleViolated_WithNullData_ReturnsResultError()
-        {
-            // Arrange
-            var message = "Business rule violation";
-
-            // Act
-            var result = Results.BusinessRuleViolated(message);
-
-            // Assert
-            Assert.Equal((HttpStatusCode)422, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(message, result.Data);
+            Assert.NotNull(result.Error);
+            Assert.Equal("User is locked", result.Error.Message);
         }
 
         [Fact]

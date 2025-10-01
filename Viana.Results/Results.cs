@@ -67,11 +67,10 @@ namespace Viana.Results
         /// Creates a business rule violated result with a message.
         /// </summary>
         /// <param name="message">The business rule violation message.</param>
-        /// <param name="data">Optional data associated with the violation.</param>
         /// <returns>A business rule violated result with HTTP 422 status.</returns>
-        public static Result BusinessRuleViolated(object data)
+        public static Result BusinessRuleViolated(string message)
         {
-            return new Result(data, (HttpStatusCode)422);
+            return new Result(new ResultError(message), (HttpStatusCode)422);
         }
 
         /// <summary>
