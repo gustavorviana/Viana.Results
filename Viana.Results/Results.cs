@@ -37,7 +37,7 @@ namespace Viana.Results
         /// <returns>A failure result.</returns>
         public static Result Failure(string message, HttpStatusCode statusCode)
         {
-            return new Result(message, statusCode);
+            return new Result(new ResultError(message), statusCode);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Viana.Results
         /// <returns>A result indicating a bad request (HTTP 400).</returns>
         public static Result BadRequest(string message = "Bad request")
         {
-            return new Result(message, HttpStatusCode.BadRequest);
+            return new Result(new ResultError(message), HttpStatusCode.BadRequest);
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Viana.Results
         /// <returns>A Result with NotFound status (HTTP 404).</returns>
         public static Result NotFound(string message = "The requested resource was not found.")
         {
-            return new Result(message, HttpStatusCode.NotFound);
+            return new Result(new ResultError(message), HttpStatusCode.NotFound);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Viana.Results
         /// <returns>A Result with Unauthorized status (HTTP 401).</returns>
         public static Result Unauthorized(string message = "Unauthorized access.")
         {
-            return new Result(message, HttpStatusCode.Unauthorized);
+            return new Result(new ResultError(message), HttpStatusCode.Unauthorized);
         }
 
         /// <summary>
@@ -101,7 +101,7 @@ namespace Viana.Results
         /// <returns>A Result with Forbidden status (HTTP 403).</returns>
         public static Result Forbidden(string message = "Forbidden access.")
         {
-            return new Result(message, HttpStatusCode.Forbidden);
+            return new Result(new ResultError(message), HttpStatusCode.Forbidden);
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Viana.Results
         /// <returns>A Result with Conflict status (HTTP 409).</returns>
         public static Result Conflict(string message = "Conflict occurred.")
         {
-            return new Result(message, HttpStatusCode.Conflict);
+            return new Result(new ResultError(message), HttpStatusCode.Conflict);
         }
 
         /// <summary>

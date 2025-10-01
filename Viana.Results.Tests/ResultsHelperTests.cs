@@ -72,8 +72,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(message, result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal(message, result.Error.Message);
         }
 
         [Fact]
@@ -87,8 +88,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(message, result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal(message, result.Error.Message);
         }
 
         [Fact]
@@ -166,8 +168,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(string.Empty, result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal(string.Empty, result.Error.Message);
         }
 
         [Fact]
@@ -258,8 +261,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal("The requested resource was not found.", result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal("The requested resource was not found.", result.Error.Message);
         }
 
         [Fact]
@@ -273,8 +277,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(message, result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal(message, result.Error.Message);
         }
 
         [Fact]
@@ -285,8 +290,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal("Unauthorized access.", result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal("Unauthorized access.", result.Error.Message);
         }
 
         [Fact]
@@ -300,8 +306,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(message, result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal(message, result.Error.Message);
         }
 
         [Fact]
@@ -312,8 +319,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal("Forbidden access.", result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal("Forbidden access.", result.Error.Message);
         }
 
         [Fact]
@@ -327,8 +335,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(message, result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal(message, result.Error.Message);
         }
 
         [Fact]
@@ -339,8 +348,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal("Conflict occurred.", result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal("Conflict occurred.", result.Error.Message);
         }
 
         [Fact]
@@ -354,8 +364,9 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
-            Assert.Null(result.Error);
-            Assert.Equal(message, result.Data);
+            Assert.NotNull(result.Error);
+            Assert.IsType<ResultError>(result.Error);
+            Assert.Equal(message, result.Error.Message);
         }
 
         [Fact]
