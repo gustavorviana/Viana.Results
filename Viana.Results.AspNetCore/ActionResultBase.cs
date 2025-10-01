@@ -50,8 +50,12 @@ namespace Viana.Results.AspNetCore
                 if (!header.Key.Equals("content-type", System.StringComparison.CurrentCultureIgnoreCase))
                     response.Headers[header.Key] = header.Value;
 
+            var returnObject = GetReturnObject();
+            if (returnObject == null)
+                return;
+
             var jsonOptions = GetJsonSerializerOptions(response);
-            var jObj = JsonSerializer.SerializeToNode(GetReturnObject(), jsonOptions)!.AsObject();
+            var jObj = JsonSerializer.SerializeToNode(returnObject, jsonOptions)!.AsObject();
 
             await response.WriteAsync(JsonSerializer.Serialize(jObj, jsonOptions));
         }
@@ -73,7 +77,7 @@ namespace Viana.Results.AspNetCore
             if (result.Data == null)
                 return new MessageResult(result.StatusCode)
                 {
-                    Message = result.Message,
+                    Message = result.Data?.ToString(),
                     Error = result.Error
                 };
 
@@ -81,7 +85,6 @@ namespace Viana.Results.AspNetCore
                 return new PageResult
                 {
                     Items = [.. (result.Data as IEnumerable)?.Cast<object>() ?? []],
-                    Message = result.Message,
                     TotalItems = paginated.TotalCount,
                     Pages = paginated.Pages,
                     Error = result.Error
@@ -91,14 +94,12 @@ namespace Viana.Results.AspNetCore
                 return new ItemsResult
                 {
                     Items = ((IEnumerable)result.Data)?.Cast<object>().ToList(),
-                    Message = result.Message,
                     Error = result.Error
                 };
 
             return new ObjectResult(result.StatusCode)
             {
                 Data = result.Data!,
-                Message = result.Message,
                 Error = result.Error
             };
         }

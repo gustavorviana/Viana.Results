@@ -14,27 +14,24 @@ namespace Viana.Results
         /// </summary>
         /// <param name="data">The collection of items.</param>
         /// <param name="message">The optional message.</param>
-        public CollectionResult(ICollection<TValue> data, string message = null) : base(data, message)
+        public CollectionResult(ICollection<TValue> data) : base(data)
         {
         }
 
-        private CollectionResult(string message, HttpStatusCode status = HttpStatusCode.OK) : base(message, status)
+        private CollectionResult(ICollection<TValue> data, HttpStatusCode status = HttpStatusCode.OK) : base(data ?? [], status)
         {
         }
 
-        private CollectionResult(ResultError error, string message, HttpStatusCode status = HttpStatusCode.InternalServerError) : base(error, message, status)
+        private CollectionResult(ResultError error, HttpStatusCode status = HttpStatusCode.InternalServerError) : base(error, status)
         {
         }
 
         public static implicit operator CollectionResult<TValue>(Result result)
         {
             if (result.Error != null)
-                return new CollectionResult<TValue>(result.Error, result.Message, result.StatusCode);
+                return new CollectionResult<TValue>(result.Error, result.StatusCode);
 
-            if (result.Data != null)
-                return new CollectionResult<TValue>((ICollection<TValue>)result.Data, result.Message);
-
-            return new CollectionResult<TValue>(result.Message, result.StatusCode);
+            return new CollectionResult<TValue>((ICollection<TValue>)result.Data, result.StatusCode);
         }
 
         public static implicit operator CollectionResult<TValue>(List<TValue> value)
@@ -49,7 +46,10 @@ namespace Viana.Results
 
         public static implicit operator Result(CollectionResult<TValue> value)
         {
-            return new Result(value.Message, value.Data, value.StatusCode);
+            if (value.Error != null)
+                return new Result(value.Error, value.StatusCode);
+
+            return new Result(value.Data, value.StatusCode);
         }
     }
 }

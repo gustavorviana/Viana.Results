@@ -36,7 +36,7 @@ namespace Viana.Results
         /// </summary>
         /// <param name="error">The error information.</param>
         /// <param name="message">The error message.</param>
-        public PaginatedResult(ResultError error, string message = null) : base(error, message)
+        public PaginatedResult(ResultError error) : base(error)
         {
         }
 

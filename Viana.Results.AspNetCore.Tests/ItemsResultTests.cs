@@ -12,7 +12,6 @@ namespace Viana.Results.AspNetCore.Tests
 
             // Assert
             Assert.Equal((int)HttpStatusCode.OK, result.StatusCode);
-            Assert.Empty(result.Message);
             Assert.NotNull(result.Items);
             Assert.Empty(result.Items);
         }
@@ -39,19 +38,6 @@ namespace Viana.Results.AspNetCore.Tests
             // Assert
             Assert.Equal(items, result.Items);
             Assert.Equal(3, result.Items.Count);
-        }
-
-        [Fact]
-        public void ItemsResult_WithMessage_SetsMessage()
-        {
-            // Arrange
-            var message = "Items retrieved successfully";
-
-            // Act
-            var result = new ItemsResult { Message = message };
-
-            // Assert
-            Assert.Equal(message, result.Message);
         }
 
         [Fact]
@@ -90,22 +76,19 @@ namespace Viana.Results.AspNetCore.Tests
         }
 
         [Fact]
-        public void ItemsResult_WithItemsAndMessage_SetsBothProperties()
+        public void ItemsResult_WithItems_SetsBothProperties()
         {
             // Arrange
             var items = new object[] { 1, 2, 3 };
-            var message = "Success";
 
             // Act
             var result = new ItemsResult
             {
-                Items = items,
-                Message = message
+                Items = items
             };
 
             // Assert
             Assert.Equal(items, result.Items);
-            Assert.Equal(message, result.Message);
         }
 
         [Fact]
@@ -141,11 +124,11 @@ namespace Viana.Results.AspNetCore.Tests
         }
 
         [Fact]
-        public void ItemsResult_WithEmptyMessage_DoesNotIncludeMessageInReturnObject()
+        public void ItemsResult_ReturnsCorrectObject()
         {
             // Arrange
             var items = new object[] { "test" };
-            var result = new ItemsResult { Items = items, Message = string.Empty };
+            var result = new ItemsResult { Items = items };
 
             // Act
             var returnObject = result.GetType()
@@ -174,14 +157,5 @@ namespace Viana.Results.AspNetCore.Tests
             Assert.IsType<bool>(result.Items.Skip(2).First());
         }
 
-        [Fact]
-        public void ItemsResult_DefaultMessage_IsEmpty()
-        {
-            // Act
-            var result = new ItemsResult();
-
-            // Assert
-            Assert.Equal(string.Empty, result.Message);
-        }
     }
 }

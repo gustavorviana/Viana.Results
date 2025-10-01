@@ -28,15 +28,13 @@ namespace Viana.Results.Tests
         {
             // Arrange
             var error = new ResultError("An error occurred");
-            var message = "Failed to retrieve data";
 
             // Act
-            var result = new PaginatedResult<string>(error, message);
+            var result = new PaginatedResult<string>(error);
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
             Assert.Equal(error, result.Error);
-            Assert.Equal(message, result.Message);
             Assert.Equal(0, result.TotalCount);
             Assert.Equal(0, result.Pages);
         }

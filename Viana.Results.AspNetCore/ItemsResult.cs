@@ -14,11 +14,6 @@ namespace Viana.Results.AspNetCore
         public ICollection<object> Items { get; set; } = [];
 
         /// <summary>
-        /// Gets or sets the message to return.
-        /// </summary>
-        public string Message { get; set; } = string.Empty;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="ItemsResult"/> class with HTTP 200 OK status.
         /// </summary>
         public ItemsResult() : base(HttpStatusCode.OK)
@@ -38,10 +33,7 @@ namespace Viana.Results.AspNetCore
         {
             Items ??= [];
 
-            if (string.IsNullOrEmpty(Message))
-                return new { Data = Items };
-
-            return new { Message, Data = Items };
+            return new { Data = Items };
         }
     }
 }

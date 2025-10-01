@@ -17,7 +17,7 @@ namespace Viana.Results
         /// Initializes a new instance of the <see cref="ValidationError"/> class.
         /// </summary>
         /// <param name="errors">The validation errors grouped by field name.</param>
-        public ValidationError(Dictionary<string, List<string>> errors) : base(null)
+        public ValidationError(Dictionary<string, List<string>> errors, string message = null) : base(message)
         {
             Errors = errors?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToArray()) ?? [];
         }
@@ -26,7 +26,7 @@ namespace Viana.Results
         /// Initializes a new instance of the <see cref="ValidationError"/> class.
         /// </summary>
         /// <param name="errors">The validation errors grouped by field name.</param>
-        public ValidationError(Dictionary<string, string[]> errors) : base(null)
+        public ValidationError(Dictionary<string, string[]> errors, string message = null) : base(message)
         {
             Errors = errors ?? [];
         }
@@ -46,7 +46,7 @@ namespace Viana.Results
 
         protected internal override object GetResponse()
         {
-            return Errors;
+            return new { Message, Errors };
         }
     }
 

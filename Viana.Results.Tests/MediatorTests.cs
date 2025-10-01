@@ -29,7 +29,7 @@ namespace Viana.Results.Tests
             public Task<Result<string>> Handle(FailingRequest request, CancellationToken cancellationToken = default)
             {
                 var error = new ResultError("Handler failed");
-                return Task.FromResult(new Result<string>(error, "Failed", HttpStatusCode.InternalServerError));
+                return Task.FromResult(new Result<string>(error, HttpStatusCode.InternalServerError));
             }
         }
 

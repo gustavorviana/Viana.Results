@@ -48,11 +48,6 @@ namespace Viana.Results
         HttpStatusCode StatusCode { get; }
 
         /// <summary>
-        /// Gets the result message.
-        /// </summary>
-        string Message { get; }
-
-        /// <summary>
         /// Gets the result data.
         /// </summary>
         object Data { get; }

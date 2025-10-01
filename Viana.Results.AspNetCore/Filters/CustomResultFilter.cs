@@ -49,7 +49,7 @@ namespace Viana.Results.AspNetCore.Filters
             if (typeof(Stream).IsAssignableFrom(valueType) || valueType == typeof(byte[]))
                 return null;
 
-            return ActionResultBase.FromResult(new Result(string.Empty, objectResult.Value));
+            return ActionResultBase.FromResult(new Result(objectResult.Value));
         }
     }
 }

@@ -14,7 +14,6 @@ namespace Viana.Results.Tests
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Null(result.Data);
             Assert.Null(result.Error);
-            Assert.Empty(result.Message);
         }
 
         [Fact]
@@ -24,7 +23,7 @@ namespace Viana.Results.Tests
             var data = new { Id = 1, Name = "Test" };
 
             // Act
-            var result = new Result(null, data);
+            var result = new Result(data);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -37,15 +36,13 @@ namespace Viana.Results.Tests
         {
             // Arrange
             var data = "test data";
-            var message = "Operation successful";
 
             // Act
-            var result = new Result(message, data);
+            var result = new Result(data);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal(data, result.Data);
-            Assert.Equal(message, result.Message);
             Assert.Null(result.Error);
         }
 
@@ -69,15 +66,13 @@ namespace Viana.Results.Tests
         {
             // Arrange
             var error = new ResultError("Error details");
-            var message = "Operation failed";
 
             // Act
-            var result = new Result(error, message);
+            var result = new Result(error);
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
             Assert.Equal(error, result.Error);
-            Assert.Equal(message, result.Message);
         }
 
         [Fact]
@@ -101,30 +96,17 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-            Assert.Equal(message, result.Message);
+            Assert.Equal(message, result.Data);
         }
 
         [Fact]
-        public void Result_WithNullMessage_ReturnsEmptyString()
+        public void Result_WithNullMessage_ReturnsNull()
         {
             // Act
             var result = new Result((string)null);
 
             // Assert
-            Assert.Equal(string.Empty, result.Message);
-        }
-
-        [Fact]
-        public void Result_WithErrorAndNullMessage_SetsMessageToEmptyString()
-        {
-            // Arrange
-            var error = new ResultError("Error");
-
-            // Act
-            var result = new Result(error, null);
-
-            // Assert
-            Assert.Equal(string.Empty, result.Message);
+            Assert.Null(result.Data);
         }
 
         [Fact]

@@ -1,5 +1,4 @@
-﻿using System.Dynamic;
-using System.Net;
+﻿using System.Net;
 
 namespace Viana.Results.AspNetCore
 {
@@ -12,11 +11,6 @@ namespace Viana.Results.AspNetCore
         /// Gets or sets the result object to return.
         /// </summary>
         public object Data { get; set; }
-
-        /// <summary>
-        /// Gets or sets the message to return.
-        /// </summary>
-        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectResult"/> class with HTTP 200 OK status.
@@ -51,16 +45,18 @@ namespace Viana.Results.AspNetCore
 
         protected override object GetReturnObject()
         {
-            dynamic obj = new ExpandoObject();
             if (Error != null)
-                obj.Error = Error.GetResponse();
+                return Error.GetResponse();
 
-            obj.Data = Data;
+            if (Data == null)
+                return null;
 
-            if (!string.IsNullOrEmpty(Message))
-                obj.Message = Message;
+            var type = Data.GetType();
 
-            return obj;
+            if (type.IsPrimitive || type.IsValueType || type == typeof(string))
+                return new { Data = type };
+
+            return Data;
         }
     }
 }

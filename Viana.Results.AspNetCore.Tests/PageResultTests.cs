@@ -57,19 +57,6 @@ namespace Viana.Results.AspNetCore.Tests
         }
 
         [Fact]
-        public void PageResult_WithMessage_SetsMessage()
-        {
-            // Arrange
-            var message = "Page retrieved successfully";
-
-            // Act
-            var result = new PageResult { Message = message };
-
-            // Assert
-            Assert.Equal(message, result.Message);
-        }
-
-        [Fact]
         public void PageResult_WithError_SetsError()
         {
             // Arrange
@@ -109,22 +96,19 @@ namespace Viana.Results.AspNetCore.Tests
             var items = new object[] { 1, 2, 3, 4, 5 };
             var totalItems = 47L;
             var pages = 10;
-            var message = "Data retrieved";
 
             // Act
             var result = new PageResult
             {
                 Items = items,
                 TotalItems = totalItems,
-                Pages = pages,
-                Message = message
+                Pages = pages
             };
 
             // Assert
             Assert.Equal(items, result.Items);
             Assert.Equal(totalItems, result.TotalItems);
             Assert.Equal(pages, result.Pages);
-            Assert.Equal(message, result.Message);
         }
 
         [Fact]
@@ -212,8 +196,7 @@ namespace Viana.Results.AspNetCore.Tests
             {
                 Items = items,
                 TotalItems = 47,
-                Pages = 5,
-                Message = "First page"
+                Pages = 5
             };
 
             // Assert
@@ -233,8 +216,7 @@ namespace Viana.Results.AspNetCore.Tests
             {
                 Items = items,
                 TotalItems = 47,
-                Pages = 5,
-                Message = "Last page"
+                Pages = 5
             };
 
             // Assert
@@ -244,15 +226,14 @@ namespace Viana.Results.AspNetCore.Tests
         }
 
         [Fact]
-        public void PageResult_EmptyMessage_DoesNotIncludeInReturnObject()
+        public void PageResult_ReturnsCorrectObject()
         {
             // Arrange
             var result = new PageResult
             {
                 Items = new object[] { "test" },
                 TotalItems = 1,
-                Pages = 1,
-                Message = string.Empty
+                Pages = 1
             };
 
             // Act

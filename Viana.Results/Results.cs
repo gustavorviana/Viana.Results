@@ -26,18 +26,7 @@ namespace Viana.Results
         /// <returns>A successful result.</returns>
         public static Result Success(object data)
         {
-            return new Result("Ok", data);
-        }
-
-        /// <summary>
-        /// Creates a successful result with data and message.
-        /// </summary>
-        /// <param name="data">The result data.</param>
-        /// <param name="message">The success message.</param>
-        /// <returns>A successful result.</returns>
-        public static Result Success(string message, object data)
-        {
-            return new Result(message, data);
+            return new Result(data);
         }
 
         /// <summary>
@@ -49,17 +38,6 @@ namespace Viana.Results
         public static Result Failure(string message, HttpStatusCode statusCode)
         {
             return new Result(message, statusCode);
-        }
-
-        /// <summary>
-        /// Creates a failure result with a message.
-        /// </summary>
-        /// <param name="message">The error message.</param>
-        /// <param name="statusCode">The HTTP status code. Defaults to 422 (Unprocessable Entity).</param>
-        /// <returns>A failure result.</returns>
-        public static Result Failure(ResultError error, string message = null, object data = null, HttpStatusCode statusCode = (HttpStatusCode)422)
-        {
-            return new Result(error, message, data, statusCode);
         }
 
         /// <summary>
@@ -80,9 +58,9 @@ namespace Viana.Results
         /// <param name="message">An optional additional message.</param>
         /// <param name="data">Optional data related to the error.</param>
         /// <returns>A result indicating a bad request (HTTP 400).</returns>
-        public static Result BadRequest(string message = "Bad request", object data = null)
+        public static Result BadRequest(string message = "Bad request")
         {
-            return new Result(message, data, HttpStatusCode.BadRequest);
+            return new Result(message, HttpStatusCode.BadRequest);
         }
 
         /// <summary>
@@ -91,9 +69,9 @@ namespace Viana.Results
         /// <param name="message">The business rule violation message.</param>
         /// <param name="data">Optional data associated with the violation.</param>
         /// <returns>A business rule violated result with HTTP 422 status.</returns>
-        public static Result BusinessRuleViolated(string message, object data = null)
+        public static Result BusinessRuleViolated(object data)
         {
-            return new Result(message, data, (HttpStatusCode)422);
+            return new Result(data, (HttpStatusCode)422);
         }
 
         /// <summary>
@@ -142,9 +120,9 @@ namespace Viana.Results
         /// <param name="errors">Dictionary containing field names as keys and arrays of validation error messages as values.</param>
         /// <param name="message">The general validation error message. Default: "Validation failed"</param>
         /// <returns>A Result with Conflict status (HTTP 409) containing validation errors.</returns>
-        public static Result Validation(Dictionary<string, string[]> errors, string message = "Validation failed")
+        public static Result Validation(Dictionary<string, string[]> errors, string message = null)
         {
-            return new Result(new ValidationError(errors), message, HttpStatusCode.BadRequest);
+            return new Result(new ValidationError(errors, message), HttpStatusCode.BadRequest);
         }
 
         /// <summary>
@@ -153,9 +131,9 @@ namespace Viana.Results
         /// <param name="errors">Dictionary containing field names as keys and arrays of validation error messages as values.</param>
         /// <param name="message">The general validation error message. Default: "Validation failed"</param>
         /// <returns>A Result with Conflict status (HTTP 409) containing validation errors.</returns>
-        public static Result Validation(Dictionary<string, List<string>> errors, string message = "Validation failed")
+        public static Result Validation(Dictionary<string, List<string>> errors, string message = null)
         {
-            return new Result(new ValidationError(errors), message, HttpStatusCode.BadRequest);
+            return new Result(new ValidationError(errors, message), HttpStatusCode.BadRequest);
         }
     }
 }

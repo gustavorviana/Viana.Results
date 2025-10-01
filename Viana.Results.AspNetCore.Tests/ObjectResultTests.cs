@@ -12,7 +12,6 @@ namespace Viana.Results.AspNetCore.Tests
 
             // Assert
             Assert.Equal((int)HttpStatusCode.OK, result.StatusCode);
-            Assert.Empty(result.Message);
         }
 
         [Fact]
@@ -36,19 +35,6 @@ namespace Viana.Results.AspNetCore.Tests
 
             // Assert
             Assert.Equal(data, result.Data);
-        }
-
-        [Fact]
-        public void ObjectResult_WithMessage_SetsMessage()
-        {
-            // Arrange
-            var message = "Operation successful";
-
-            // Act
-            var result = new ObjectResult { Message = message };
-
-            // Assert
-            Assert.Equal(message, result.Message);
         }
 
         [Fact]
@@ -105,32 +91,19 @@ namespace Viana.Results.AspNetCore.Tests
         }
 
         [Fact]
-        public void ObjectResult_WithResultAndMessage_SetsBothProperties()
+        public void ObjectResult_WithResult_SetsProperties()
         {
             // Arrange
             var data = new { Count = 10 };
-            var message = "Retrieved successfully";
 
             // Act
             var result = new ObjectResult
             {
-                Data = data,
-                Message = message
+                Data = data
             };
 
             // Assert
             Assert.Equal(data, result.Data);
-            Assert.Equal(message, result.Message);
-        }
-
-        [Fact]
-        public void ObjectResult_WithEmptyMessage_SetsEmptyMessage()
-        {
-            // Act
-            var result = new ObjectResult { Message = string.Empty };
-
-            // Assert
-            Assert.Equal(string.Empty, result.Message);
         }
 
         [Fact]

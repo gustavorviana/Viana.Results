@@ -32,9 +32,6 @@ namespace Viana.Results.AspNetCore
             obj.TotalItems = TotalItems;
             obj.Pages = Pages;
 
-            if (!string.IsNullOrEmpty(Message))
-                obj.Message = Message;
-
             if (Error != null)
                 obj.Error = Error.GetResponse();
 

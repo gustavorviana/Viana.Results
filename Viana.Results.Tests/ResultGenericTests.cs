@@ -5,25 +5,13 @@ namespace Viana.Results.Tests
     public class ResultGenericTests
     {
         [Fact]
-        public void ResultT_DefaultConstructor_SetsStatusCodeToOK()
-        {
-            // Act
-            var result = new Result<string>();
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.Null(result.Data);
-            Assert.Null(result.Error);
-        }
-
-        [Fact]
         public void ResultT_WithData_SetsDataAndStatusCode()
         {
             // Arrange
             var data = "Test data";
 
             // Act
-            var result = new Result<string>(data, null);
+            var result = new Result<string>(data);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -36,15 +24,13 @@ namespace Viana.Results.Tests
         {
             // Arrange
             var data = 42;
-            var message = "Operation successful";
 
             // Act
-            var result = new Result<int>(data, message);
+            var result = new Result<int>(data);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal(data, result.Data);
-            Assert.Equal(message, result.Message);
             Assert.Null(result.Error);
         }
 
@@ -67,25 +53,13 @@ namespace Viana.Results.Tests
         {
             // Arrange
             var error = new ResultError("Error details");
-            var message = "Operation failed";
 
             // Act
-            var result = new Result<int>(error, message);
+            var result = new Result<int>(error);
 
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
             Assert.Equal(error, result.Error);
-            Assert.Equal(message, result.Message);
-        }
-
-        [Fact]
-        public void ResultT_WithCustomStatusCode_SetsStatusCodeCorrectly()
-        {
-            // Act
-            var result = new Result<string>(HttpStatusCode.NotFound);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
         }
 
         [Fact]
@@ -106,15 +80,14 @@ namespace Viana.Results.Tests
         public void ResultT_ImplicitConversionFromResult_WithData_CreatesResultT()
         {
             // Arrange
-            var originalResult = new Result("Success message", "test data");
+            var originalResult = new Result("Success message");
 
             // Act
             Result<string> result = originalResult;
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.Equal("test data", result.Data);
-            Assert.Equal("Success message", result.Message);
+            Assert.Equal("Success message", result.Data);
         }
 
         [Fact]
@@ -122,7 +95,7 @@ namespace Viana.Results.Tests
         {
             // Arrange
             var error = new ResultError("Error occurred");
-            var originalResult = new Result(error, "Error message");
+            var originalResult = new Result(error);
 
             // Act
             Result<string> result = originalResult;
@@ -130,41 +103,16 @@ namespace Viana.Results.Tests
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
             Assert.Equal(error, result.Error);
-            Assert.Equal("Error message", result.Message);
         }
 
         [Fact]
         public void ResultT_ImplementsIResultT()
         {
             // Act
-            var result = new Result<string>("test", null);
+            var result = new Result<string>("test");
 
             // Assert
             Assert.IsAssignableFrom<IResult<string>>(result);
-        }
-
-        [Fact]
-        public void ResultT_ImplementsIResult()
-        {
-            // Act
-            var result = new Result<string>("test", null);
-
-            // Assert
-            Assert.IsAssignableFrom<IResult>(result);
-        }
-
-        [Fact]
-        public void ResultT_IResultData_ReturnsDataAsObject()
-        {
-            // Arrange
-            var data = "test data";
-            var result = new Result<string>(data, null);
-
-            // Act
-            var iResult = (IResult)result;
-
-            // Assert
-            Assert.Equal(data, iResult.Data);
         }
 
         [Fact]
@@ -174,7 +122,7 @@ namespace Viana.Results.Tests
             var data = new { Id = 1, Name = "Test", Active = true };
 
             // Act
-            var result = new Result<object>(data, null);
+            var result = new Result<object>(data);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -185,7 +133,7 @@ namespace Viana.Results.Tests
         public void ResultT_WithNullData_AllowsNull()
         {
             // Act
-            var result = new Result<string>((string)null, null);
+            var result = new Result<string>((string)null);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);

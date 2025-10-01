@@ -5,7 +5,7 @@ namespace Viana.Results.AspNetCore.Tests
     public class ActionResultBaseTests
     {
         [Fact]
-        public void FromResult_WithNonGenericResult_ReturnsMessageResult()
+        public void FromResult_WithNonGenericResult_ReturnsObjectResult()
         {
             // Arrange
             var result = new Result("Success message", HttpStatusCode.OK);
@@ -14,10 +14,10 @@ namespace Viana.Results.AspNetCore.Tests
             var actionResult = ActionResultBase.FromResult(result);
 
             // Assert
-            Assert.IsType<MessageResult>(actionResult);
-            var messageResult = (MessageResult)actionResult;
-            Assert.Equal("Success message", messageResult.Message);
-            Assert.Equal((int)HttpStatusCode.OK, messageResult.StatusCode);
+            Assert.IsType<ObjectResult>(actionResult);
+            var objectResult = (ObjectResult)actionResult;
+            Assert.Equal("Success message", objectResult.Data);
+            Assert.Equal((int)HttpStatusCode.OK, objectResult.StatusCode);
         }
 
         [Fact]
@@ -25,7 +25,7 @@ namespace Viana.Results.AspNetCore.Tests
         {
             // Arrange
             var error = new ResultError("An error occurred");
-            var result = new Result(error, "Error message", HttpStatusCode.BadRequest);
+            var result = new Result(error, HttpStatusCode.BadRequest);
 
             // Act
             var actionResult = ActionResultBase.FromResult(result);
@@ -76,7 +76,7 @@ namespace Viana.Results.AspNetCore.Tests
         {
             // Arrange
             var data = new { Id = 1, Name = "Test" };
-            var result = new Result<object>(data, "Success", HttpStatusCode.OK);
+            var result = new Result<object>(data, HttpStatusCode.OK);
 
             // Act
             var actionResult = ActionResultBase.FromResult(result);
@@ -85,14 +85,13 @@ namespace Viana.Results.AspNetCore.Tests
             Assert.IsType<ObjectResult>(actionResult);
             var objectResult = (ObjectResult)actionResult;
             Assert.Equal(data, objectResult.Data);
-            Assert.Equal("Success", objectResult.Message);
         }
 
         [Fact]
         public void FromResult_WithResultString_ReturnsObjectResult()
         {
             // Arrange
-            var result = new Result<string>("test data", null, HttpStatusCode.OK);
+            var result = new Result<string>("test data", HttpStatusCode.OK);
 
             // Act
             var actionResult = ActionResultBase.FromResult(result);
@@ -146,7 +145,7 @@ namespace Viana.Results.AspNetCore.Tests
                 Settings = new { Theme = "Dark" },
                 Roles = new[] { "Admin", "User" }
             };
-            var result = new Result<object>(data, null, HttpStatusCode.OK);
+            var result = new Result<object>(data, HttpStatusCode.OK);
 
             // Act
             var actionResult = ActionResultBase.FromResult(result);
@@ -179,7 +178,7 @@ namespace Viana.Results.AspNetCore.Tests
         {
             // Arrange
             var result1 = new Result("Created", HttpStatusCode.Created);
-            var result2 = new Result<string>("data", null, HttpStatusCode.Accepted);
+            var result2 = new Result<string>("data", HttpStatusCode.Accepted);
             var result3 = new Result("Not Modified", HttpStatusCode.NotModified);
 
             // Act
@@ -197,7 +196,7 @@ namespace Viana.Results.AspNetCore.Tests
         public void FromResult_WithResultInt_ReturnsObjectResult()
         {
             // Arrange
-            var result = new Result<int>(42, null, HttpStatusCode.OK);
+            var result = new Result<int>(42, HttpStatusCode.OK);
 
             // Act
             var actionResult = ActionResultBase.FromResult(result);
