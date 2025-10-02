@@ -1,5 +1,4 @@
-﻿using System.Dynamic;
-using System.Net;
+﻿using System.Net;
 
 namespace Viana.Results.AspNetCore
 {
@@ -40,14 +39,11 @@ namespace Viana.Results.AspNetCore
 
         protected override object GetReturnObject()
         {
-            dynamic obj = new ExpandoObject();
-            if (Error != null)
-                obj.Error = Error.GetResponse();
-
-            if (!string.IsNullOrEmpty(Message))
-                obj.Message = Message;
-
-            return obj;
+            return new DataResponse
+            {
+                Message = Message,
+                Error = Error?.GetResponse()
+            };
         }
 
         /// <summary>

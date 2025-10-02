@@ -27,17 +27,19 @@ namespace Viana.Results.AspNetCore
 
         protected override object GetReturnObject()
         {
-            dynamic obj = new ExpandoObject();
+            return new PaginationResult
+            {
+                Data = Items ?? [],
+                TotalItems = TotalItems,
+                Pages = Pages,
+                Error = Error?.GetResponse()
+            };
+        }
 
-            obj.TotalItems = TotalItems;
-            obj.Pages = Pages;
-
-            if (Error != null)
-                obj.Error = Error.GetResponse();
-
-            obj.Data = Items ?? [];
-
-            return obj;
+        private class PaginationResult : DataResponse
+        {
+            public long TotalItems { get; set; }
+            public int Pages { get; set; }
         }
     }
 }

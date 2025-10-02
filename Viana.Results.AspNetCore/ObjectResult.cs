@@ -54,7 +54,7 @@ namespace Viana.Results.AspNetCore
             var type = Data.GetType();
 
             if (type.IsPrimitive || type.IsValueType || type == typeof(string))
-                return new { Data = type };
+                return new DataResponse { Data = Data };
 
             return Data;
         }

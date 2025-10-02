@@ -6,6 +6,7 @@ using System.Collections;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Viana.Results.AspNetCore
@@ -15,6 +16,12 @@ namespace Viana.Results.AspNetCore
     /// </summary>
     public abstract class ActionResultBase(HttpStatusCode status) : ActionResult
     {
+        /// <summary>
+        /// Gets or sets the default JSON serializer options to use when no options are configured in the DI container.
+        /// This provides a hardcoded fallback configuration.
+        /// </summary>
+        public static JsonSerializerOptions DefaultJsonSerializerOptions { get; set; }
+
         /// <summary>
         /// Gets the HTTP status code for the response.
         /// </summary>
@@ -55,14 +62,12 @@ namespace Viana.Results.AspNetCore
                 return;
 
             var jsonOptions = GetJsonSerializerOptions(response);
-            var jObj = JsonSerializer.SerializeToNode(returnObject, jsonOptions)!.AsObject();
-
-            await response.WriteAsync(JsonSerializer.Serialize(jObj, jsonOptions));
+            await response.WriteAsync(JsonSerializer.Serialize(returnObject, jsonOptions));
         }
 
         private static JsonSerializerOptions GetJsonSerializerOptions(HttpResponse response)
         {
-            return response.HttpContext.RequestServices
+            return DefaultJsonSerializerOptions ?? response.HttpContext.RequestServices
                 .GetService<IOptions<JsonOptions>>()?.Value?.JsonSerializerOptions
                 ?? new JsonSerializerOptions();
         }
@@ -102,6 +107,18 @@ namespace Viana.Results.AspNetCore
                 Data = result.Data!,
                 Error = result.Error
             };
+        }
+
+        internal class DataResponse
+        {
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public string Message { get; set; }
+
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public object Error { get; set; }
+
+            [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+            public object Data { get; set; }
         }
     }
 }

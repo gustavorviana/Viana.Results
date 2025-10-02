@@ -33,7 +33,10 @@ namespace Viana.Results.AspNetCore
         {
             Items ??= [];
 
-            return new { Data = Items };
+            return new DataResponse
+            {
+                Data = Items
+            };
         }
     }
 }
