@@ -37,7 +37,7 @@ namespace Viana.Results.AspNetCore
             return new MessageResult { Message = message };
         }
 
-        protected override object GetReturnObject()
+        protected override object GetReturnObject(ResponseFormatOptions options)
         {
             return new DataResponse
             {

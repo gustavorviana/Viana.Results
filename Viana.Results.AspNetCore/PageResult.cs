@@ -25,7 +25,7 @@ namespace Viana.Results.AspNetCore
         {
         }
 
-        protected override object GetReturnObject()
+        protected override object GetReturnObject(ResponseFormatOptions options)
         {
             return new PaginationResult
             {

@@ -43,17 +43,17 @@ namespace Viana.Results.AspNetCore
             };
         }
 
-        protected override object GetReturnObject()
+        protected override object GetReturnObject(ResponseFormatOptions options)
         {
             if (Error != null)
                 return Error.GetResponse();
 
             if (Data == null)
-                return null;
+                return options.UseObjectEnvelope ? new DataResponse() : null;
 
             var type = Data.GetType();
 
-            if (type.IsPrimitive || type.IsValueType || type == typeof(string))
+            if (options.UseObjectEnvelope || type.IsPrimitive || type.IsValueType || type == typeof(string))
                 return new DataResponse { Data = Data };
 
             return Data;

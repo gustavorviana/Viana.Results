@@ -41,7 +41,7 @@ namespace Viana.Results.AspNetCore
         /// Gets the object to be serialized and returned in the response.
         /// </summary>
         /// <returns>The object to serialize.</returns>
-        protected abstract object GetReturnObject();
+        protected abstract object GetReturnObject(ResponseFormatOptions options);
 
         public override Task ExecuteResultAsync(ActionContext context)
         {
@@ -57,7 +57,7 @@ namespace Viana.Results.AspNetCore
                 if (!header.Key.Equals("content-type", System.StringComparison.CurrentCultureIgnoreCase))
                     response.Headers[header.Key] = header.Value;
 
-            var returnObject = GetReturnObject();
+            var returnObject = GetReturnObject(GetOptions(response.HttpContext));
             if (returnObject == null)
                 return;
 
@@ -109,7 +109,15 @@ namespace Viana.Results.AspNetCore
             };
         }
 
-        internal class DataResponse
+        protected ResponseFormatOptions GetOptions(HttpContext context)
+        {
+            return context
+                .RequestServices
+                .GetRequiredService<IOptions<ResponseFormatOptions>>()
+                ?.Value ?? new ResponseFormatOptions();
+        }
+
+        public class DataResponse
         {
             [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
             public string Message { get; set; }
