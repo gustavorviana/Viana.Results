@@ -14,6 +14,16 @@ namespace Viana.Results
         /// </summary>
         /// <param name="message">The success message.</param>
         /// <returns>A successful result.</returns>
+        public static Result Ok(string message = "Ok")
+        {
+            return new Result(message);
+        }
+        
+        /// <summary>
+        /// Creates a successful result with a message.
+        /// </summary>
+        /// <param name="message">The success message.</param>
+        /// <returns>A successful result.</returns>
         public static Result Success(string message = "Ok")
         {
             return new Result(message);
