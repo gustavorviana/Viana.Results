@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace Viana.Results
 {
@@ -7,17 +8,38 @@ namespace Viana.Results
     /// Represents a paginated result containing a collection of items with pagination metadata.
     /// </summary>
     /// <typeparam name="TValue">The type of items in the collection.</typeparam>
-    public class PaginatedResult<TValue> : Result<ICollection<TValue>>, IPaginatedResult
+    public class PaginatedResult<TValue> : IResult<ICollection<TValue>>, IPaginatedResult
     {
         /// <summary>
         /// Gets or sets the total count of items across all pages.
         /// </summary>
-        public int TotalCount { get; set; }
+        public int Total { get; set; }
 
         /// <summary>
         /// Gets or sets the total number of pages.
         /// </summary>
         public int Pages { get; set; }
+
+        public ICollection<TValue> Data { get; }
+
+        public HttpStatusCode StatusCode { get; } = HttpStatusCode.OK;
+
+        object IResult.Data => Data;
+
+        public ResultError Error { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Result{TValue}"/> class with data.
+        /// </summary>
+        /// <param name="data">The result data.</param>
+        /// <param name="status">The HTTP status code.</param>
+        public PaginatedResult(ICollection<TValue> data, HttpStatusCode status = HttpStatusCode.OK)
+        {
+            Data = data;
+            StatusCode = status;
+            Total = data.Count;
+            Pages = Total > 0 ? 1 : 0;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaginatedResult{TValue}"/> class with items and pagination data.
@@ -25,19 +47,21 @@ namespace Viana.Results
         /// <param name="items">The collection of items for the current page.</param>
         /// <param name="totalCount">The total count of items.</param>
         /// <param name="pages">The total number of pages.</param>
-        public PaginatedResult(ICollection<TValue> items, int totalCount, int pages) : base(items)
+        public PaginatedResult(ICollection<TValue> items, int totalCount, int pages)
         {
-            TotalCount = totalCount;
+            Total = totalCount;
             Pages = pages;
+            Data = items;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PaginatedResult{TValue}"/> class with an error.
         /// </summary>
         /// <param name="error">The error information.</param>
-        /// <param name="message">The error message.</param>
-        public PaginatedResult(ResultError error) : base(error)
+        public PaginatedResult(ResultError error, HttpStatusCode status = HttpStatusCode.InternalServerError)
         {
+            Error = error;
+            StatusCode = status;
         }
 
         /// <summary>
@@ -47,6 +71,14 @@ namespace Viana.Results
         public IQueryable<TValue> AsQueryable()
         {
             return Data?.AsQueryable() ?? Enumerable.Empty<TValue>().AsQueryable();
+        }
+
+        public static implicit operator PaginatedResult<TValue>(Result result)
+        {
+            if (result.Error != null)
+                return new PaginatedResult<TValue>(result.Error, result.StatusCode);
+
+            return new PaginatedResult<TValue>((ICollection<TValue>)result.Data, result.StatusCode);
         }
     }
 }

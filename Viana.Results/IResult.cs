@@ -10,7 +10,7 @@ namespace Viana.Results
         /// <summary>
         /// Gets the total count of items across all pages.
         /// </summary>
-        public int TotalCount { get; }
+        public int Total { get; }
 
         /// <summary>
         /// Gets the total number of pages.
