@@ -11,7 +11,7 @@ namespace Viana.Results.AspNetCore
         /// <summary>
         /// Gets or sets the total number of items across all pages.
         /// </summary>
-        public long TotalItems { get; set; }
+        public long Total { get; set; }
 
         /// <summary>
         /// Gets or sets the total number of pages.
@@ -30,7 +30,7 @@ namespace Viana.Results.AspNetCore
             return new PaginationResult
             {
                 Data = Items ?? [],
-                TotalItems = TotalItems,
+                Total = Total,
                 Pages = Pages,
                 Error = Error?.GetResponse()
             };
@@ -38,7 +38,7 @@ namespace Viana.Results.AspNetCore
 
         private class PaginationResult : DataResponse
         {
-            public long TotalItems { get; set; }
+            public long Total { get; set; }
             public int Pages { get; set; }
         }
     }

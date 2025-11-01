@@ -90,7 +90,7 @@ namespace Viana.Results.AspNetCore
                 return new PageResult
                 {
                     Items = [.. (result.Data as IEnumerable)?.Cast<object>() ?? []],
-                    TotalItems = paginated.Total,
+                    Total = paginated.Total,
                     Pages = paginated.Pages,
                     Error = result.Error
                 };

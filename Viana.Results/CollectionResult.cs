@@ -7,23 +7,36 @@ namespace Viana.Results
     /// Represents a result containing a collection of items.
     /// </summary>
     /// <typeparam name="TValue">The type of items in the collection.</typeparam>
-    public class CollectionResult<TValue> : Result<ICollection<TValue>>, ICollectionResult
+    public class CollectionResult<TValue> : IResult<ICollection<TValue>>, ICollectionResult
     {
+        public ICollection<TValue> Data { get; }
+
+        public HttpStatusCode StatusCode { get; } = HttpStatusCode.OK;
+
+        object IResult.Data => Data;
+
+        public ResultError Error { get; }
+
+        private CollectionResult(ICollection<TValue> data, HttpStatusCode status = HttpStatusCode.OK) : this(data)
+        {
+            StatusCode = status;
+        }
+
+        private CollectionResult(ResultError error, HttpStatusCode status = HttpStatusCode.InternalServerError)
+        {
+            Data = [];
+            Error = error;
+            StatusCode = status;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CollectionResult{TValue}"/> class.
         /// </summary>
         /// <param name="data">The collection of items.</param>
         /// <param name="message">The optional message.</param>
-        public CollectionResult(ICollection<TValue> data) : base(data)
+        public CollectionResult(ICollection<TValue> data)
         {
-        }
-
-        private CollectionResult(ICollection<TValue> data, HttpStatusCode status = HttpStatusCode.OK) : base(data ?? [], status)
-        {
-        }
-
-        private CollectionResult(ResultError error, HttpStatusCode status = HttpStatusCode.InternalServerError) : base(error, status)
-        {
+            Data = data ?? [];
         }
 
         public static implicit operator CollectionResult<TValue>(Result result)
