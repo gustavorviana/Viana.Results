@@ -18,7 +18,7 @@ namespace Viana.Results
         {
             return new Result(message);
         }
-        
+
         /// <summary>
         /// Creates a successful result with a message.
         /// </summary>

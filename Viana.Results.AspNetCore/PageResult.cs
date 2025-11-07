@@ -1,5 +1,4 @@
-﻿using System.Dynamic;
-using System.Net;
+﻿using System.Net;
 
 namespace Viana.Results.AspNetCore
 {
