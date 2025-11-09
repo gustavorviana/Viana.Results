@@ -7,9 +7,9 @@ namespace Viana.Results
     /// Represents a result containing a collection of items.
     /// </summary>
     /// <typeparam name="TValue">The type of items in the collection.</typeparam>
-    public class CollectionResult<TValue> : IResult<ICollection<TValue>>, ICollectionResult
+    public class CollectionResult<TValue> : IResult<IReadOnlyList<TValue>>, ICollectionResult
     {
-        public ICollection<TValue> Data { get; }
+        public IReadOnlyList<TValue> Data { get; }
 
         public HttpStatusCode StatusCode { get; } = HttpStatusCode.OK;
 
@@ -17,7 +17,7 @@ namespace Viana.Results
 
         public ResultError Error { get; }
 
-        private CollectionResult(ICollection<TValue> data, HttpStatusCode status = HttpStatusCode.OK) : this(data)
+        private CollectionResult(IReadOnlyList<TValue> data, HttpStatusCode status = HttpStatusCode.OK) : this(data)
         {
             StatusCode = status;
         }
@@ -34,7 +34,7 @@ namespace Viana.Results
         /// </summary>
         /// <param name="data">The collection of items.</param>
         /// <param name="message">The optional message.</param>
-        public CollectionResult(ICollection<TValue> data)
+        public CollectionResult(IReadOnlyList<TValue> data)
         {
             Data = data ?? [];
         }
@@ -44,7 +44,7 @@ namespace Viana.Results
             if (result.Error != null)
                 return new CollectionResult<TValue>(result.Error, result.StatusCode);
 
-            return new CollectionResult<TValue>((ICollection<TValue>)result.Data, result.StatusCode);
+            return new CollectionResult<TValue>((IReadOnlyList<TValue>)result.Data, result.StatusCode);
         }
 
         public static implicit operator CollectionResult<TValue>(List<TValue> value)

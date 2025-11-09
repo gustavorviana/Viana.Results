@@ -8,8 +8,10 @@ namespace Viana.Results
     /// Represents a paginated result containing a collection of items with pagination metadata.
     /// </summary>
     /// <typeparam name="TValue">The type of items in the collection.</typeparam>
-    public class PaginatedResult<TValue> : IResult<ICollection<TValue>>, IPaginatedResult
+    public class PaginatedResult<TValue> : IResult<IReadOnlyList<TValue>>, IPaginatedResult
     {
+        private List<object> entities;
+
         /// <summary>
         /// Gets or sets the total count of items across all pages.
         /// </summary>
@@ -20,7 +22,7 @@ namespace Viana.Results
         /// </summary>
         public int Pages { get; set; }
 
-        public ICollection<TValue> Data { get; }
+        public IReadOnlyList<TValue> Data { get; }
 
         public HttpStatusCode StatusCode { get; } = HttpStatusCode.OK;
 
@@ -33,7 +35,7 @@ namespace Viana.Results
         /// </summary>
         /// <param name="data">The result data.</param>
         /// <param name="status">The HTTP status code.</param>
-        public PaginatedResult(ICollection<TValue> data, HttpStatusCode status = HttpStatusCode.OK)
+        public PaginatedResult(IReadOnlyList<TValue> data, HttpStatusCode status = HttpStatusCode.OK)
         {
             Data = data;
             StatusCode = status;
@@ -47,7 +49,7 @@ namespace Viana.Results
         /// <param name="items">The collection of items for the current page.</param>
         /// <param name="totalCount">The total count of items.</param>
         /// <param name="pages">The total number of pages.</param>
-        public PaginatedResult(ICollection<TValue> items, int totalCount, int pages)
+        public PaginatedResult(IReadOnlyList<TValue> items, int totalCount, int pages)
         {
             Total = totalCount;
             Pages = pages;
@@ -64,6 +66,11 @@ namespace Viana.Results
             StatusCode = status;
         }
 
+        public PaginatedResult(List<object> entities)
+        {
+            this.entities = entities;
+        }
+
         /// <summary>
         /// Converts the data collection to a queryable.
         /// </summary>
@@ -78,7 +85,7 @@ namespace Viana.Results
             if (result.Error != null)
                 return new PaginatedResult<TValue>(result.Error, result.StatusCode);
 
-            return new PaginatedResult<TValue>((ICollection<TValue>)result.Data, result.StatusCode);
+            return new PaginatedResult<TValue>((IReadOnlyList<TValue>)result.Data, result.StatusCode);
         }
     }
 }
