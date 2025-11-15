@@ -42,7 +42,7 @@ namespace Viana.Results.Tests
             var result = new CollectionResult<string>(items);
 
             // Assert
-            Assert.IsAssignableFrom<Result<ICollection<string>>>(result);
+            Assert.IsAssignableFrom<IResult<IReadOnlyList<string>>>(result);
         }
 
         [Fact]
@@ -98,13 +98,13 @@ namespace Viana.Results.Tests
         public void CollectionResult_WithNullCollection_CreatesEmptyData()
         {
             // Arrange
-            ICollection<string> items = null;
+            List<string> items = null;
 
             // Act
             var result = new CollectionResult<string>(items);
 
             // Assert
-            Assert.Null(result.Data);
+            Assert.Empty(result.Data);
         }
 
         [Fact]
@@ -117,8 +117,8 @@ namespace Viana.Results.Tests
             var result = new CollectionResult<int>(items);
 
             // Assert
-            Assert.IsAssignableFrom<IResult<ICollection<int>>>(result);
-            var typedResult = (IResult<ICollection<int>>)result;
+            Assert.IsAssignableFrom<IResult<IReadOnlyList<int>>>(result);
+            var typedResult = (IResult<IReadOnlyList<int>>)result;
             Assert.Equal(items, typedResult.Data);
         }
     }

@@ -50,7 +50,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Assert
             Assert.IsType<PageResult>(actionResult);
             var pageResult = (PageResult)actionResult;
-            Assert.Equal(100, pageResult.TotalItems);
+            Assert.Equal(100, pageResult.Total);
             Assert.Equal(10, pageResult.Pages);
             Assert.Equal(3, pageResult.Items.Count);
         }
@@ -169,7 +169,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Assert
             Assert.IsType<PageResult>(actionResult);
             var pageResult = (PageResult)actionResult;
-            Assert.Equal(0, pageResult.TotalItems);
+            Assert.Equal(0, pageResult.Total);
             Assert.Equal(0, pageResult.Pages);
         }
 

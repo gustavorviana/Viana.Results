@@ -12,21 +12,21 @@ namespace Viana.Results.AspNetCore.Tests
 
             // Assert
             Assert.Equal((int)HttpStatusCode.OK, result.StatusCode);
-            Assert.Equal(0, result.TotalItems);
+            Assert.Equal(0, result.Total);
             Assert.Equal(0, result.Pages);
         }
 
         [Fact]
-        public void PageResult_WithTotalItems_SetsTotalItems()
+        public void PageResult_WithTotal_SetsTotal()
         {
             // Arrange
             var totalItems = 100L;
 
             // Act
-            var result = new PageResult { TotalItems = totalItems };
+            var result = new PageResult { Total = totalItems };
 
             // Assert
-            Assert.Equal(totalItems, result.TotalItems);
+            Assert.Equal(totalItems, result.Total);
         }
 
         [Fact]
@@ -101,13 +101,13 @@ namespace Viana.Results.AspNetCore.Tests
             var result = new PageResult
             {
                 Items = items,
-                TotalItems = totalItems,
+                Total = totalItems,
                 Pages = pages
             };
 
             // Assert
             Assert.Equal(items, result.Items);
-            Assert.Equal(totalItems, result.TotalItems);
+            Assert.Equal(totalItems, result.Total);
             Assert.Equal(pages, result.Pages);
         }
 
@@ -118,7 +118,7 @@ namespace Viana.Results.AspNetCore.Tests
             var result = new PageResult
             {
                 Items = new object[] { },
-                TotalItems = 0,
+                Total = 0,
                 Pages = 0
             };
 
@@ -134,14 +134,14 @@ namespace Viana.Results.AspNetCore.Tests
             var result = new PageResult
             {
                 Items = null,
-                TotalItems = 100,
+                Total = 100,
                 Pages = 10
             };
 
             // Act - GetReturnObject should handle null items
             var returnObject = result.GetType()
                 .GetMethod("GetReturnObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(result, null);
+                .Invoke(result, [new ResponseFormatOptions()]);
 
             // Assert
             Assert.NotNull(returnObject);
@@ -162,27 +162,27 @@ namespace Viana.Results.AspNetCore.Tests
             var result = new PageResult
             {
                 Items = items,
-                TotalItems = 100,
+                Total = 100,
                 Pages = 34
             };
 
             // Assert
             Assert.Equal(3, result.Items.Count);
-            Assert.Equal(100, result.TotalItems);
+            Assert.Equal(100, result.Total);
             Assert.Equal(34, result.Pages);
         }
 
         [Fact]
-        public void PageResult_WithLargeTotalItems_HandlesLargeNumbers()
+        public void PageResult_WithLargeTotal_HandlesLargeNumbers()
         {
             // Arrange
             var totalItems = long.MaxValue;
 
             // Act
-            var result = new PageResult { TotalItems = totalItems };
+            var result = new PageResult { Total = totalItems };
 
             // Assert
-            Assert.Equal(totalItems, result.TotalItems);
+            Assert.Equal(totalItems, result.Total);
         }
 
         [Fact]
@@ -195,13 +195,13 @@ namespace Viana.Results.AspNetCore.Tests
             var result = new PageResult
             {
                 Items = items,
-                TotalItems = 47,
+                Total = 47,
                 Pages = 5
             };
 
             // Assert
             Assert.Equal(10, result.Items.Count); // Current page items
-            Assert.Equal(47, result.TotalItems);   // Total in database
+            Assert.Equal(47, result.Total);   // Total in database
             Assert.Equal(5, result.Pages);         // Total pages
         }
 
@@ -215,13 +215,13 @@ namespace Viana.Results.AspNetCore.Tests
             var result = new PageResult
             {
                 Items = items,
-                TotalItems = 47,
+                Total = 47,
                 Pages = 5
             };
 
             // Assert
             Assert.Equal(7, result.Items.Count);
-            Assert.Equal(47, result.TotalItems);
+            Assert.Equal(47, result.Total);
             Assert.Equal(5, result.Pages);
         }
 
@@ -232,14 +232,14 @@ namespace Viana.Results.AspNetCore.Tests
             var result = new PageResult
             {
                 Items = new object[] { "test" },
-                TotalItems = 1,
+                Total = 1,
                 Pages = 1
             };
 
             // Act
             var returnObject = result.GetType()
                 .GetMethod("GetReturnObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(result, null);
+                .Invoke(result, [new ResponseFormatOptions()]);
 
             // Assert
             Assert.NotNull(returnObject);

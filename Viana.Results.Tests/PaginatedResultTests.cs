@@ -18,7 +18,7 @@ namespace Viana.Results.Tests
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal(items, result.Data);
-            Assert.Equal(totalCount, result.TotalCount);
+            Assert.Equal(totalCount, result.Total);
             Assert.Equal(pages, result.Pages);
             Assert.Null(result.Error);
         }
@@ -35,7 +35,7 @@ namespace Viana.Results.Tests
             // Assert
             Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
             Assert.Equal(error, result.Error);
-            Assert.Equal(0, result.TotalCount);
+            Assert.Equal(0, result.Total);
             Assert.Equal(0, result.Pages);
         }
 
@@ -106,7 +106,7 @@ namespace Viana.Results.Tests
             var result = new PaginatedResult<string>(items, 1, 1);
 
             // Assert
-            Assert.IsAssignableFrom<Result<ICollection<string>>>(result);
+            Assert.IsAssignableFrom<IResult<IReadOnlyList<string>>>(result);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Viana.Results.Tests
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Empty((ICollection<string>)result.Data);
-            Assert.Equal(0, result.TotalCount);
+            Assert.Equal(0, result.Total);
             Assert.Equal(0, result.Pages);
         }
 
@@ -141,12 +141,12 @@ namespace Viana.Results.Tests
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal(2, result.Data.Count);
-            Assert.Equal(50, result.TotalCount);
+            Assert.Equal(50, result.Total);
             Assert.Equal(5, result.Pages);
         }
 
         [Fact]
-        public void PaginatedResult_TotalCountAndPages_CanBeDifferentFromDataCount()
+        public void PaginatedResult_TotalAndPages_CanBeDifferentFromDataCount()
         {
             // Arrange
             var items = new List<int> { 1, 2, 3, 4, 5 }; // 5 items per page
@@ -158,7 +158,7 @@ namespace Viana.Results.Tests
 
             // Assert
             Assert.Equal(5, result.Data.Count); // Current page has 5 items
-            Assert.Equal(47, result.TotalCount); // Total items
+            Assert.Equal(47, result.Total); // Total items
             Assert.Equal(10, result.Pages); // Total pages
         }
 

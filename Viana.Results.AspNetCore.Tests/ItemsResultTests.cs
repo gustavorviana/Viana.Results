@@ -60,7 +60,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Assert - GetReturnObject should handle null items
             var returnObject = result.GetType()
                 .GetMethod("GetReturnObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(result, null);
+                .Invoke(result, [new ResponseFormatOptions()]);
 
             Assert.NotNull(returnObject);
         }
@@ -133,7 +133,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Act
             var returnObject = result.GetType()
                 .GetMethod("GetReturnObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(result, null);
+                .Invoke(result, [new ResponseFormatOptions()]);
 
             // Assert
             Assert.NotNull(returnObject);

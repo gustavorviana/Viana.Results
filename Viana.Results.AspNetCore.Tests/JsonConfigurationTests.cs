@@ -119,17 +119,6 @@ namespace Viana.Results.AspNetCore.Tests
         }
 
         [Fact]
-        public void DefaultJsonSerializerOptions_ShouldHaveCamelCaseAsDefault()
-        {
-            // Arrange & Act
-            var defaultOptions = ActionResultBase.DefaultJsonSerializerOptions;
-
-            // Assert
-            Assert.NotNull(defaultOptions);
-            Assert.Equal(JsonNamingPolicy.CamelCase, defaultOptions.PropertyNamingPolicy);
-        }
-
-        [Fact]
         public void DefaultJsonSerializerOptions_CanBeCustomized()
         {
             // Arrange
@@ -169,7 +158,10 @@ namespace Viana.Results.AspNetCore.Tests
             };
 
             // Act
-            var json = JsonSerializer.Serialize(testObject, ActionResultBase.DefaultJsonSerializerOptions);
+            var json = JsonSerializer.Serialize(testObject, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
 
             // Assert
             Assert.Contains("\"firstName\"", json);
@@ -201,7 +193,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Act
             var returnObject = messageResult.GetType()
                 .GetMethod("GetReturnObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(messageResult, null);
+                .Invoke(messageResult, [new ResponseFormatOptions()]);
 
             var json = JsonSerializer.Serialize(returnObject, customOptions);
 
@@ -234,7 +226,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Act
             var returnObject = messageResult.GetType()
                 .GetMethod("GetReturnObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(messageResult, null);
+                .Invoke(messageResult, [new ResponseFormatOptions()]);
 
             var json = JsonSerializer.Serialize(returnObject, pascalCaseOptions);
 
@@ -268,7 +260,7 @@ namespace Viana.Results.AspNetCore.Tests
             // Act
             var returnObject = objectResult.GetType()
                 .GetMethod("GetReturnObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(objectResult, null);
+                .Invoke(objectResult, [new ResponseFormatOptions()]);
 
             var json = JsonSerializer.Serialize(returnObject, customOptions);
 
@@ -297,7 +289,7 @@ namespace Viana.Results.AspNetCore.Tests
             var pageResult = new PageResult
             {
                 Items = new object[] { 1, 2, 3 },
-                TotalItems = 100,
+                Total = 100,
                 Pages = 10,
                 Error = error
             };
@@ -305,14 +297,14 @@ namespace Viana.Results.AspNetCore.Tests
             // Act
             var returnObject = pageResult.GetType()
                 .GetMethod("GetReturnObject", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(pageResult, null);
+                .Invoke(pageResult, [new ResponseFormatOptions()]);
 
             var json = JsonSerializer.Serialize(returnObject, customOptions);
 
             // Assert
             Assert.NotNull(json);
             Assert.Contains("\"data\"", json);
-            Assert.Contains("\"totalItems\"", json);
+            Assert.Contains("\"total\"", json);
             Assert.Contains("\"pages\"", json);
             Assert.Contains("\"error\"", json);
             Assert.Contains("Database timeout", json);
