@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Viana.Results.Mediators/Viana.Results.Mediators.csproj" />
+    <Project Path="src/Viana.Results.Mvc/Viana.Results.Mvc.csproj" />
+    <Project Path="src/Viana.Results/Viana.Results.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Viana.Results.Mediators.Tests/Viana.Results.Mediators.Tests.csproj" />
+    <Project Path="tests/Viana.Results.Mvc.Tests/Viana.Results.Mvc.Tests.csproj" />
+    <Project Path="tests/Viana.Results.Tests/Viana.Results.Tests.csproj" />
+  </Folder>
+</Solution>

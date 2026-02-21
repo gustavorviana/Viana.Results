@@ -17,8 +17,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Viana.Results.Mvc\Viana.Results.Mvc.csproj" />
-		<ProjectReference Include="..\Viana.Results\Viana.Results.csproj" />
+		<ProjectReference Include="..\..\src\Viana.Results.Mvc\Viana.Results.Mvc.csproj" />
+		<ProjectReference Include="..\..\src\Viana.Results\Viana.Results.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

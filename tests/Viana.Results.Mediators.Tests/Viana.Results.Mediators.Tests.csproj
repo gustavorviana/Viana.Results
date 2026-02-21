@@ -1,10 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -18,7 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Viana.Results\Viana.Results.csproj" />
+    <ProjectReference Include="..\..\src\Viana.Results.Mediators\Viana.Results.Mediators.csproj" />
+    <ProjectReference Include="..\..\src\Viana.Results\Viana.Results.csproj" />
   </ItemGroup>
 
   <ItemGroup>
