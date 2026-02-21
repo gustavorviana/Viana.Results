@@ -37,7 +37,7 @@ public Result<User> GetUser(int id)
 public Result ValidateInput(string input)
 {
     if (string.IsNullOrEmpty(input))
-        return Results.Failure("Input cannot be empty");
+        return Results.Failure(422, "Input cannot be empty");
 
     return Results.Success("Validation passed");
 }
@@ -197,7 +197,7 @@ The library offers extensions to facilitate use in ASP.NET Core APIs:
 #### 5.1. Convert Result to ActionResult
 
 ```csharp
-using Viana.Results.AspNetCore;
+using Viana.Results.Mvc;
 
 [HttpGet("{id}")]
 public async Task<IActionResult> GetUser(int id)
@@ -217,22 +217,27 @@ public async Task<IActionResult> CreateUser(CreateUserDto dto)
 }
 ```
 
-#### 5.2. Use Custom Result Filter
+#### 5.2. Use Viana Result Filter
 
 ```csharp
-using Viana.Results.AspNetCore.Filters;
+using Viana.Results.Mvc;
 
 public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddControllers(options =>
-        {
-            // Automatically converts IResult to formatted HTTP responses
-            options.Filters.Add<CustomResultFilter>();
-        });
+        // Registers VianaResultFilter so IResult is converted to JSON responses
+        services.AddControllers().AddVianaResultFilter();
     }
 }
+
+// Or register the filter manually:
+using Viana.Results.Mvc.Filters;
+
+services.AddControllers(options =>
+{
+    options.Filters.Add<VianaResultFilter>();
+});
 
 // Now you can return IResult directly
 [HttpGet]

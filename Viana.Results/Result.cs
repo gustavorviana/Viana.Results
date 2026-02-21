@@ -1,120 +1,66 @@
-﻿using System.Net;
 #if NET5_0_OR_GREATER
 using System.Text.Json.Serialization;
 #endif
 
-namespace Viana.Results
+namespace Viana.Results;
+
+public class Result(int status, ProblemResult? problem = null) : IResult, IResultData
 {
-    /// <summary>
-    /// Represents a strongly-typed result with status, message, data, and error information.
-    /// </summary>
-    /// <typeparam name="TValue">The type of the result data.</typeparam>
-    public class Result<TValue> : IResult<TValue>
+    private readonly object? _data;
+    public int Status { get; } = status;
+#if NET5_0_OR_GREATER
+    [JsonIgnore]
+#endif
+    public ProblemResult? Problem { get; } = problem;
+
+    object? IResultData.Data => _data;
+
+    public Result(ProblemResult problem) : this(problem.Status, problem)
     {
-        /// <summary>
-        /// Gets the HTTP status code.
-        /// </summary>
-        public HttpStatusCode StatusCode { get; }
 
-        /// <summary>
-        /// Gets the result data.
-        /// </summary>
-        public TValue Data { get; }
-
-        /// <summary>
-        /// Gets the error information, if any.
-        /// </summary>
-        public ResultError Error { get; }
-
-        object IResult.Data => Data;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Result{TValue}"/> class with data.
-        /// </summary>
-        /// <param name="data">The result data.</param>
-        /// <param name="message">The optional message.</param>
-        /// <param name="status">The HTTP status code.</param>
-        public Result(TValue data, HttpStatusCode status = HttpStatusCode.OK)
-        {
-            Data = data;
-            StatusCode = status;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Result{TValue}"/> class with an error.
-        /// </summary>
-        /// <param name="error">The error information.</param>
-        /// <param name="status">The HTTP status code.</param>
-        public Result(ResultError error, HttpStatusCode status = HttpStatusCode.InternalServerError)
-        {
-            Error = error;
-            StatusCode = status;
-        }
-
-        public static implicit operator Result<TValue>(Result result)
-        {
-            if (result.Error != null)
-                return new Result<TValue>(result.Error, result.StatusCode);
-
-            return new Result<TValue>((TValue)result.Data, result.StatusCode);
-        }
-
-        public static implicit operator Result<TValue>(TValue value)
-        {
-            return new Result<TValue>(value);
-        }
     }
 
-    /// <summary>
-    /// Represents a non-generic result with status, message, data, and error information.
-    /// </summary>
-    public class Result : IResult
+    internal Result(int status, object? data, ProblemResult? problem = null) : this(status, problem)
     {
-        /// <summary>
-        /// Gets the HTTP status code.
-        /// </summary>
-#if NET5_0_OR_GREATER
-        [JsonIgnore]
-#endif
-        public HttpStatusCode StatusCode { get; }
+        _data = data;
+    }
+}
 
-        /// <summary>
-        /// Gets the result data.
-        /// </summary>
-        public object Data { get; }
+public class Result<TValue>(TValue? data, int status = 200, ProblemResult? problem = null) : IResult<TValue>, IResultData
+{
+    public TValue? Data => data;
 
-        /// <summary>
-        /// Gets the error information, if any.
-        /// </summary>
-        public ResultError Error { get; }
+    object? IResultData.Data => Data;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Result"/> class with an error.
-        /// </summary>
-        /// <param name="error">The error information.</param>
-        /// <param name="status">The HTTP status code.</param>
-        public Result(ResultError error, HttpStatusCode status = HttpStatusCode.InternalServerError) : this(status)
-        {
-            Error = error;
-        }
+    public int Status => status;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Result"/> class with a message.
-        /// </summary>
-        /// <param name="message">The result message.</param>
-        /// <param name="status">The HTTP status code.</param>
-        public Result(object data, HttpStatusCode status = HttpStatusCode.OK) : this(status)
-        {
-            Data = data;
-        }
+    public ProblemResult? Problem => problem;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Result"/> class.
-        /// </summary>
-        /// <param name="status">The HTTP status code.</param>
-        public Result(HttpStatusCode status = HttpStatusCode.OK)
-        {
-            StatusCode = status;
-        }
+
+    public Result(ProblemResult problem):this(default, problem.Status, problem)
+    {
+    }
+
+    public static implicit operator Result<TValue>(TValue data) => new(data, 200);
+
+    public static implicit operator Result<TValue>(ProblemResult problem) => new(default, problem.Status, problem);
+
+    public static implicit operator Result(Result<TValue> result)
+    {
+        if (result.Problem != null)
+            return new Result(result.Problem);
+        return new Result(result.Status, result.Data, result.Problem);
+    }
+
+    public static implicit operator Result<TValue>(Result result)
+    {
+        if (result.Problem != null)
+            return new Result<TValue>(default, result.Status, result.Problem);
+
+        TValue? typedData = default;
+        if (((IResultData)result)?.Data is TValue value)
+            typedData = value;
+
+        return new Result<TValue>(typedData, result!.Status);
     }
 }

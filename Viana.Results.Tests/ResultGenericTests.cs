@@ -14,9 +14,9 @@ namespace Viana.Results.Tests
             var result = new Result<string>(data);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Equal(data, result.Data);
-            Assert.Null(result.Error);
+            Assert.Null(result.Problem);
         }
 
         [Fact]
@@ -29,37 +29,37 @@ namespace Viana.Results.Tests
             var result = new Result<int>(data);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Equal(data, result.Data);
-            Assert.Null(result.Error);
+            Assert.Null(result.Problem);
         }
 
         [Fact]
         public void ResultT_WithError_SetsErrorAndStatusCode()
         {
             // Arrange
-            var error = new ResultError("An error occurred");
+            var error = new ProblemResult(500, "An error occurred");
 
             // Act
             var result = new Result<string>(error);
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
-            Assert.Equal(error, result.Error);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, result.Status);
+            Assert.Equal(error, result.Problem);
         }
 
         [Fact]
         public void ResultT_WithErrorAndMessage_SetsPropertiesCorrectly()
         {
             // Arrange
-            var error = new ResultError("Error details");
+            var error = new ProblemResult(500, "Error details");
 
             // Act
             var result = new Result<int>(error);
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
-            Assert.Equal(error, result.Error);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, result.Status);
+            Assert.Equal(error, result.Problem);
         }
 
         [Fact]
@@ -72,37 +72,37 @@ namespace Viana.Results.Tests
             Result<string> result = value;
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Equal(value, result.Data);
         }
 
         [Fact]
-        public void ResultT_ImplicitConversionFromResult_WithData_CreatesResultT()
+        public void ResultT_ImplicitConversionFromResult_WithSuccess_CreatesResultT()
         {
             // Arrange
-            var originalResult = new Result("Success message");
+            var originalResult = new Result(200);
 
             // Act
-            Result<string> result = originalResult;
+            IResultData result = originalResult;
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.Equal("Success message", result.Data);
+            Assert.Equal((int)HttpStatusCode.OK, originalResult.Status);
+            Assert.Null(result.Data);
         }
 
         [Fact]
         public void ResultT_ImplicitConversionFromResult_WithError_CreatesResultTWithError()
         {
             // Arrange
-            var error = new ResultError("Error occurred");
+            var error = new ProblemResult(500, "Error occurred");
             var originalResult = new Result(error);
 
             // Act
             Result<string> result = originalResult;
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
-            Assert.Equal(error, result.Error);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, result.Status);
+            Assert.Equal(error, result.Problem);
         }
 
         [Fact]
@@ -125,7 +125,7 @@ namespace Viana.Results.Tests
             var result = new Result<object>(data);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Equal(data, result.Data);
         }
 
@@ -136,7 +136,7 @@ namespace Viana.Results.Tests
             var result = new Result<string>((string)null);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Null(result.Data);
         }
     }

@@ -6,60 +6,59 @@ namespace Viana.Results.Tests
     public class ResultsHelperTests
     {
         [Fact]
-        public void Results_Success_WithMessage_ReturnsSuccessResult()
+        public void Results_Ok_WithMessage_ReturnsSuccessResult()
         {
             // Arrange
             var message = "Operation completed successfully";
 
             // Act
-            var result = Results.Success(message);
+            var result = Results.Ok(message);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Equal(message, result.Data);
-            Assert.Null(result.Error);
+            Assert.Null(result.Problem);
         }
 
         [Fact]
-        public void Results_Success_WithData_ReturnsSuccessResultWithData()
+        public void Results_Ok_WithData_ReturnsSuccessResultWithData()
         {
             // Arrange
             var data = new { Id = 1, Name = "Test" };
 
             // Act
-            var result = Results.Success(data);
+            var result = Results.Ok(data);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Equal(data, result.Data);
-            Assert.Null(result.Error);
+            Assert.Null(result.Problem);
         }
 
         [Fact]
-        public void Results_Success_WithDataAndMessage_ReturnsSuccessResultWithBoth()
+        public void Results_Ok_WithDataAndMessage_ReturnsSuccessResultWithBoth()
         {
             // Arrange
             var data = "test data";
 
             // Act
-            var result = Results.Success(data);
+            var result = Results.Ok(data);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Equal(data, result.Data);
-            Assert.Null(result.Error);
+            Assert.Null(result.Problem);
         }
 
         [Fact]
-        public void Results_Success_WithoutParameters_ReturnsSuccessResult()
+        public void Results_Ok_WithoutParameters_ReturnsSuccessResult()
         {
             // Act
-            var result = Results.Success();
+            var result = Results.Ok();
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.Equal("Ok", result.Data);
-            Assert.Null(result.Error);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
+            Assert.Null(result.Problem);
         }
 
         [Fact]
@@ -69,13 +68,13 @@ namespace Viana.Results.Tests
             var message = "Operation failed";
 
             // Act
-            var result = Results.Failure(message, HttpStatusCode.InternalServerError);
+            var result = Results.Failure(HttpStatusCode.InternalServerError, message);
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal(message, result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal(message, result.Problem.Title);
         }
 
         [Fact]
@@ -85,17 +84,17 @@ namespace Viana.Results.Tests
             var message = "Not found";
 
             // Act
-            var result = Results.Failure(message, HttpStatusCode.NotFound);
+            var result = Results.Failure(HttpStatusCode.NotFound, message);
 
             // Assert
-            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal(message, result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.NotFound, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal(message, result.Problem.Title);
         }
 
         [Fact]
-        public void Results_Failure_WithException_ReturnsFailureResultWithExceptionError()
+        public void Results_Failure_WithException_ReturnsFailureResultWithProblemResult()
         {
             // Arrange
             var exception = new InvalidOperationException("Invalid operation");
@@ -104,11 +103,10 @@ namespace Viana.Results.Tests
             var result = Results.Failure(exception);
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ExceptionError>(result.Error);
-            var exceptionError = (ExceptionError)result.Error;
-            Assert.Equal(exception, exceptionError.Exception);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal(exception.Message, result.Problem!.Title);
         }
 
         [Fact]
@@ -121,9 +119,10 @@ namespace Viana.Results.Tests
             var result = Results.Failure(exception, HttpStatusCode.BadRequest);
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ExceptionError>(result.Error);
+            Assert.Equal((int)HttpStatusCode.BadRequest, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal(exception.Message, result.Problem!.Title);
         }
 
         [Fact]
@@ -133,31 +132,31 @@ namespace Viana.Results.Tests
             var message = "Validation error";
 
             // Act
-            var result = Results.Failure(message, HttpStatusCode.InternalServerError);
+            var result = Results.Failure(HttpStatusCode.InternalServerError, message);
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, result.Status);
         }
 
         [Fact]
-        public void Results_Success_WithNullData_WorksCorrectly()
+        public void Results_Ok_WithNullData_WorksCorrectly()
         {
             // Act
-            var result = Results.Success((object)null);
+            var result = Results.Ok((object)null);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Null(result.Data);
         }
 
         [Fact]
-        public void Results_Success_WithEmptyMessage_WorksCorrectly()
+        public void Results_Ok_WithEmptyMessage_WorksCorrectly()
         {
             // Act
-            var result = Results.Success(string.Empty);
+            var result = Results.Ok(string.Empty);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Equal(string.Empty, result.Data);
         }
 
@@ -165,17 +164,17 @@ namespace Viana.Results.Tests
         public void Results_Failure_WithEmptyMessage_WorksCorrectly()
         {
             // Act
-            var result = Results.Failure(string.Empty, HttpStatusCode.InternalServerError);
+            var result = Results.Failure(HttpStatusCode.InternalServerError, string.Empty);
 
             // Assert
-            Assert.Equal(HttpStatusCode.InternalServerError, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal(string.Empty, result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal("Internal Server Error", result.Problem.Title);
         }
 
         [Fact]
-        public void Results_Success_WithComplexData_WorksCorrectly()
+        public void Results_Ok_WithComplexData_WorksCorrectly()
         {
             // Arrange
             var data = new
@@ -186,15 +185,15 @@ namespace Viana.Results.Tests
             };
 
             // Act
-            var result = Results.Success(data);
+            var result = Results.Ok(data);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal((int)HttpStatusCode.OK, result.Status);
             Assert.Equal(data, result.Data);
         }
 
         [Fact]
-        public void Results_Failure_WithExceptionHavingInnerException_PreservesExceptionHierarchy()
+        public void Results_Failure_WithExceptionHavingInnerException_UsesOuterMessageAsTitle()
         {
             // Arrange
             var innerException = new InvalidOperationException("Inner error");
@@ -204,21 +203,20 @@ namespace Viana.Results.Tests
             var result = Results.Failure(exception);
 
             // Assert
-            var exceptionError = (ExceptionError)result.Error;
-            Assert.Equal(exception, exceptionError.Exception);
-            Assert.Equal(innerException, exceptionError.Exception.InnerException);
+            Assert.NotNull(result.Problem);
+            Assert.Equal("Outer error", result.Problem!.Title);
         }
 
         [Fact]
-        public void Results_BusinessRuleViolated_WithMessage_ReturnsDataResultError()
+        public void Results_BusinessRuleViolated_WithMessage_ReturnsDataProblemResult()
         {
             // Act
             var result = Results.BusinessRuleViolated("User is locked");
 
             // Assert
-            Assert.Equal((HttpStatusCode)422, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.Equal("User is locked", result.Error.Message);
+            Assert.Equal(422, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.Equal("User is locked", result.Problem.Title);
         }
 
         [Fact]
@@ -228,10 +226,10 @@ namespace Viana.Results.Tests
             var result = Results.NotFound();
 
             // Assert
-            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal("The requested resource was not found.", result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.NotFound, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal("The requested resource was not found.", result.Problem.Title);
         }
 
         [Fact]
@@ -244,10 +242,10 @@ namespace Viana.Results.Tests
             var result = Results.NotFound(message);
 
             // Assert
-            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal(message, result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.NotFound, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal(message, result.Problem.Title);
         }
 
         [Fact]
@@ -257,10 +255,10 @@ namespace Viana.Results.Tests
             var result = Results.Unauthorized();
 
             // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal("Unauthorized access.", result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.Unauthorized, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal("Unauthorized access.", result.Problem.Title);
         }
 
         [Fact]
@@ -273,10 +271,10 @@ namespace Viana.Results.Tests
             var result = Results.Unauthorized(message);
 
             // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal(message, result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.Unauthorized, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal(message, result.Problem.Title);
         }
 
         [Fact]
@@ -286,10 +284,10 @@ namespace Viana.Results.Tests
             var result = Results.Forbidden();
 
             // Assert
-            Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal("Forbidden access.", result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.Forbidden, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal("Forbidden access.", result.Problem.Title);
         }
 
         [Fact]
@@ -302,10 +300,10 @@ namespace Viana.Results.Tests
             var result = Results.Forbidden(message);
 
             // Assert
-            Assert.Equal(HttpStatusCode.Forbidden, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal(message, result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.Forbidden, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal(message, result.Problem.Title);
         }
 
         [Fact]
@@ -315,10 +313,10 @@ namespace Viana.Results.Tests
             var result = Results.Conflict();
 
             // Assert
-            Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal("Conflict occurred.", result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.Conflict, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal("Conflict occurred.", result.Problem.Title);
         }
 
         [Fact]
@@ -331,10 +329,10 @@ namespace Viana.Results.Tests
             var result = Results.Conflict(message);
 
             // Assert
-            Assert.Equal(HttpStatusCode.Conflict, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ResultError>(result.Error);
-            Assert.Equal(message, result.Error.Message);
+            Assert.Equal((int)HttpStatusCode.Conflict, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal(message, result.Problem.Title);
         }
 
         [Fact]
@@ -351,12 +349,10 @@ namespace Viana.Results.Tests
             var result = Results.Validation(errors);
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ValidationError>(result.Error);
-            Assert.Null(result.Error.Message);
-            var validationError = (ValidationError)result.Error;
-            Assert.Equal(errors, validationError.Errors);
+            Assert.Equal((int)HttpStatusCode.BadRequest, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.True(result.Problem!.Extensions.TryGetValue("errors", out var ext) && ext is Dictionary<string, string[]> dict && dict.Count == 2);
         }
 
         [Fact]
@@ -369,15 +365,13 @@ namespace Viana.Results.Tests
             };
 
             // Act
-            var result = Results.Validation(errors);
+            var result = Results.Validation(errors, "Custom validation failed");
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ValidationError>(result.Error);
-            Assert.Null(result.Error.Message);
-            var validationError = (ValidationError)result.Error;
-            Assert.Equal(errors, validationError.Errors);
+            Assert.Equal((int)HttpStatusCode.BadRequest, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
+            Assert.Equal("Custom validation failed", result.Problem!.Title);
         }
 
         [Fact]
@@ -390,26 +384,21 @@ namespace Viana.Results.Tests
             var result = Results.Validation(errors);
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ValidationError>(result.Error);
-            var validationError = (ValidationError)result.Error;
-            Assert.Empty(validationError.Errors);
+            Assert.Equal((int)HttpStatusCode.BadRequest, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
         }
 
         [Fact]
         public void Results_Validation_WithNullErrors_WorksCorrectly()
         {
             // Act
-            var result = Results.Validation((Dictionary<string, string[]>)null);
+            var result = Results.Validation((Dictionary<string, string[]>)null!);
 
             // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
-            Assert.NotNull(result.Error);
-            Assert.IsType<ValidationError>(result.Error);
-            var validationError = (ValidationError)result.Error;
-            Assert.NotNull(validationError.Errors);
-            Assert.Empty(validationError.Errors);
+            Assert.Equal((int)HttpStatusCode.BadRequest, result.Status);
+            Assert.NotNull(result.Problem);
+            Assert.IsType<ProblemResult>(result.Problem);
         }
     }
 }
