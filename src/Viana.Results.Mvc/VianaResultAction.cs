@@ -48,28 +48,22 @@ public class VianaResultAction(IResult result) : ActionResult
 
     private object? GetExpectedBody()
     {
-        if (result == null) 
+        if (result == null || result.Status == 204)
             return null;
 
         if (result.Problem != null)
             return result.Problem;
 
-        if (IsRawResult())
-            return (result as IResultData)?.Data;
-
-        return result;
-    }
-
-    private bool IsRawResult()
-    {
+        var resultData = result as IResultData;
         var type = result.GetType();
-        if (type == typeof(Result))
-            return true;
 
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Result<>))
-            return true;
+        if (!type.IsGenericType)
+            return null;
 
-        return false;
+        if (!ResultReflections.IsUnwrappableType(type) || ResultReflections.IsScalarLike(type.GetGenericArguments()[0]))
+            return resultData;
+
+        return resultData?.Data ?? new object();
     }
 
     /// <summary>

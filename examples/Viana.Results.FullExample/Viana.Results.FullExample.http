@@ -1,0 +1,6 @@
+@Viana.Results.FullExample_HostAddress = http://localhost:5026
+
+GET {{Viana.Results.FullExample_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

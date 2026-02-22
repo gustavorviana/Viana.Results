@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/Viana.Results.FullExample/Viana.Results.FullExample.csproj" Id="59880a7f-9ccb-4d2d-abb3-325e557ea51a" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Packages.props" />
   </Folder>
