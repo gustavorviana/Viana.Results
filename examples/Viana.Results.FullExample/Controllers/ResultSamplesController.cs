@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Viana.Results.OpenApi.Swashbuckle;
 
 namespace Viana.Results.FullExample.Controllers;
 
@@ -23,6 +24,7 @@ public class ResultSamplesController : ControllerBase
 
     /// <summary>Retorna Result&lt;T&gt; (um item). Documenta 400, 500 e 503 via atributos; extensões globais por status aplicam-se aqui.</summary>
     [HttpGet("result-typed", Name = "GetResultTyped")]
+    [ProblemResult(503, Title = "Service Unavailable")]
     public Result<WeatherForecast> GetResultTyped()
     {
         var item = new WeatherForecast

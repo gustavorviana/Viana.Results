@@ -12,7 +12,8 @@ builder.Services.AddControllers()
 builder.Services.AddMediator(typeof(Program).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => options.AddVianaResultFilters());
+builder.Services.AddSwaggerGen(options =>
+    options.AddVianaResultFilters());
 
 var app = builder.Build();
 
