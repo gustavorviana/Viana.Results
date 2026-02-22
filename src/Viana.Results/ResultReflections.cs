@@ -7,7 +7,9 @@ internal static class ResultReflections
 {
     public static bool IsUnwrappableType(Type type)
     {
-        if (!typeof(IResultData).IsAssignableFrom(type) || !type.IsGenericType)
+        if (!typeof(IResultData).IsAssignableFrom(type) ||
+            typeof(IHasExtensions).IsAssignableFrom(type) ||
+            !type.IsGenericType)
             return false;
 
         var hasGenericResult = false;

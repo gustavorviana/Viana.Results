@@ -1,6 +1,6 @@
-using Viana.Results.FullExample.Swagger;
 using Viana.Results.Mediators;
 using Viana.Results.Mvc;
+using Viana.Results.OpenApi.Swashbuckle;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,14 +12,7 @@ builder.Services.AddControllers()
 builder.Services.AddMediator(typeof(Program).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-	options.SchemaFilter<OmitProblemSchemaFilter>();
-    options.OperationFilter<NoResponseBodyOperationFilter>();
-    options.DocumentFilter<RemoveResultSchemaDocumentFilter>();
-    options.OperationFilter<ProblemResponseOperationFilter>();
-    options.OperationFilter<UnwrapResultFilter>();
-});
+builder.Services.AddSwaggerGen(options => options.AddVianaResultFilters());
 
 var app = builder.Build();
 

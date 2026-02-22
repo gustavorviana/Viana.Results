@@ -17,4 +17,4 @@ using System.Runtime.InteropServices;
 
 [assembly: Guid("77bf93a5-4692-49ec-825f-7dd15d2616a4")]
 [assembly: InternalsVisibleTo("Viana.Results.Mvc")]
-[assembly: InternalsVisibleTo("Viana.Results.FullExample")]
+[assembly: InternalsVisibleTo("Viana.Results.OpenApi.Swashbuckle")]

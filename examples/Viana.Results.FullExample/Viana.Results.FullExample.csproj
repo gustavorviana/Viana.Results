@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Viana.Results.OpenApi.Swashbuckle\Viana.Results.OpenApi.Swashbuckle.csproj" />
     <ProjectReference Include="..\..\src\Viana.Results\Viana.Results.csproj" />
     <ProjectReference Include="..\..\src\Viana.Results.Mvc\Viana.Results.Mvc.csproj" />
     <ProjectReference Include="..\..\src\Viana.Results.Mediators\Viana.Results.Mediators.csproj" />

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Text.Json.Serialization;
 
 namespace Viana.Results;
 
@@ -10,7 +11,8 @@ namespace Viana.Results;
 /// Spec: RFC 9457 - Problem Details for HTTP APIs
 /// https://datatracker.ietf.org/doc/html/rfc9457
 /// </summary>
-public sealed class ProblemResult
+[JsonConverter(typeof(ProblemResultJsonConverter))]
+public sealed class ProblemResult: IHasExtensions
 {
     /// <summary>RFC 9457: problem type URI.</summary>
     public string Type { get; }

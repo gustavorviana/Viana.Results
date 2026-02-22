@@ -8,6 +8,9 @@
   <Folder Name="/src/">
     <Project Path="src/Viana.Results.Mediators/Viana.Results.Mediators.csproj" />
     <Project Path="src/Viana.Results.Mvc/Viana.Results.Mvc.csproj" />
+    <Project Path="src/Viana.Results.OpenApi.Swashbuckle/Viana.Results.OpenApi.Swashbuckle.csproj">
+      <Build Solution="Debug|*" Project="false" />
+    </Project>
     <Project Path="src/Viana.Results/Viana.Results.csproj" />
   </Folder>
   <Folder Name="/tests/">

@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Viana.Results;
 
 namespace Viana.Results.FullExample.Controllers;
 
@@ -22,7 +21,7 @@ public class ResultSamplesController : ControllerBase
         return Results.NoContent();
     }
 
-    /// <summary>Retorna Result&lt;T&gt; (um item).</summary>
+    /// <summary>Retorna Result&lt;T&gt; (um item). Documenta 400, 500 e 503 via atributos; extensões globais por status aplicam-se aqui.</summary>
     [HttpGet("result-typed", Name = "GetResultTyped")]
     public Result<WeatherForecast> GetResultTyped()
     {

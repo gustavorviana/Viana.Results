@@ -1,9 +1,13 @@
-﻿using Microsoft.OpenApi;
+using Microsoft.OpenApi;
+#if NET8_0
+using Microsoft.OpenApi.Models;
+#endif
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Linq;
 
-namespace Viana.Results.FullExample.Swagger;
+namespace Viana.Results.OpenApi.Swashbuckle.Filters;
 
-public class UnwrapResultFilter : IOperationFilter
+internal class UnwrapResultFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
@@ -17,23 +21,13 @@ public class UnwrapResultFilter : IOperationFilter
             var responseType = context.ApiDescription.SupportedResponseTypes
                 .FirstOrDefault(x => x.StatusCode.ToString() == response.Key)?.Type;
 
-            if (responseType == null)
-                continue;
-
-            if (responseType == typeof(Result))
-            {
-                response.Value.Content.Clear();
-                continue;
-            }
-
-            if (!ResultReflections.IsUnwrappableType(responseType))
+            if (responseType == null || !ResultReflections.IsUnwrappableType(responseType))
                 continue;
 
             var genericArgType = responseType.GetGenericArguments()[0];
             if (ResultReflections.IsScalarLike(genericArgType))
                 continue;
 
-            var schema = context.SchemaGenerator.GenerateSchema(responseType, context.SchemaRepository);
             var keys = response.Value.Content.Keys.ToArray();
             for (int i = 0; i < keys.Length; i++)
             {

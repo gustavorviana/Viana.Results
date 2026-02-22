@@ -38,32 +38,12 @@ public class VianaResultAction(IResult result) : ActionResult
         response.StatusCode = result.Status;
         WriteHeaders(response);
 
-        var body = GetExpectedBody();
+        var body = ResultResponseBody.GetBody(result);
         if (body == null)
             return;
 
         response.ContentType = ContentType;
         await response.WriteAsync(SerializeToJson(response, body));
-    }
-
-    private object? GetExpectedBody()
-    {
-        if (result == null || result.Status == 204)
-            return null;
-
-        if (result.Problem != null)
-            return result.Problem;
-
-        var resultData = result as IResultData;
-        var type = result.GetType();
-
-        if (!type.IsGenericType)
-            return null;
-
-        if (!ResultReflections.IsUnwrappableType(type) || ResultReflections.IsScalarLike(type.GetGenericArguments()[0]))
-            return resultData;
-
-        return resultData?.Data ?? new object();
     }
 
     /// <summary>
