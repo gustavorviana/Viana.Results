@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/examples/">
-    <Project Path="examples/Viana.Results.FullExample/Viana.Results.FullExample.csproj" Id="59880a7f-9ccb-4d2d-abb3-325e557ea51a" />
+    <Project Path="examples/Viana.Results.FullExample/Viana.Results.FullExample.csproj"
+      Id="59880a7f-9ccb-4d2d-abb3-325e557ea51a" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Packages.props" />
@@ -8,9 +9,7 @@
   <Folder Name="/src/">
     <Project Path="src/Viana.Results.Mediators/Viana.Results.Mediators.csproj" />
     <Project Path="src/Viana.Results.Mvc/Viana.Results.Mvc.csproj" />
-    <Project Path="src/Viana.Results.OpenApi.Swashbuckle/Viana.Results.OpenApi.Swashbuckle.csproj">
-      <Build Solution="Debug|*" Project="false" />
-    </Project>
+    <Project Path="src/Viana.Results.OpenApi.Swashbuckle/Viana.Results.OpenApi.Swashbuckle.csproj" />
     <Project Path="src/Viana.Results/Viana.Results.csproj" />
   </Folder>
   <Folder Name="/tests/">
