@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using Viana.Results.OpenApi.Swashbuckle.Schemas;
@@ -36,8 +37,8 @@ internal class ProblemResponseOperationFilter : IOperationFilter
             return;
 
         foreach (var problem in GetProblemAttributes(context.MethodInfo))
-            operation.Responses![problem.Status.ToString()]
-                = ProblemResultSchema.FromAttribute(_httpJson.Value.SerializerOptions, problem).Build();
+            ProblemResultSchema.FromAttribute(_httpJson.Value.SerializerOptions, problem)
+                .ApplyTo(operation.Responses);
     }
 
     private static List<ProblemResultAttribute> GetProblemAttributes(MethodInfo method)

@@ -114,19 +114,34 @@ public class ProblemResultSchema
         return converterType != null && converterType.IsGenericType && converterType.GetGenericTypeDefinition() == typeof(JsonNumberEnumConverter<>);
     }
 
-    public OpenApiResponse Build()
+    public void ApplyTo(OpenApiResponses? responses)
     {
+        if (responses == null) return;
+
+        var jsonTypes = responses
+            .Select(x => x.Value)
+            .SelectMany(x => x.Content ?? new Dictionary<string, OpenApiMediaType>())
+            .Select(x => x.Key)
+            .Where(x => x.Contains("json", StringComparison.OrdinalIgnoreCase) || string.Equals(x, "text/plain", StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        responses[Status.ToString()] = Build(jsonTypes);
+    }
+
+    public OpenApiResponse Build(string[] jsonContentTypes)
+    {
+        var apiTypes = new Dictionary<string, OpenApiMediaType>();
+        foreach (var type in jsonContentTypes)
+            apiTypes[type] = new OpenApiMediaType
+            {
+                Schema = CreateSchema(),
+                Example = BuildNode()
+            };
+
         return new OpenApiResponse
         {
             Description = _title,
-            Content = new Dictionary<string, OpenApiMediaType>
-            {
-                ["application/json"] = new OpenApiMediaType
-                {
-                    Schema = CreateSchema(),
-                    Example = BuildNode()
-                }
-            }
+            Content = apiTypes
         };
     }
 
