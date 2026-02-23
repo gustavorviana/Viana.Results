@@ -1,5 +1,402 @@
 # Viana.Results
 
+Biblioteca .NET para padronizar respostas de operações usando o padrão **Result**,
+com suporte a coleções, paginação, **Mediator**, integração com **ASP.NET Core**
+e integração com **OpenAPI / Swashbuckle**.
+
+---
+
+## Pacotes NuGet
+
+O projeto é distribuído em quatro pacotes independentes:
+
+- **Core**
+  - `Viana.Results`
+  - Tipos de resultado (`Result`, `Result<T>`, `CollectionResult<T>`,
+    `PaginatedResult<T>`), fábrica de resultados (`Results`) e helpers
+    para padronizar respostas de sucesso/erro.
+
+- **Mediator**
+  - `Viana.Results.Mediators`
+  - Implementação simples de Mediator com `IRequest<T>`, `IHandler<TRequest, TResponse>`
+    e `IMediator`, incluindo geração de `Activity` no .NET 8+ para observabilidade.
+
+- **ASP.NET Core MVC**
+  - `Viana.Results.Mvc`
+  - Extensões para converter `Result` em `ActionResult`, filtro global
+    (`VianaResultFilter`) e helpers para APIs ASP.NET Core.
+
+- **OpenAPI / Swashbuckle**
+  - `Viana.Results.OpenApi.Swashbuckle`
+  - Filtros para ajustar schemas e respostas no Swagger, desenhados para
+    funcionar em conjunto com `Viana.Results` e `Swashbuckle.AspNetCore`.
+
+---
+
+## Instalação
+
+Escolha os pacotes de acordo com a sua necessidade:
+
+```bash
+# Core (obrigatório na maioria dos cenários)
+dotnet add package Viana.Results
+
+# Mediator
+dotnet add package Viana.Results.Mediators
+
+# ASP.NET Core MVC integration
+dotnet add package Viana.Results.Mvc
+
+# OpenAPI / Swashbuckle integration
+dotnet add package Viana.Results.OpenApi.Swashbuckle
+```
+
+---
+
+## Frameworks Suportados
+
+Dependendo do pacote:
+
+- `Viana.Results`
+  - `netstandard2.0`, `net5.0`, `net8.0`, `net10.0`
+- `Viana.Results.Mediators`
+  - `netstandard2.0`, `net5.0`, `net6.0`, `net8.0`, `net10.0`
+- `Viana.Results.Mvc`
+  - `net6.0`, `net8.0`, `net10.0`
+- `Viana.Results.OpenApi.Swashbuckle`
+  - `net8.0`, `net10.0`
+
+---
+
+## Uso básico
+
+### 1. Padrão Result (Core – `Viana.Results`)
+
+O padrão **Result** representa o resultado de uma operação de forma clara e segura.
+
+```csharp
+using Viana.Results;
+
+// Simple success
+public Result ProcessData()
+{
+    return Results.Success("Operation completed successfully");
+}
+
+// Success with data
+public Result<User> GetUser(int id)
+{
+    var user = database.FindUser(id);
+    return user; // Implicit conversion
+}
+
+// Error
+public Result ValidateInput(string input)
+{
+    if (string.IsNullOrEmpty(input))
+        return Results.Failure(422, "Input cannot be empty");
+
+    return Results.Success("Validation passed");
+}
+
+// Different error types
+public Result ProcessRequest()
+{
+    // Not Found (404)
+    return Results.NotFound("Resource not found");
+
+    // Bad Request (400)
+    // return Results.BadRequest("Invalid request");
+
+    // Unauthorized (401)
+    // return Results.Unauthorized("Unauthorized access");
+
+    // Forbidden (403)
+    // return Results.Forbidden("Forbidden access");
+
+    // Conflict (409)
+    // return Results.Conflict("Conflict detected");
+
+    // Business Rule (400)
+    // return Results.BusinessRuleViolated("Business rule violated");
+}
+```
+
+#### 1.1. Validação
+
+```csharp
+using Viana.Results;
+
+public Result ValidateUser(User user)
+{
+    var errors = new Dictionary<string, string[]>
+    {
+        ["Email"] = new[] { "Email is required", "Invalid email" },
+        ["Password"] = new[] { "Password must be at least 8 characters" }
+    };
+
+    return Results.Validation(errors, "Validation failed");
+}
+```
+
+#### 1.2. Coleções e paginação
+
+```csharp
+using Viana.Results;
+
+// Simple collection
+public CollectionResult<Product> GetProducts()
+{
+    var products = database.GetProducts().ToList();
+    return products; // Implicit conversion
+}
+
+// Paginated result
+public PaginatedResult<Product> GetProductsPaged(int page, int pageSize)
+{
+    var query = database.GetProducts();
+    var total = query.Count();
+    var items = query
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToList();
+
+    var pages = (int)Math.Ceiling(total / (double)pageSize);
+
+    return new PaginatedResult<Product>(items, total, pages);
+}
+```
+
+---
+
+### 2. Mediator (`Viana.Results.Mediators`)
+
+O pacote `Viana.Results.Mediators` fornece uma implementação simples do padrão
+**Mediator**, integrada com `Result`.
+
+#### 2.1. Definindo Request e Handler
+
+```csharp
+using Viana.Results;
+using Viana.Results.Mediators;
+
+// Request
+public class GetUserByIdRequest : IRequest<Result<User>>
+{
+    public int UserId { get; set; }
+}
+
+// Handler
+public class GetUserByIdHandler : IHandler<GetUserByIdRequest, Result<User>>
+{
+    private readonly IUserRepository _repository;
+
+    public GetUserByIdHandler(IUserRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<Result<User>> Handle(
+        GetUserByIdRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _repository.GetByIdAsync(request.UserId, cancellationToken);
+
+        if (user == null)
+            return Results.NotFound("User not found");
+
+        return user; // Implicit conversion to Result<User>
+    }
+}
+```
+
+#### 2.2. Registrando o Mediator
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Viana.Results.Mediators;
+
+public class Startup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // Register the mediator and all handlers from an assembly
+        services.AddMediator(typeof(GetUserByIdHandler).Assembly);
+
+        // Or register from multiple assemblies
+        services.AddMediator(
+            typeof(GetUserByIdHandler).Assembly,
+            typeof(AnotherHandler).Assembly
+        );
+    }
+}
+```
+
+#### 2.3. Usando o Mediator
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Viana.Results;
+using Viana.Results.Mediators;
+using Viana.Results.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController : ControllerBase
+{
+    private readonly IMediator _mediator;
+
+    public UsersController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUser(int id)
+    {
+        var request = new GetUserByIdRequest { UserId = id };
+        var result = await _mediator.SendAsync(request);
+
+        // ASP.NET Core integration (from Viana.Results.Mvc)
+        return result.ToActionResult();
+    }
+}
+```
+
+No .NET 8+, o `Mediator` também cria `Activity` automaticamente para facilitar
+telemetria (com tags como `request.type`, `result.type`, `handler.type`,
+`result.success`, `result.statusCode`).
+
+---
+
+### 3. Integração ASP.NET Core MVC (`Viana.Results.Mvc`)
+
+O pacote `Viana.Results.Mvc` facilita o uso de `Result` em APIs ASP.NET Core.
+
+#### 3.1. Convertendo `Result` em `ActionResult`
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Viana.Results;
+using Viana.Results.Mvc;
+
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController : ControllerBase
+{
+    private readonly IUserService _userService;
+
+    public UsersController(IUserService userService)
+    {
+        _userService = userService;
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetUser(int id)
+    {
+        var result = await _userService.GetUserByIdAsync(id);
+
+        // Converts Result to ActionResult with the appropriate status code
+        return result.ToActionResult();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateUser(CreateUserDto dto)
+    {
+        var result = await _userService.CreateAsync(dto);
+        return result.ToActionResult();
+    }
+}
+```
+
+#### 3.2. Filtro global (`VianaResultFilter`)
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Viana.Results.Mvc;
+using Viana.Results.Mvc.Filters;
+
+// Registers VianaResultFilter so IResult is converted to JSON responses
+services.AddControllers().AddVianaResultFilter();
+
+// Or register the filter manually:
+services.AddControllers(options =>
+{
+    options.Filters.Add<VianaResultFilter>();
+});
+
+// Now you can return IResult directly
+[HttpGet]
+public async Task<IResult> GetUsers()
+{
+    var users = await _userService.GetAllAsync();
+    return users; // Will be automatically formatted
+}
+```
+
+---
+
+### 4. OpenAPI / Swashbuckle (`Viana.Results.OpenApi.Swashbuckle`)
+
+O pacote `Viana.Results.OpenApi.Swashbuckle` fornece filtros para o Swagger
+compatíveis com `Viana.Results`.
+
+```csharp
+using Microsoft.Extensions.DependencyInjection;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Viana.Results.OpenApi.Swashbuckle;
+
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(options =>
+{
+    // Registers all Viana.Results filters in one call
+    options.AddVianaResultFilters();
+});
+```
+
+Os filtros incluídos ajustam schemas de erro, removem schemas intermediários de
+`Result<T>` e melhoram a documentação das respostas retornadas pela API.
+
+---
+
+## Métodos disponíveis em `Results`
+
+Alguns dos métodos mais importantes da classe estática `Results`:
+
+| Método | Status Code | Descrição |
+|--------|-------------|-----------|
+| `Success(string message = "Ok")` | 200 | Operação bem-sucedida com mensagem |
+| `Success(object data)` | 200 | Operação bem-sucedida com dado |
+| `Success(string message, object data)` | 200 | Sucesso com mensagem e dado |
+| `Failure(string message, HttpStatusCode statusCode)` | Custom | Falha genérica com status customizado |
+| `Failure(ResultError error, string message = null, object data = null, HttpStatusCode statusCode = 422)` | 422 | Falha com detalhes de erro |
+| `Failure(Exception exception, HttpStatusCode statusCode = 500)` | 500 | Falha a partir de exceção |
+| `NotFound(string message = "The requested resource was not found.")` | 404 | Recurso não encontrado |
+| `BadRequest(string message = "Bad request", object data = null)` | 400 | Requisição inválida |
+| `Unauthorized(string message = "Unauthorized access.")` | 401 | Não autorizado |
+| `Forbidden(string message = "Forbidden access.")` | 403 | Acesso proibido |
+| `Conflict(string message = "Conflict occurred.")` | 409 | Conflito |
+| `BusinessRuleViolated(string message, object data = null)` | 422 | Regra de negócio violada |
+| `Validation(Dictionary<string, string[]> errors, string message = "Validation failed")` | 400 | Erro de validação (arrays) |
+| `Validation(Dictionary<string, List<string>> errors, string message = "Validation failed")` | 400 | Erro de validação (listas) |
+
+---
+
+## Licença
+
+[Especifique aqui a licença do projeto.]
+
+---
+
+## Contribuindo
+
+Contribuições são bem-vindas!  
+Abra uma *issue* ou envie um *pull request* no repositório
+[`gustavorviana/Viana.Results`](https://github.com/gustavorviana/Viana.Results).
+
+# Viana.Results
+
 A .NET library for standardizing operation responses with support for the Result pattern, Mediator, and ASP.NET Core integration.
 
 ## Features
