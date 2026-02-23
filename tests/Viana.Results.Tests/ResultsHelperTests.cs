@@ -229,7 +229,7 @@ namespace Viana.Results.Tests
             Assert.Equal((int)HttpStatusCode.NotFound, result.Status);
             Assert.NotNull(result.Problem);
             Assert.IsType<ProblemResult>(result.Problem);
-            Assert.Equal("The requested resource was not found.", result.Problem.Title);
+            Assert.Equal("The Requested Resource Was Not Found.", result.Problem.Title);
         }
 
         [Fact]
@@ -258,7 +258,7 @@ namespace Viana.Results.Tests
             Assert.Equal((int)HttpStatusCode.Unauthorized, result.Status);
             Assert.NotNull(result.Problem);
             Assert.IsType<ProblemResult>(result.Problem);
-            Assert.Equal("Unauthorized access.", result.Problem.Title);
+            Assert.Equal("Unauthorized Access.", result.Problem.Title);
         }
 
         [Fact]
@@ -287,7 +287,7 @@ namespace Viana.Results.Tests
             Assert.Equal((int)HttpStatusCode.Forbidden, result.Status);
             Assert.NotNull(result.Problem);
             Assert.IsType<ProblemResult>(result.Problem);
-            Assert.Equal("Forbidden access.", result.Problem.Title);
+            Assert.Equal("Forbidden Access.", result.Problem.Title);
         }
 
         [Fact]
@@ -316,7 +316,7 @@ namespace Viana.Results.Tests
             Assert.Equal((int)HttpStatusCode.Conflict, result.Status);
             Assert.NotNull(result.Problem);
             Assert.IsType<ProblemResult>(result.Problem);
-            Assert.Equal("Conflict occurred.", result.Problem.Title);
+            Assert.Equal("Conflict Occurred.", result.Problem.Title);
         }
 
         [Fact]

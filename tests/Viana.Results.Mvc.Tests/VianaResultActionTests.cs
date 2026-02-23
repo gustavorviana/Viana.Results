@@ -54,8 +54,8 @@ public class VianaResultActionTests
         Assert.Equal("application/json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
-        Assert.Equal(422, json.RootElement.GetProperty("Status").GetInt32());
-        Assert.Equal("Validation Error", json.RootElement.GetProperty("Title").GetString());
+        Assert.Equal(422, json.RootElement.GetProperty("status").GetInt32());
+        Assert.Equal("Validation Error", json.RootElement.GetProperty("title").GetString());
     }
 
     [Fact]
@@ -139,8 +139,8 @@ public class VianaResultActionTests
         Assert.Equal("application/json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
-        Assert.Equal(400, json.RootElement.GetProperty("Status").GetInt32());
-        Assert.Equal("Bad Request", json.RootElement.GetProperty("Title").GetString());
+        Assert.Equal(400, json.RootElement.GetProperty("status").GetInt32());
+        Assert.Equal("Bad Request", json.RootElement.GetProperty("title").GetString());
     }
 
     [Fact]
@@ -181,8 +181,8 @@ public class VianaResultActionTests
         Assert.Equal("application/json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
-        Assert.Equal(404, json.RootElement.GetProperty("Status").GetInt32());
-        Assert.Equal("Not Found", json.RootElement.GetProperty("Title").GetString());
+        Assert.Equal(404, json.RootElement.GetProperty("status").GetInt32());
+        Assert.Equal("Not Found", json.RootElement.GetProperty("title").GetString());
     }
 
     [Fact]

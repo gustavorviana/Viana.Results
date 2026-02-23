@@ -114,7 +114,7 @@ public static class ResultMessages
         if (!Enum.IsDefined(typeof(HttpStatusCode), code))
             return string.Empty;
 
-        var input = code.ToString();
+        var input = ((HttpStatusCode)code).ToString();
         var sb = new System.Text.StringBuilder(input.Length + 10);
 
         sb.Append(input[0]);
