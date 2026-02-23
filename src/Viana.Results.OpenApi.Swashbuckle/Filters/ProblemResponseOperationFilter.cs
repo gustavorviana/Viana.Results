@@ -16,23 +16,27 @@ namespace Viana.Results.OpenApi.Swashbuckle.Filters;
 /// Each configured example is an <see cref="IResult"/>; the same logic as the MVC pipeline
 /// (<see cref="ResultResponseBody.GetBody"/>) is used to determine the response body,
 /// and that body is used to generate the schema and JSON example in Swagger.
-/// Supports global examples, path-specific examples (<see cref="ProblemResponseOptions.ForPath"/>),
 /// <see cref="ProblemResultAttribute"/> per action, and optional 401/403 when auth is required.
 /// </summary>
-internal class ProblemResponseOperationFilter : IOperationFilter
+public class ProblemResponseOperationFilter : IOperationFilter
 {
     private readonly IOptions<JsonOptions> _httpJson;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ProblemResponseOperationFilter"/> class.
+    /// </summary>
+    /// <param name="httpJson">Provides access to the configured JSON serializer options.</param>
     public ProblemResponseOperationFilter(IOptions<JsonOptions> httpJson)
     {
         _httpJson = httpJson;
     }
 
-#if NET10_0_OR_GREATER
+    /// <summary>
+    /// Applies the filter to the specified OpenAPI operation.
+    /// </summary>
+    /// <param name="operation">The OpenAPI operation being processed.</param>
+    /// <param name="context">The operation filter context.</param>
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
-#else
-    public void Apply(OpenApiOperation operation, OperationFilterContext context)
-#endif
     {
         var returnType = context.MethodInfo.ReturnType;
         if (returnType.IsGenericType && returnType.GetGenericTypeDefinition().Name == "Task`1")

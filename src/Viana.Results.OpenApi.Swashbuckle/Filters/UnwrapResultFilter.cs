@@ -7,8 +7,16 @@ using System.Linq;
 
 namespace Viana.Results.OpenApi.Swashbuckle.Filters;
 
-internal class UnwrapResultFilter : IOperationFilter
+/// <summary>
+/// Swagger operation filter that unwraps result wrapper types from the generated OpenAPI response.
+/// </summary>
+public class UnwrapResultFilter : IOperationFilter
 {
+    /// <summary>
+    /// Applies the filter to the specified OpenAPI operation.
+    /// </summary>
+    /// <param name="operation">The OpenAPI operation being processed.</param>
+    /// <param name="context">The operation filter context.</param>
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         if (operation.Responses == null) return;
