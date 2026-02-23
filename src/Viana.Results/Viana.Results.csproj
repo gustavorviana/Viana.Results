@@ -4,6 +4,26 @@
 		<TargetFrameworks>netstandard2.0;net5.0;net8.0;net10.0</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
+
+		<!-- NuGet package metadata -->
+		<PackageId>Viana.Results</PackageId>
+		<Title>Viana.Results</Title>
+		<Description>Core library for standardized operation results with support for the Result pattern, collections, and pagination.</Description>
+		<Authors>Gustavo Viana</Authors>
+		<Company>Gustavo Viana</Company>
+		<RepositoryUrl>https://github.com/gustavorviana/Viana.Results</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageProjectUrl>https://github.com/gustavorviana/Viana.Results</PackageProjectUrl>
+		<PackageTags>result;results;error-handling;pattern;viana</PackageTags>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+
+		<!-- Packing configuration -->
+		<IsPackable>true</IsPackable>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<Version>1.0.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
