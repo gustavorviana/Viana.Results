@@ -1,6 +1,9 @@
 ﻿#if NET10_0_OR_GREATER
 using Microsoft.OpenApi;
+#else
+using Microsoft.OpenApi.Models;
 #endif
+
 
 namespace Viana.Results.OpenApi.Swashbuckle.Schemas;
 
@@ -8,7 +11,15 @@ public record ProblemFieldSchema(JsonSchemaType Type, string Name, string Descri
 {
     public OpenApiSchema ToOpenApi()
     {
-        return new OpenApiSchema { Type = Type, Description = Description };
+        return new OpenApiSchema
+        {
+#if NET10_0_OR_GREATER
+            Type = Type,
+#else
+            Type = Type.ToString().ToLowerInvariant(),
+#endif
+            Description = Description
+        };
     }
 
     public string GetExampleJsonField()

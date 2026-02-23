@@ -1,4 +1,9 @@
 ﻿using Microsoft.OpenApi;
+#if NET8_0
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
+#endif
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -145,21 +150,42 @@ public class ProblemResultSchema
         };
     }
 
+#if NET10_0_OR_GREATER
     private JsonNode? BuildNode()
     {
         return $"{{{string.Join(",", _schemas.Select(x => x.GetExampleJsonField()))}}}";
     }
-
-    private OpenApiSchema CreateSchema()
+#else
+    private IOpenApiAny? BuildNode()
     {
+        var json = $"{{{string.Join(",", _schemas.Select(x => x.GetExampleJsonField()))}}}";
+
+        return OpenApiAnyFactory.CreateFromJson(json);
+    }
+#endif
+
+#if NET10_0_OR_GREATER
+    private IOpenApiSchema CreateSchema()
+#else
+    private OpenApiSchema CreateSchema()
+#endif
+    {
+#if NET10_0_OR_GREATER
         var properties = new Dictionary<string, IOpenApiSchema>(StringComparer.OrdinalIgnoreCase);
+#else
+        var properties = new Dictionary<string, OpenApiSchema>(StringComparer.OrdinalIgnoreCase);
+#endif
 
         foreach (var extension in _schemas)
             properties.TryAdd(extension.Name, extension.ToOpenApi());
 
         return new OpenApiSchema
         {
+#if NET10_0_OR_GREATER
             Type = JsonSchemaType.Object,
+#else
+            Type = "object",
+#endif
             Properties = properties
         };
     }

@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
+#if NET8_0
+using Microsoft.OpenApi.Models;
+#endif
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using Viana.Results.OpenApi.Swashbuckle.Schemas;
 
 namespace Viana.Results.OpenApi.Swashbuckle.Filters;
@@ -27,7 +28,11 @@ internal class ProblemResponseOperationFilter : IOperationFilter
         _httpJson = httpJson;
     }
 
+#if NET10_0_OR_GREATER
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
+#else
+    public void Apply(OpenApiOperation operation, OperationFilterContext context)
+#endif
     {
         var returnType = context.MethodInfo.ReturnType;
         if (returnType.IsGenericType && returnType.GetGenericTypeDefinition().Name == "Task`1")
