@@ -16,6 +16,8 @@
 		<PackageProjectUrl>https://github.com/gustavorviana/Viana.Results</PackageProjectUrl>
 		<PackageTags>result;results;openapi;swagger;swashbuckle;viana</PackageTags>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 
 		<!-- Packing configuration -->
 		<IsPackable>true</IsPackable>
@@ -39,6 +41,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Viana.Results\Viana.Results.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>

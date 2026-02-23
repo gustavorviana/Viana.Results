@@ -16,6 +16,8 @@
 		<PackageProjectUrl>https://github.com/gustavorviana/Viana.Results</PackageProjectUrl>
 		<PackageTags>result;results;error-handling;pattern;viana</PackageTags>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 
 		<!-- Packing configuration -->
 		<IsPackable>true</IsPackable>
@@ -28,5 +30,9 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
 		<PackageReference Include="System.Text.Json" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 </Project>
