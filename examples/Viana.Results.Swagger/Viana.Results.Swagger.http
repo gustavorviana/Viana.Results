@@ -1,0 +1,6 @@
+@Viana.Results.Swagger_HostAddress = http://localhost:5026
+
+GET {{Viana.Results.Swagger_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

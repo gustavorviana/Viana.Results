@@ -1,7 +1,7 @@
 using Viana.Results.Mediators;
 
-namespace Viana.Results.FullExample.UseCases.WeatherForecast;
+namespace Viana.Results.Swagger.UseCases.WeatherForecast;
 
-using WeatherForecastModel = FullExample.WeatherForecast;
+using WeatherForecastModel = Swagger.WeatherForecast;
 
 public record GetWeatherForecastRequest(int? Count = null) : IRequest<ListResult<WeatherForecastModel>>;

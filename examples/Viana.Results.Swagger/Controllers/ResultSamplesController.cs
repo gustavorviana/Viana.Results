@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Viana.Results.OpenApi;
 using Viana.Results.OpenApi.Swashbuckle;
 
-namespace Viana.Results.FullExample.Controllers;
+namespace Viana.Results.Swagger.Controllers;
 
 /// <summary>
 /// Controller de exemplo com um endpoint para cada tipo de retorno: Result, Result&lt;T&gt;, ListResult&lt;T&gt;, PagedResult&lt;T&gt;.

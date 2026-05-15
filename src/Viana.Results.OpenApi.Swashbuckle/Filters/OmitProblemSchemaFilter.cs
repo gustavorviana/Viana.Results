@@ -1,16 +1,12 @@
 using Microsoft.OpenApi;
-#if NET8_0
-using Microsoft.OpenApi.Models;
-#endif
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Viana.Results.OpenApi.Swashbuckle.Filters;
 
 /// <summary>
-/// Schema filter for result types:
-/// - For <c>Result</c>: removes all properties (no response body for 200).
-/// - For <c>Result&lt;T&gt;</c> (when T is not list-like): exposes only the schema of T (the data payload).
-/// - For list-like results (<c>ListResult</c>, <c>PagedResult</c>, etc.): removes only the <c>problem</c> field.
+/// Schema filter for result types: removes the wrapper-only properties (<c>status</c> and <c>problem</c>)
+/// from any schema that implements <see cref="IResult"/>. The actual payload unwrapping
+/// (for <c>Result&lt;T&gt;</c> / <c>ListResult&lt;T&gt;</c>) is performed by <see cref="UnwrapResultFilter"/>.
 /// </summary>
 public class OmitProblemSchemaFilter : ISchemaFilter
 {
@@ -19,11 +15,7 @@ public class OmitProblemSchemaFilter : ISchemaFilter
     /// </summary>
     /// <param name="schema">The OpenAPI schema being processed.</param>
     /// <param name="context">The schema filter context.</param>
-#if NET10_0_OR_GREATER
     public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
-#else
-    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
-#endif
     {
         if (schema is null)
             return;

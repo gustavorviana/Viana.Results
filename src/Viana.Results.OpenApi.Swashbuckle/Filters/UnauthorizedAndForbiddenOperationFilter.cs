@@ -1,10 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
-#if NET8_0
-using Microsoft.OpenApi.Models;
-#endif
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Linq;
 using Viana.Results.OpenApi.Swashbuckle.Schemas;

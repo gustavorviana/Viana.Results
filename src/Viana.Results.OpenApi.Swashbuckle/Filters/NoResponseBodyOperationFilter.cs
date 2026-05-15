@@ -1,7 +1,4 @@
 using Microsoft.OpenApi;
-#if NET8_0
-using Microsoft.OpenApi.Models;
-#endif
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Viana.Results.OpenApi.Swashbuckle.Filters;
@@ -18,7 +15,6 @@ public class NoResponseBodyOperationFilter : IOperationFilter
     /// </summary>
     /// <param name="operation">The OpenAPI operation being processed.</param>
     /// <param name="context">The operation filter context.</param>
-
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
         if (operation?.Responses is null || operation.Responses.Count == 0)

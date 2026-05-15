@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Viana.Results.FullExample.UseCases.WeatherForecast;
+using Viana.Results.Swagger.UseCases.WeatherForecast;
 using Viana.Results.Mediators;
 
-namespace Viana.Results.FullExample.Controllers
+namespace Viana.Results.Swagger.Controllers
 {
     [ApiController]
     [Route("[controller]")]

@@ -1,23 +1,21 @@
-#if NET5_0_OR_GREATER
 using System.Text.Json.Serialization;
-#endif
 
 namespace Viana.Results;
 
 public class Result(int status, ProblemResult? problem = null) : IResult, IResultData
 {
     private readonly object? _data;
-    public int Status { get; } = status;
-#if NET5_0_OR_GREATER
+
     [JsonIgnore]
-#endif
+    public int Status { get; } = status;
+
+    [JsonIgnore]
     public ProblemResult? Problem { get; } = problem;
 
     object? IResultData.Data => _data;
 
     public Result(ProblemResult problem) : this(problem.Status, problem)
     {
-
     }
 
     internal Result(int status, object? data, ProblemResult? problem = null) : this(status, problem)
@@ -32,12 +30,14 @@ public class Result<TValue>(TValue? data, int status = 200, ProblemResult? probl
 
     object? IResultData.Data => Data;
 
+    [JsonIgnore]
     public int Status => status;
 
+    [JsonIgnore]
     public ProblemResult? Problem => problem;
 
 
-    public Result(ProblemResult problem):this(default, problem.Status, problem)
+    public Result(ProblemResult problem) : this(default, problem.Status, problem)
     {
     }
 

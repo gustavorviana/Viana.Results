@@ -1,6 +1,6 @@
 using Microsoft.OpenApi;
 
-namespace Viana.Results.OpenApi.Swashbuckle.Schemas;
+namespace Viana.Results.OpenApi.Schemas;
 
 /// <summary>
 /// Represents a single field definition used to compose an RFC 9457 problem schema

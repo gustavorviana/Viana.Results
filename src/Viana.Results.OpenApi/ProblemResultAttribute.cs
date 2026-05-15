@@ -1,9 +1,9 @@
 using System;
 
-namespace Viana.Results.OpenApi.Swashbuckle;
+namespace Viana.Results.OpenApi;
 
 /// <summary>
-/// Documents one problem response for Swagger with the same options as <see cref="ProblemResult"/>:
+/// Documents one problem response for OpenAPI with the same options as <see cref="ProblemResult"/>:
 /// status, title, type (RFC 9457 problem type URI), and optional description.
 /// Apply multiple attributes to document multiple error responses for the same action.
 /// </summary>

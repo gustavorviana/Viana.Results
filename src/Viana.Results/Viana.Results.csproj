@@ -25,9 +25,11 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>1.0.2</Version>
+		<Version>1.1.0</Version>
 		<PackageReleaseNotes>
-			Added ResultTypes helper to centralize default RFC 9457 "type" URIs for problem details.
+			ListResult&lt;T&gt; is now unwrappable: response body becomes the inner list (PagedResult&lt;T&gt; stays wrapped to preserve PageNumber/TotalPages).
+			Fixed a latent bug where IResultData.Data returned null for ListResult&lt;T&gt; (data was never forwarded to the base Result).
+			Status and Problem are now marked [JsonIgnore] on Result/Result&lt;T&gt; so they no longer leak into the serialized response body.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

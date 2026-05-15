@@ -144,7 +144,7 @@ public class VianaResultActionTests
     }
 
     [Fact]
-    public async Task ExecuteResultAsync_ListResult_WithSuccess_WritesFullListResultJson()
+    public async Task ExecuteResultAsync_ListResult_WithSuccess_WritesUnwrappedArray()
     {
         var items = new List<string> { "a", "b", "c" };
         var result = new ListResult<string>(items);
@@ -157,14 +157,11 @@ public class VianaResultActionTests
         Assert.Equal("application/json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
-        Assert.True(json.RootElement.TryGetProperty("Data", out var dataProp));
-        Assert.Equal(JsonValueKind.Array, dataProp.ValueKind);
-        Assert.Equal(3, dataProp.GetArrayLength());
-        Assert.Equal("a", dataProp[0].GetString());
-        Assert.Equal("b", dataProp[1].GetString());
-        Assert.Equal("c", dataProp[2].GetString());
-        Assert.True(json.RootElement.TryGetProperty("Status", out var statusProp));
-        Assert.Equal(200, statusProp.GetInt32());
+        Assert.Equal(JsonValueKind.Array, json.RootElement.ValueKind);
+        Assert.Equal(3, json.RootElement.GetArrayLength());
+        Assert.Equal("a", json.RootElement[0].GetString());
+        Assert.Equal("b", json.RootElement[1].GetString());
+        Assert.Equal("c", json.RootElement[2].GetString());
     }
 
     [Fact]
@@ -209,8 +206,7 @@ public class VianaResultActionTests
         Assert.Equal(2, pageProp.GetInt32());
         Assert.True(json.RootElement.TryGetProperty("TotalPages", out var totalProp));
         Assert.Equal(3, totalProp.GetInt32());
-        Assert.True(json.RootElement.TryGetProperty("Status", out var statusProp));
-        Assert.Equal(200, statusProp.GetInt32());
+        Assert.False(json.RootElement.TryGetProperty("Status", out _));
     }
 
     [Fact]
@@ -228,7 +224,7 @@ public class VianaResultActionTests
     }
 
     [Fact]
-    public async Task ExecuteResultAsync_ResultWithString_WritesFullResultWrapper()
+    public async Task ExecuteResultAsync_ResultWithString_WritesDataOnlyWrapper()
     {
         var result = Results.Ok("hello");
         var action = new VianaResultAction(result);
@@ -240,15 +236,14 @@ public class VianaResultActionTests
         Assert.Equal("application/json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
-        Assert.True(json.RootElement.TryGetProperty("Status", out var statusProp));
-        Assert.Equal(200, statusProp.GetInt32());
+        Assert.False(json.RootElement.TryGetProperty("Status", out _));
         Assert.True(json.RootElement.TryGetProperty("Data", out var dataProp));
         Assert.Equal(JsonValueKind.String, dataProp.ValueKind);
         Assert.Equal("hello", dataProp.GetString());
     }
 
     [Fact]
-    public async Task ExecuteResultAsync_ResultWithValueType_WritesFullResultWrapper()
+    public async Task ExecuteResultAsync_ResultWithValueType_WritesDataOnlyWrapper()
     {
         var result = Results.Ok(42);
         var action = new VianaResultAction(result);
@@ -260,15 +255,14 @@ public class VianaResultActionTests
         Assert.Equal("application/json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
-        Assert.True(json.RootElement.TryGetProperty("Status", out var statusProp));
-        Assert.Equal(200, statusProp.GetInt32());
+        Assert.False(json.RootElement.TryGetProperty("Status", out _));
         Assert.True(json.RootElement.TryGetProperty("Data", out var dataProp));
         Assert.Equal(JsonValueKind.Number, dataProp.ValueKind);
         Assert.Equal(42, dataProp.GetInt32());
     }
 
     [Fact]
-    public async Task ExecuteResultAsync_ResultWithEnum_WritesFullResultWrapper()
+    public async Task ExecuteResultAsync_ResultWithEnum_WritesDataOnlyWrapper()
     {
         var result = Results.Ok(SampleEnum.Second);
         var action = new VianaResultAction(result);
@@ -280,15 +274,14 @@ public class VianaResultActionTests
         Assert.Equal("application/json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
-        Assert.True(json.RootElement.TryGetProperty("Status", out var statusProp));
-        Assert.Equal(200, statusProp.GetInt32());
+        Assert.False(json.RootElement.TryGetProperty("Status", out _));
         Assert.True(json.RootElement.TryGetProperty("Data", out var dataProp));
         Assert.Equal(JsonValueKind.Number, dataProp.ValueKind);
         Assert.Equal((int)SampleEnum.Second, dataProp.GetInt32());
     }
 
     [Fact]
-    public async Task ExecuteResultAsync_ResultWithNullableValueType_WritesFullResultWrapper()
+    public async Task ExecuteResultAsync_ResultWithNullableValueType_WritesDataOnlyWrapper()
     {
         int? value = 99;
         var result = Results.Ok(value);
@@ -301,8 +294,7 @@ public class VianaResultActionTests
         Assert.Equal("application/json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
-        Assert.True(json.RootElement.TryGetProperty("Status", out var statusProp));
-        Assert.Equal(200, statusProp.GetInt32());
+        Assert.False(json.RootElement.TryGetProperty("Status", out _));
         Assert.True(json.RootElement.TryGetProperty("Data", out var dataProp));
         Assert.Equal(99, dataProp.GetInt32());
     }
@@ -334,7 +326,7 @@ public class VianaResultActionTests
         await action.ExecuteResultAsync(context);
 
         var body = ReadResponseBody(context);
-        Assert.Contains("Status", body);
         Assert.Contains("Data", body);
+        Assert.DoesNotContain("Status", body);
     }
 }

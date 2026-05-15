@@ -1,48 +1,51 @@
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Reflection;
-using Viana.Results.OpenApi;
-using Viana.Results.OpenApi.Swashbuckle.Schemas;
+using System.Threading;
+using System.Threading.Tasks;
+using Viana.Results.OpenApi.Schemas;
 
-namespace Viana.Results.OpenApi.Swashbuckle.Filters;
+namespace Viana.Results.OpenApi.Transformers;
 
 /// <summary>
-/// Adds RFC 9457 problem response examples to operations that return <see cref="IResult"/>
-/// and are decorated with one or more <see cref="ProblemResultAttribute"/>.
+/// OpenAPI operation transformer that adds RFC 9457 problem response examples
+/// to operations decorated with <see cref="ProblemResultAttribute"/>.
 /// </summary>
-public class ProblemResponseOperationFilter : IOperationFilter
+public sealed class ProblemResponseOperationTransformer : IOpenApiOperationTransformer
 {
     private readonly IOptions<JsonOptions> _httpJson;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ProblemResponseOperationFilter"/> class.
+    /// Initializes a new instance of the <see cref="ProblemResponseOperationTransformer"/> class.
     /// </summary>
     /// <param name="httpJson">Provides access to the configured JSON serializer options.</param>
-    public ProblemResponseOperationFilter(IOptions<JsonOptions> httpJson)
+    public ProblemResponseOperationTransformer(IOptions<JsonOptions> httpJson)
     {
         _httpJson = httpJson;
     }
 
-    /// <summary>
-    /// Applies the filter to the specified OpenAPI operation.
-    /// </summary>
-    /// <param name="operation">The OpenAPI operation being processed.</param>
-    /// <param name="context">The operation filter context.</param>
-    public void Apply(OpenApiOperation operation, OperationFilterContext context)
+    /// <inheritdoc />
+    public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
     {
-        var returnType = context.MethodInfo.ReturnType;
+        var methodInfo = TransformerHelper.GetMethodInfo(context.Description);
+        if (methodInfo == null)
+            return Task.CompletedTask;
+
+        var returnType = methodInfo.ReturnType;
         if (returnType.IsGenericType && returnType.GetGenericTypeDefinition().Name == "Task`1")
             returnType = returnType.GetGenericArguments()[0];
 
         if (!typeof(IResult).IsAssignableFrom(returnType))
-            return;
+            return Task.CompletedTask;
 
-        foreach (var problem in GetProblemAttributes(context.MethodInfo))
+        foreach (var problem in GetProblemAttributes(methodInfo))
             ProblemResultSchema.FromAttribute(_httpJson.Value.SerializerOptions, problem)
                 .ApplyTo(operation.Responses);
+
+        return Task.CompletedTask;
     }
 
     private static List<ProblemResultAttribute> GetProblemAttributes(MethodInfo method)

@@ -1,5 +1,4 @@
 using Microsoft.OpenApi;
-using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,13 +6,12 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Viana.Results.OpenApi;
 
-namespace Viana.Results.OpenApi.Swashbuckle.Schemas;
+namespace Viana.Results.OpenApi.Schemas;
 
 /// <summary>
 /// Represents an OpenAPI schema builder for RFC 9457 Problem Details responses.
-/// Produces standardized Swagger documentation including default and custom fields.
+/// Produces standardized OpenAPI documentation including default and custom fields.
 /// </summary>
 public class ProblemResultSchema
 {

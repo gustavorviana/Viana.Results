@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace Viana.Results;
 
@@ -6,9 +6,15 @@ namespace Viana.Results;
 /// Result type for operations that return a list of items.
 /// </summary>
 /// <typeparam name="TValue">Type of each item in the list.</typeparam>
-public class ListResult<TValue>(IReadOnlyList<TValue> data, ProblemResult? problem = null) : Result(problem?.Status ?? 200, problem), IListResult<TValue>
+public class ListResult<TValue> : Result, IListResult<TValue>
 {
-    public IReadOnlyList<TValue> Data => data;
+    public IReadOnlyList<TValue> Data { get; }
+
+    public ListResult(IReadOnlyList<TValue> data, ProblemResult? problem = null)
+        : base(problem?.Status ?? 200, data, problem)
+    {
+        Data = data;
+    }
 
     public static implicit operator ListResult<TValue>(ProblemResult problem) => new([], problem);
 

@@ -1,4 +1,4 @@
-namespace Viana.Results.FullExample
+namespace Viana.Results.Swagger
 {
     public class WeatherForecast
     {

@@ -28,7 +28,7 @@ public static class ResultResponseBody
 		if (!type.IsGenericType)
 			return null;
 
-		if (!ResultReflections.IsUnwrappableType(type) || ResultReflections.IsScalarLike(type.GetGenericArguments()[0]))
+		if (!ResultReflections.IsUnwrappableType(type) || ResultReflections.IsScalarLike(ResultReflections.GetDataType(type)))
 			return resultData;
 
 		return resultData?.Data ?? new object();

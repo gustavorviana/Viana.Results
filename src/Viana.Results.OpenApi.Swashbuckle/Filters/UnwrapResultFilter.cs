@@ -1,7 +1,4 @@
 using Microsoft.OpenApi;
-#if NET8_0
-using Microsoft.OpenApi.Models;
-#endif
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Linq;
 
@@ -9,6 +6,9 @@ namespace Viana.Results.OpenApi.Swashbuckle.Filters;
 
 /// <summary>
 /// Swagger operation filter that unwraps result wrapper types from the generated OpenAPI response.
+/// For <c>Result&lt;T&gt;</c> and <c>ListResult&lt;T&gt;</c>, replaces the response media schema with
+/// the schema of the inner payload type (<c>T</c> or <c>IReadOnlyList&lt;T&gt;</c> respectively).
+/// <c>PagedResult&lt;T&gt;</c> is preserved because it carries paging metadata.
 /// </summary>
 public class UnwrapResultFilter : IOperationFilter
 {
@@ -32,8 +32,8 @@ public class UnwrapResultFilter : IOperationFilter
             if (responseType == null || !ResultReflections.IsUnwrappableType(responseType))
                 continue;
 
-            var genericArgType = responseType.GetGenericArguments()[0];
-            if (ResultReflections.IsScalarLike(genericArgType))
+            var dataType = ResultReflections.GetDataType(responseType);
+            if (dataType == null || ResultReflections.IsScalarLike(dataType))
                 continue;
 
             var keys = response.Value.Content.Keys.ToArray();
@@ -42,7 +42,7 @@ public class UnwrapResultFilter : IOperationFilter
                 var key = keys[i];
                 response.Value.Content[key] = new OpenApiMediaType
                 {
-                    Schema = context.SchemaGenerator.GenerateSchema(genericArgType, context.SchemaRepository)
+                    Schema = context.SchemaGenerator.GenerateSchema(dataType, context.SchemaRepository)
                 };
             }
         }

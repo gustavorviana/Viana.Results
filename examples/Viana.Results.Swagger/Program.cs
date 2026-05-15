@@ -1,5 +1,6 @@
 using Viana.Results.Mediators;
 using Viana.Results.Mvc;
+using Viana.Results.OpenApi;
 using Viana.Results.OpenApi.Swashbuckle;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,12 +16,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
     options.AddVianaResultFilters());
 
+builder.Services.AddOpenApi(options =>
+    options.AddVianaResultTransformers());
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
