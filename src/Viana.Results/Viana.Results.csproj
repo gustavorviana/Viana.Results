@@ -25,11 +25,11 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>1.1.0</Version>
+		<Version>1.2.0</Version>
 		<PackageReleaseNotes>
-			ListResult&lt;T&gt; is now unwrappable: response body becomes the inner list (PagedResult&lt;T&gt; stays wrapped to preserve PageNumber/TotalPages).
-			Fixed a latent bug where IResultData.Data returned null for ListResult&lt;T&gt; (data was never forwarded to the base Result).
-			Status and Problem are now marked [JsonIgnore] on Result/Result&lt;T&gt; so they no longer leak into the serialized response body.
+			Added ProblemBuilder: a fluent builder for ProblemResult with WithTitle/WithType/WithDescription/WithDetail/WithInstance and AddExtension(s).
+			WithDetail and WithInstance map to the RFC 9457 "detail" and "instance" members (stored as extensions until promoted to top-level properties).
+			Previous (1.1.0): ListResult&lt;T&gt; unwrap, IResultData.Data fix on ListResult, [JsonIgnore] on Status/Problem.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

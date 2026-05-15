@@ -21,6 +21,7 @@ public static class OpenApiExtensions
         options.AddOperationTransformer<ProblemResponseOperationTransformer>();
         options.AddSchemaTransformer<UnwrapResultSchemaTransformer>();
         options.AddOperationTransformer<UnauthorizedAndForbiddenOperationTransformer>();
+        options.AddOperationTransformer<ResponseExampleOperationTransformer>();
         return options;
     }
 }

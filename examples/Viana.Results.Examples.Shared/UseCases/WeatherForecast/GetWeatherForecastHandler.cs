@@ -1,9 +1,7 @@
 using Viana.Results.Mediators;
+using WeatherForecastModel = Viana.Results.Examples.Shared.WeatherForecast;
 
-namespace Viana.Results.Swagger.UseCases.WeatherForecast;
-
-// Model from root namespace to avoid conflict with current namespace name
-using WeatherForecastModel = Swagger.WeatherForecast;
+namespace Viana.Results.Examples.Shared.UseCases.WeatherForecast;
 
 public class GetWeatherForecastHandler : IHandler<GetWeatherForecastRequest, ListResult<WeatherForecastModel>>
 {

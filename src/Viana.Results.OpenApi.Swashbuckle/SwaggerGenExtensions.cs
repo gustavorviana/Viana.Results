@@ -23,6 +23,7 @@ public static class SwaggerGenExtensions
         options.OperationFilter<ProblemResponseOperationFilter>();
         options.OperationFilter<UnwrapResultFilter>();
         options.OperationFilter<UnauthorizedAndForbiddenOperationFilter>();
+        options.OperationFilter<ResponseExampleOperationFilter>();
         return options;
     }
 }

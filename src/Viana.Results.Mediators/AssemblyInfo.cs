@@ -1,19 +1,19 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-// Nos projetos no estilo SDK como este, vários atributos de assembly que sempre eram
-// definidos nesse arquivo agora são adicionados automaticamente durante o build e
-// populados com os valores definidos nas propriedades do projeto. Para obter detalhes
-// de quais atributos são incluídos e como personalizar esse processo, confira: https://aka.ms/assembly-info-properties
+// In SDK-style projects such as this one, several assembly attributes that were historically
+// defined in this file are now automatically added during build and populated with
+// values defined in project properties. For details of which attributes are included
+// and how to customise this process see: https://aka.ms/assembly-info-properties
 
 
-// A definição de ComVisible como false torna os tipos neste assembly invisíveis para
-// os componentes do COM. Se for necessário acessar um tipo do COM neste assembly,
-// defina o atributo ComVisible como true nesse tipo.
+// Setting ComVisible to false makes the types in this assembly not visible to COM
+// components.  If you need to access a type in this assembly from COM, set the ComVisible
+// attribute to true on that type.
 
 [assembly: ComVisible(false)]
 
-// O GUID a seguir será destinado à ID de typelib se este projeto for exposto ao COM.
+// The following GUID is for the ID of the typelib if this project is exposed to COM.
 
 [assembly: Guid("ACBB9F0D-44BF-4773-B9DA-D9EB402FCD85")]
 [assembly: InternalsVisibleTo("Viana.Results.Mvc")]

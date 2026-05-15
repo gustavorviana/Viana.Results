@@ -1,5 +1,7 @@
 <Solution>
   <Folder Name="/examples/">
+    <Project Path="examples/Viana.Results.Examples.Shared/Viana.Results.Examples.Shared.csproj" />
+    <Project Path="examples/Viana.Results.Scalar/Viana.Results.Scalar.csproj" />
     <Project Path="examples/Viana.Results.Swagger/Viana.Results.Swagger.csproj"
       Id="59880a7f-9ccb-4d2d-abb3-325e557ea51a" />
   </Folder>

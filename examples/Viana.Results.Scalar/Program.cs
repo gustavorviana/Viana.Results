@@ -1,9 +1,9 @@
+using Scalar.AspNetCore;
 using Viana.Results.Examples.Shared.Controllers;
 using Viana.Results.Examples.Shared.Examples;
 using Viana.Results.Mediators;
 using Viana.Results.Mvc;
 using Viana.Results.OpenApi;
-using Viana.Results.OpenApi.Swashbuckle;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,22 +22,15 @@ builder.Services.AddVianaResultExamples(opts =>
     opts.AddExample<InternalServerErrorExample>(500, summary: "Generic internal error");
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    var xmlFile = Path.Combine(AppContext.BaseDirectory, $"{sharedAssembly.GetName().Name}.xml");
-    if (File.Exists(xmlFile))
-        options.IncludeXmlComments(xmlFile);
-
-    options.AddVianaResultFilters();
-});
+builder.Services.AddOpenApi(options =>
+    options.AddVianaResultTransformers());
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
@@ -47,7 +40,7 @@ app.Use(async (context, next) =>
 {
     if (context.Request.Path == "/")
     {
-        context.Response.Redirect("/swagger");
+        context.Response.Redirect("/scalar/v1");
         return;
     }
     await next();

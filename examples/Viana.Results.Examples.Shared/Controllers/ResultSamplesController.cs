@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Viana.Results.Examples.Shared.Examples;
 using Viana.Results.OpenApi;
-using Viana.Results.OpenApi.Swashbuckle;
 
-namespace Viana.Results.Swagger.Controllers;
+namespace Viana.Results.Examples.Shared.Controllers;
 
 /// <summary>
-/// Controller de exemplo com um endpoint para cada tipo de retorno: Result, Result&lt;T&gt;, ListResult&lt;T&gt;, PagedResult&lt;T&gt;.
+/// Sample controller exposing one endpoint per supported result type:
+/// Result, Result of T, ListResult of T and PagedResult of T.
 /// </summary>
 [ApiController]
 [Route("[controller]")]
@@ -16,16 +17,22 @@ public class ResultSamplesController : ControllerBase
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     ];
 
-    /// <summary>Retorna apenas Result (sem body).</summary>
-    [HttpGet("result", Name = "GetResultOnly")]
+    /// <summary>Returns a bodyless Result (HTTP 204 No Content).</summary>
+    [HttpPost("result", Name = "GetResultOnly")]
     public Result GetResultOnly()
     {
         return Results.NoContent();
     }
 
-    /// <summary>Retorna Result&lt;T&gt; (um item). Documenta 400, 500 e 503 via atributos; extensões globais por status aplicam-se aqui.</summary>
+    /// <summary>
+    /// Returns a Result of T with a single item. Documents 500 and 503 error responses
+    /// via ProblemResult attributes; the globally-registered 500 example also applies here.
+    /// </summary>
     [HttpGet("result-typed", Name = "GetResultTyped")]
+    [ProblemResult(500, Title = "Internal Server Error")]
     [ProblemResult(503, Title = "Service Unavailable")]
+    [ResponseExample(200, typeof(WeatherForecastSuccessExample), Summary = "Typical forecast", Description = "A successful response for the typed endpoint.")]
+    [ResponseExample(503, typeof(ServiceUnavailableExample), Summary = "Downstream provider down")]
     public Result<WeatherForecast> GetResultTyped()
     {
         var item = new WeatherForecast
@@ -37,7 +44,7 @@ public class ResultSamplesController : ControllerBase
         return Results.Ok(item);
     }
 
-    /// <summary>Retorna ListResult&lt;T&gt; (lista de itens).</summary>
+    /// <summary>Returns a ListResult of T — a list of items.</summary>
     [HttpGet("list", Name = "GetListResult")]
     public ListResult<WeatherForecast> GetListResult()
     {
@@ -50,7 +57,7 @@ public class ResultSamplesController : ControllerBase
         return items;
     }
 
-    /// <summary>Retorna PagedResult&lt;T&gt; (página de itens).</summary>
+    /// <summary>Returns a PagedResult of T — a page of items with paging metadata.</summary>
     [HttpGet("paged", Name = "GetPagedResult")]
     public PagedResult<WeatherForecast> GetPagedResult([FromQuery] int page = 1, [FromQuery] int pageSize = 3)
     {
