@@ -105,7 +105,7 @@ jobs:
           cat "$NOTES_FILE"
 
       - name: Build (Release)
-        run: dotnet build "${{ steps.resolve.outputs.project }}" --configuration Release --no-restore
+        run: dotnet build Viana.Results.slnx --configuration Release --no-restore
 
       - name: Test (whole solution)
         run: dotnet test Viana.Results.slnx --configuration Release --no-build --verbosity normal
