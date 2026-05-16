@@ -26,6 +26,11 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<Version>1.0.0</Version>
+		<PackageReleaseNotes>
+			Provides IRequest&lt;T&gt;, IHandler&lt;TRequest, TResponse&gt; and IMediator for a minimal Mediator pattern integrated with Viana.Results.
+			AddMediator(params Assembly[]) registers all handlers from the given assemblies via Microsoft.Extensions.DependencyInjection.
+			On .NET 8+ the mediator automatically emits an Activity per dispatch (tags: request.type, result.type, handler.type, result.success, result.statusCode) for observability.
+		</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

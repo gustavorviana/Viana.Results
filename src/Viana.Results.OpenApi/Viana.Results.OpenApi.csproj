@@ -26,6 +26,13 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<Version>1.0.0</Version>
+		<PackageReleaseNotes>
+			Native Microsoft.AspNetCore.OpenApi integration for Viana.Results (no Swashbuckle dependency) — wires up via AddOpenApi(opts =&gt; opts.AddVianaResultTransformers()).
+			Unwraps Result&lt;T&gt;, ListResult&lt;T&gt; and PagedResult&lt;T&gt; schemas so the OpenAPI document exposes the actual payload shape instead of the wrapper.
+			Emits RFC 9457 problem responses declared via [ProblemResult(status)] and auto-adds 401/403 responses to [Authorize] endpoints.
+			Adds [ResponseExample] attribute and IExampleProvider&lt;T&gt; for typed response examples with method/class/global precedence.
+			Shares its mutation logic with Viana.Results.OpenApi.Swashbuckle via Viana.Results.OpenApi.Processing, so both pipelines emit an identical document.
+		</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
