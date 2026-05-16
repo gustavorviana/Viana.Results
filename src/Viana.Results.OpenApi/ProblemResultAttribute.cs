@@ -9,7 +9,7 @@ namespace Viana.Results.OpenApi;
 /// </summary>
 /// <remarks>
 /// Example: <c>[<see cref="ProblemResultAttribute"/>(404, Title = "User not found")]</c>,
-/// <c>[<see cref="ProblemResultAttribute"/>>(400, Title = "Validation failed", Description = "One or more fields are invalid.")]</c>
+/// <c>[<see cref="ProblemResultAttribute"/>(400, Title = "Validation failed", Description = "One or more fields are invalid.")]</c>
 /// </remarks>
 /// <remarks>
 /// Initializes the attribute for one error response.

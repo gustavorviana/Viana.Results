@@ -19,6 +19,10 @@ public interface IResultData
     object? Data { get; }
 }
 
+/// <summary>
+/// Represents the outcome of an operation as an HTTP-aligned status code and an optional
+/// <see cref="ProblemResult"/> describing the failure.
+/// </summary>
 public interface IResult
 {
     /// <summary>

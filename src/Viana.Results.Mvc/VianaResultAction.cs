@@ -59,8 +59,9 @@ public class VianaResultAction(IResult result) : ActionResult
     }
 
     /// <summary>
-    /// Serializes the given value to JSON using the serializer options from DI, <see cref="DefaultJsonSerializerOptions"/>,
-    /// or a new <see cref="JsonSerializerOptions"/> instance as fallback.
+    /// Serializes the given value to JSON using the <see cref="JsonOptions"/> configured in the
+    /// request services when available; otherwise falls back to a new <see cref="JsonSerializerOptions"/>
+    /// instance with default settings.
     /// </summary>
     /// <param name="response">The HTTP response; used to resolve <see cref="JsonOptions"/> from request services.</param>
     /// <param name="value">The object to serialize (e.g. problem details or payload). May be null.</param>

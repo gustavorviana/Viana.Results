@@ -42,9 +42,6 @@ public sealed class ProblemResult: IHasExtensions
     {
     }
 
-    /// <summary>
-    /// Private constructor with optional description (used by <see cref="WithDescription"/> when description is provided).
-    /// </summary>
     private ProblemResult(
         int status,
         string title,
