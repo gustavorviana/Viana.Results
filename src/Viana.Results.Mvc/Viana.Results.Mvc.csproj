@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
@@ -8,7 +8,7 @@
 		<!-- NuGet package metadata -->
 		<PackageId>Viana.Results.Mvc</PackageId>
 		<Title>Viana.Results.Mvc</Title>
-		<Description>ASP.NET Core MVC integration for Viana.Results, including filters and helpers to convert Result types to ActionResult.</Description>
+		<Description>ASP.NET Core MVC integration for Viana.Results: an ActionResult and filter that serialize Result/Result&lt;T&gt;/ListResult&lt;T&gt;/PagedResult&lt;T&gt; with the correct HTTP status and RFC 9457 problem details on errors.</Description>
 		<Authors>Gustavo Viana</Authors>
 		<Company>Gustavo Viana</Company>
 		<RepositoryUrl>https://github.com/gustavorviana/Viana.Results</RepositoryUrl>
@@ -25,15 +25,12 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>1.1.0</Version>
+		<Version>2.0.0</Version>
 		<PackageReleaseNotes>
-			Aligned with Viana.Results 1.1.0: ListResult&lt;T&gt; responses are now serialized as a plain array (the wrapper is unwrapped); PagedResult&lt;T&gt; keeps its metadata. Status no longer appears in the response body.
+			BREAKING: serialized response shape changed. ListResult&lt;T&gt; is now emitted as a plain JSON array (was an object with "data"). Result&lt;T&gt; no longer emits the "status" or "problem" wrapper fields. PagedResult&lt;T&gt; keeps its metadata. Clients that depended on the wrapper shape must be updated.
+			Removed redundant Microsoft.AspNetCore.Mvc.Core PackageReference (already covered by Microsoft.AspNetCore.App FrameworkReference). This also removes the transitive Newtonsoft.Json 9.0.1 vulnerability (NU1903).
 		</PackageReleaseNotes>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Viana.Results\Viana.Results.csproj" />

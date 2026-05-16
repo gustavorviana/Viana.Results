@@ -8,7 +8,7 @@
 		<!-- NuGet package metadata -->
 		<PackageId>Viana.Results.OpenApi</PackageId>
 		<Title>Viana.Results.OpenApi</Title>
-		<Description>OpenAPI integration for Viana.Results using Microsoft.AspNetCore.OpenApi transformers and shared schemas.</Description>
+		<Description>Native Microsoft.AspNetCore.OpenApi transformers for Viana.Results (no Swashbuckle required): unwraps Result/ListResult/PagedResult schemas, emits RFC 9457 problem responses, supports IExampleProvider&lt;T&gt; with [ResponseExample] attribute and global registration. Use this package when consuming AddOpenApi() + Scalar/Swagger UI; for Swashbuckle pipelines see Viana.Results.OpenApi.Swashbuckle.</Description>
 		<Authors>Gustavo Viana</Authors>
 		<Company>Gustavo Viana</Company>
 		<RepositoryUrl>https://github.com/gustavorviana/Viana.Results</RepositoryUrl>
@@ -17,6 +17,7 @@
 		<PackageTags>result;results;openapi;viana</PackageTags>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 
 		<!-- Packing configuration -->
 		<IsPackable>true</IsPackable>
@@ -24,7 +25,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>1.1.0</Version>
+		<Version>1.0.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -33,6 +34,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Viana.Results\Viana.Results.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include=".\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 </Project>

@@ -8,7 +8,7 @@
 		<!-- NuGet package metadata -->
 		<PackageId>Viana.Results.OpenApi.Swashbuckle</PackageId>
 		<Title>Viana.Results.OpenApi.Swashbuckle</Title>
-		<Description>OpenAPI/Swagger integration for Viana.Results using Swashbuckle.AspNetCore, including filters and schemas.</Description>
+		<Description>Swashbuckle.AspNetCore (10.x+) integration for Viana.Results: SwaggerGen filters that unwrap Result/ListResult/PagedResult schemas, emit RFC 9457 problem responses, support IExampleProvider&lt;T&gt; with [ResponseExample] attribute and global registration. For projects using AddOpenApi() directly (without Swashbuckle), see Viana.Results.OpenApi.</Description>
 		<Authors>Gustavo Viana</Authors>
 		<Company>Gustavo Viana</Company>
 		<RepositoryUrl>https://github.com/gustavorviana/Viana.Results</RepositoryUrl>
@@ -29,6 +29,7 @@
 		<PackageReleaseNotes>
 			Targets Swashbuckle.AspNetCore 10.x (post Microsoft.OpenApi 3.x breaking change) only.
 			Fixed Result&lt;T&gt;, ListResult&lt;T&gt; and PagedResult&lt;T&gt; OpenAPI schema mapping so the response shows the actual payload schema instead of the wrapper.
+			Added [ResponseExample] attribute and IExampleProvider&lt;T&gt; for typed response examples (method/class/global precedence), backed by shared processors in Viana.Results.OpenApi.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

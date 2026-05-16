@@ -1,143 +1,164 @@
 ## Viana.Results (Core)
 
-**Core** library of `Viana.Results` to standardize operation responses
-using the **Result** pattern, with support for collections and pagination.
+Standardized operation responses with the **Result** pattern, including
+collections, pagination, and RFC 9457 problem details.
+
+This is the core package. ASP.NET Core MVC integration lives in
+`Viana.Results.Mvc`. OpenAPI/Swagger integration lives in
+`Viana.Results.OpenApi` (native) and `Viana.Results.OpenApi.Swashbuckle`.
 
 ---
 
-### NuGet package
+### Install
 
 ```bash
 dotnet add package Viana.Results
 ```
 
-### Supported frameworks
+### Target frameworks
 
-* `netstandard2.0`
-* `net5.0`
-* `net8.0`
-* `net10.0`
+`netstandard2.0`, `net5.0`, `net8.0`, `net10.0`
 
 ---
 
-### Basic Result pattern usage
+### Basic usage
 
 ```csharp
 using Viana.Results;
 
-// Simple success
-public Result ProcessData()
-{
-    return Results.Success("Operation completed successfully");
-}
+// Success with no body (HTTP 204)
+public Result Delete(int id) => Results.NoContent();
 
-// Success with data
+// Success with typed payload (HTTP 200)
 public Result<User> GetUser(int id)
 {
-    var user = database.FindUser(id);
-    return user; // Implicit conversion
+    var user = repository.Find(id);
+    return user;                  // implicit User -> Result<User>
 }
 
-// Error
-public Result ValidateInput(string input)
+// Failure (problem details body, status code from problem)
+public Result<User> Get(int id)
 {
-    if (string.IsNullOrEmpty(input))
-        return Results.Failure(422, "Input cannot be empty");
+    var user = repository.Find(id);
+    if (user is null)
+        return Results.NotFound("User not found");   // implicit ProblemResult -> Result<User>
 
-    return Results.Success("Validation passed");
-}
-
-// Different error types
-public Result ProcessRequest()
-{
-    // Not Found (404)
-    return Results.NotFound("Resource not found");
-
-    // Bad Request (400)
-    // return Results.BadRequest("Invalid request");
-
-    // Unauthorized (401)
-    // return Results.Unauthorized("Unauthorized access");
-
-    // Forbidden (403)
-    // return Results.Forbidden("Forbidden access");
-
-    // Conflict (409)
-    // return Results.Conflict("Conflict detected");
-
-    // Business Rule (400)
-    // return Results.BusinessRuleViolated("Business rule violated");
+    return user;
 }
 ```
+
+### Factory helpers (`Results` static class)
+
+| Method | Status | Notes |
+|---|---|---|
+| `Results.Ok()` | 200 | Empty success |
+| `Results.Ok(string message)` | 200 | Returns `Result<string>` |
+| `Results.Ok<T>(T data)` | 200 | Typed success |
+| `Results.Created<T>(T data)` | 201 | |
+| `Results.NoContent()` | 204 | |
+| `Results.BadRequest(string? title = null)` | 400 | |
+| `Results.Unauthorized(string? title = null)` | 401 | |
+| `Results.Forbidden(string? title = null)` | 403 | |
+| `Results.NotFound(string? title = null)` | 404 | |
+| `Results.Conflict(string? title = null)` | 409 | |
+| `Results.BusinessRuleViolated(string? message)` | 422 | |
+| `Results.Validation(Dictionary<string, string[]> errors, string? title = null)` | 400 | Errors land under `extensions.errors` |
+| `Results.Failure(HttpStatusCode status, string? title = null)` | custom | |
+| `Results.Failure(Exception ex, HttpStatusCode status = 500)` | custom | |
+
+---
+
+### Lists and pagination
+
+```csharp
+// ListResult<T> — serialized as a plain JSON array
+public ListResult<Product> GetAll()
+{
+    return repository.GetAll().ToList();   // implicit List<T> -> ListResult<T>
+}
+
+// PagedResult<T> — serialized as { "data": [...], "pageNumber": N, "totalPages": N }
+public PagedResult<Product> GetPage(int page, int pageSize)
+{
+    var items = repository.Query()
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToList();
+    var total = repository.Count();
+    return PagedResult<Product>.Create(items, page, pageSize, total);
+}
+```
+
+> **2.0 breaking change:** `ListResult<T>` now serializes as a bare JSON array
+> (not as `{ "data": [...] }`). `PagedResult<T>` keeps its wrapper because of
+> the paging metadata. Clients reading the previous shape need to be updated.
+
+---
+
+### Problem details (RFC 9457)
+
+```csharp
+// Quick helper for validation
+return Results.Validation(new Dictionary<string, string[]>
+{
+    ["email"]    = new[] { "is required", "must be a valid email" },
+    ["password"] = new[] { "must be at least 8 characters" }
+});
+```
+
+### Fluent ProblemBuilder
+
+For richer problem payloads (custom type URI, RFC 9457 `detail` /
+`instance`, extension members like `traceId`):
+
+```csharp
+using Viana.Results;
+
+var problem = new ProblemBuilder(404)
+    .WithTitle("User not found")
+    .WithType("https://api.example.com/errors/user-not-found")
+    .WithDetail("No user with id '8f3e2a1b' exists in tenant 'acme'.")
+    .WithInstance("/api/users/8f3e2a1b")
+    .AddExtension("traceId", Activity.Current?.TraceId.ToString())
+    .Build();
+
+return new Result(problem);
+```
+
+`WithDetail` and `WithInstance` write to the RFC 9457 `detail` / `instance`
+keys under `Extensions`. Reserved members (`type`, `title`, `status`,
+`extensions`) added via `AddExtension` are silently filtered out by
+`ProblemResult`.
 
 ---
 
 ### Validation
 
 ```csharp
-using Viana.Results;
-
 public Result ValidateUser(User user)
 {
     var errors = new Dictionary<string, string[]>
     {
-        ["Email"] = new[] { "Email is required", "Invalid email" },
-        ["Password"] = new[] { "Password must be at least 8 characters" }
+        ["email"]    = new[] { "is required" },
+        ["password"] = new[] { "must be at least 8 characters" }
     };
 
     return Results.Validation(errors, "Validation failed");
 }
 ```
 
----
-
-### Collections and pagination
-
-```csharp
-using Viana.Results;
-
-// Simple collection
-public CollectionResult<Product> GetProducts()
-{
-    var products = database.GetProducts().ToList();
-    return products; // Implicit conversion
-}
-
-// Paginated result
-public PaginatedResult<Product> GetProductsPaged(int page, int pageSize)
-{
-    var query = database.GetProducts();
-    var total = query.Count();
-    var items = query
-        .Skip((page - 1) * pageSize)
-        .Take(pageSize)
-        .ToList();
-
-    var pages = (int)Math.Ceiling(total / (double)pageSize);
-
-    return new PaginatedResult<Product>(items, total, pages);
-}
-```
+Serializes the errors under `extensions.errors`, matching the
+[Microsoft.AspNetCore.Mvc.ValidationProblemDetails](https://learn.microsoft.com/dotnet/api/microsoft.aspnetcore.mvc.validationproblemdetails)
+shape.
 
 ---
 
-### Available methods in `Results`
+### Companion packages
 
-Some of the most important methods of the static `Results` class:
-
-| Method                                                                                                   | Status Code | Description                        |
-| -------------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------- |
-| `Success(string message = "Ok")`                                                                         | 200         | Successful operation with message  |
-| `Success(object data)`                                                                                   | 200         | Successful operation with data     |
-| `Success(string message, object data)`                                                                   | 200         | Success with message and data      |
-| `Failure(string message, HttpStatusCode statusCode)`                                                     | Custom      | Generic failure with custom status |
-| `Failure(ResultError error, string message = null, object data = null, HttpStatusCode statusCode = 422)` | 422         | Failure with error details         |
-| `Failure(Exception exception, HttpStatusCode statusCode = 500)`                                          | 500         | Failure from exception             |
-| `NotFound(string message = "The requested resource was not found.")`                                     | 404         | Resource not found                 |
-| `BadRequest(string message = "Bad request", object data = null)`                                         | 400         | Invalid request                    |
-| `Unauthorized(string message = "Unauthorized access.")`                                                  | 401         | Unauthorized                       |
-| `Forbidden(string message = "Forbidden access.")`                                                        | 403         | Forbidden                          |
-| `Conflict(string message = "Conflict occurred.")`                                                        | 409         | Conflict                           |
-| `BusinessRuleViolated(string message, object data = null)`                                               | 422         | Business rule violation            |
-| `Validation(Dictionary<string, string[]> errors, string message = "Validation failed")`                  | 400         | Validation error (arrays)          |
-| `Validation(Dictionary<string, List<string>> errors, string message = "Validation failed")`              | 400         | Validation error (lists)           |
+* **`Viana.Results.Mvc`** — `VianaResultAction` and filter converting any
+  `IResult` into a JSON response with the correct HTTP status.
+* **`Viana.Results.Mediators`** — minimalist mediator that returns `IResult`-typed values.
+* **`Viana.Results.OpenApi`** — native `Microsoft.AspNetCore.OpenApi` transformers
+  (unwrap, problem responses, `[ResponseExample]`, etc.).
+* **`Viana.Results.OpenApi.Swashbuckle`** — same features wired up as
+  `Swashbuckle.AspNetCore` filters.
