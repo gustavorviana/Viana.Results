@@ -1,0 +1,137 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'core-v*'
+      - 'mediators-v*'
+      - 'mvc-v*'
+      - 'openapi-v*'
+      - 'openapi-swashbuckle-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Resolve package from tag
+        id: resolve
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          echo "Tag: $TAG"
+
+          # Match longest slug first (openapi-swashbuckle before openapi).
+          case "$TAG" in
+            core-v*)
+              SLUG="core"
+              PROJECT="src/Viana.Results/Viana.Results.csproj"
+              ;;
+            mediators-v*)
+              SLUG="mediators"
+              PROJECT="src/Viana.Results.Mediators/Viana.Results.Mediators.csproj"
+              ;;
+            mvc-v*)
+              SLUG="mvc"
+              PROJECT="src/Viana.Results.Mvc/Viana.Results.Mvc.csproj"
+              ;;
+            openapi-swashbuckle-v*)
+              SLUG="openapi-swashbuckle"
+              PROJECT="src/Viana.Results.OpenApi.Swashbuckle/Viana.Results.OpenApi.Swashbuckle.csproj"
+              ;;
+            openapi-v*)
+              SLUG="openapi"
+              PROJECT="src/Viana.Results.OpenApi/Viana.Results.OpenApi.csproj"
+              ;;
+            *)
+              echo "::error::Unrecognized tag format: $TAG"
+              exit 1
+              ;;
+          esac
+
+          VERSION="${TAG#${SLUG}-v}"
+
+          echo "slug=$SLUG"       >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "project=$PROJECT" >> "$GITHUB_OUTPUT"
+
+      - name: Restore
+        run: dotnet restore Viana.Results.slnx
+
+      - name: Validate version matches csproj
+        run: |
+          set -euo pipefail
+          PROJECT="${{ steps.resolve.outputs.project }}"
+          TAG_VERSION="${{ steps.resolve.outputs.version }}"
+
+          CSPROJ_VERSION=$(dotnet msbuild "$PROJECT" -getProperty:Version -nologo | tr -d '[:space:]')
+
+          if [ "$CSPROJ_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match csproj <Version> ($CSPROJ_VERSION) in $PROJECT"
+            exit 1
+          fi
+          echo "Version OK: $CSPROJ_VERSION"
+
+      - name: Extract release notes from csproj
+        id: notes
+        run: |
+          set -euo pipefail
+          PROJECT="${{ steps.resolve.outputs.project }}"
+
+          NOTES=$(dotnet msbuild "$PROJECT" -getProperty:PackageReleaseNotes -nologo)
+
+          if [ -z "$(echo "$NOTES" | tr -d '[:space:]')" ]; then
+            echo "::error::<PackageReleaseNotes> is empty in $PROJECT. Add release notes before tagging."
+            exit 1
+          fi
+
+          NOTES_FILE="${RUNNER_TEMP}/release-notes.md"
+          printf '%s\n' "$NOTES" > "$NOTES_FILE"
+          echo "notes_file=$NOTES_FILE" >> "$GITHUB_OUTPUT"
+
+          echo "--- Release notes ---"
+          cat "$NOTES_FILE"
+
+      - name: Build (Release)
+        run: dotnet build "${{ steps.resolve.outputs.project }}" --configuration Release --no-restore
+
+      - name: Test (whole solution)
+        run: dotnet test Viana.Results.slnx --configuration Release --no-build --verbosity normal
+
+      - name: Pack
+        run: |
+          dotnet pack "${{ steps.resolve.outputs.project }}" \
+            --configuration Release \
+            --no-build \
+            -p:ContinuousIntegrationBuild=true \
+            -o ./artifacts
+
+      - name: Push to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push ./artifacts/*.nupkg \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "${{ steps.resolve.outputs.slug }} v${{ steps.resolve.outputs.version }}" \
+            --notes-file "${{ steps.notes.outputs.notes_file }}" \
+            ./artifacts/*.nupkg ./artifacts/*.snupkg
