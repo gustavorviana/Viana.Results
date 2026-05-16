@@ -1,19 +1,15 @@
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Viana.Results.OpenApi.Processing;
 
 namespace Viana.Results.OpenApi.Swashbuckle.Filters;
 
 /// <summary>
-/// Swagger document filter that removes the <c>Result</c> schema from the
-/// generated OpenAPI components section.
+/// Document filter that removes the bare <c>Result</c> schema from the components section.
 /// </summary>
 public sealed class RemoveResultSchemaDocumentFilter : IDocumentFilter
 {
-    /// <summary>
-    /// Applies the filter to the specified OpenAPI document.
-    /// </summary>
-    /// <param name="swaggerDoc">The OpenAPI document being processed.</param>
-    /// <param name="context">The document filter context.</param>
+    /// <inheritdoc />
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
-        => swaggerDoc.Components?.Schemas?.Remove("Result");
+        => OpenApiDocumentProcessor.RemoveBareResultSchema(swaggerDoc);
 }

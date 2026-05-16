@@ -3,101 +3,37 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Viana.Results.OpenApi.Processing;
 
 namespace Viana.Results.OpenApi.Transformers;
 
 /// <summary>
 /// OpenAPI operation transformer that materializes <see cref="ResponseExampleAttribute"/>
-/// declarations (and globally-registered examples in <see cref="VianaResultOptions"/>) into
-/// <c>example</c> or <c>examples</c> entries on the relevant JSON response media types.
+/// declarations (and globally-registered examples) into <c>example</c>/<c>examples</c>
+/// entries on each JSON response media type.
 /// </summary>
 public sealed class ResponseExampleOperationTransformer : IOpenApiOperationTransformer
 {
     private readonly IOptions<JsonOptions> _httpJson;
     private readonly IServiceProvider _services;
-    private readonly VianaResultOptions? _resultOptions;
+    private readonly VianaResultOptions? _options;
 
     /// <summary>Initializes the transformer.</summary>
     public ResponseExampleOperationTransformer(IOptions<JsonOptions> httpJson, IServiceProvider services)
     {
         _httpJson = httpJson;
         _services = services;
-        _resultOptions = services.GetService(typeof(VianaResultOptions)) as VianaResultOptions;
+        _options = services.GetService(typeof(VianaResultOptions)) as VianaResultOptions;
     }
 
     /// <inheritdoc />
     public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
     {
-        if (operation.Responses == null || operation.Responses.Count == 0)
-            return Task.CompletedTask;
-
-        var methodInfo = TransformerHelper.GetMethodInfo(context.Description);
-        if (methodInfo == null)
-            return Task.CompletedTask;
-
-        var globals = _resultOptions?.GlobalExamples ?? Array.Empty<GlobalExampleRegistration>();
-        var byStatus = ResponseExampleResolver.Collect(methodInfo, globals);
-        if (byStatus.Count == 0)
-            return Task.CompletedTask;
-
-        foreach (var pair in byStatus)
-        {
-            var statusKey = pair.Key.ToString();
-            if (!operation.Responses.TryGetValue(statusKey, out var response) || response.Content == null)
-                continue;
-
-            ApplyExamples(response, pair.Value);
-        }
-
+        var method = TransformerHelper.GetMethodInfo(context.Description);
+        if (method != null)
+            OpenApiOperationProcessor.ApplyResponseExamples(operation, method, _httpJson.Value.SerializerOptions, _services, _options);
         return Task.CompletedTask;
-    }
-
-    private void ApplyExamples(IOpenApiResponse response, List<ResolvedExample> examples)
-    {
-        var serializerOptions = _httpJson.Value.SerializerOptions;
-        var built = new List<(string Key, ResolvedExample Meta, System.Text.Json.Nodes.JsonNode? Node)>();
-
-        foreach (var ex in examples)
-        {
-            var provider = ResponseExampleResolver.CreateProvider(ex.ProviderType, _services);
-            if (provider == null)
-                continue;
-
-            var value = ResponseExampleResolver.InvokeGetExample(provider);
-            var node = ResponseExampleResolver.Serialize(value, serializerOptions);
-            var key = ex.Name ?? ex.ProviderType.Name;
-            built.Add((key, ex, node));
-        }
-
-        if (built.Count == 0)
-            return;
-
-        var useExamplesMap = built.Count > 1 || built.Any(b => b.Meta.Name != null);
-
-        foreach (var media in response.Content!.Values)
-        {
-            if (useExamplesMap)
-            {
-                media.Example = null;
-                media.Examples ??= new Dictionary<string, IOpenApiExample>();
-                foreach (var (key, meta, node) in built)
-                {
-                    media.Examples[key] = new OpenApiExample
-                    {
-                        Value = node,
-                        Summary = meta.Summary,
-                        Description = meta.Description
-                    };
-                }
-            }
-            else
-            {
-                media.Example = built[0].Node;
-            }
-        }
     }
 }
