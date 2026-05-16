@@ -61,8 +61,8 @@ public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 		}
 
 		return string.IsNullOrEmpty(description)
-			? new ProblemResult(status ?? 500, title, type, extensions.Count > 0 ? extensions : null)
-			: ProblemResult.WithDescription(status ?? 500, title, description, type, extensions.Count > 0 ? extensions : null);
+			? new ProblemResult(status ?? 500, title!, type!, extensions.Count > 0 ? extensions : null)
+			: ProblemResult.WithDescription(status ?? 500, title!, description, type!, extensions.Count > 0 ? extensions : null);
 	}
 
 	/// <inheritdoc />
