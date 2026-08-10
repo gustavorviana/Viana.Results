@@ -8,7 +8,7 @@
 		<!-- NuGet package metadata -->
 		<PackageId>Viana.Results.Mvc</PackageId>
 		<Title>Viana.Results.Mvc</Title>
-		<Description>ASP.NET Core MVC integration for Viana.Results: an ActionResult and filter that serialize Result/Result&lt;T&gt;/ListResult&lt;T&gt;/PagedResult&lt;T&gt; with the correct HTTP status and RFC 9457 problem details on errors.</Description>
+		<Description>ASP.NET Core MVC integration for Viana.Results: a result filter that converts Result/Result&lt;T&gt;/ListResult&lt;T&gt;/PagedResult&lt;T&gt; into native ASP.NET Core responses with the correct HTTP status and RFC 9457 ProblemDetails on errors.</Description>
 		<Authors>Gustavo Viana</Authors>
 		<Company>Gustavo Viana</Company>
 		<RepositoryUrl>https://github.com/gustavorviana/Viana.Results</RepositoryUrl>
@@ -25,10 +25,11 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>2.0.0</Version>
+		<Version>3.0.0</Version>
 		<PackageReleaseNotes>
-			BREAKING: serialized response shape changed. ListResult&lt;T&gt; is now emitted as a plain JSON array (was an object with "data"). Result&lt;T&gt; no longer emits the "status" or "problem" wrapper fields. PagedResult&lt;T&gt; keeps its metadata. Clients that depended on the wrapper shape must be updated.
-			Removed redundant Microsoft.AspNetCore.Mvc.Core PackageReference (already covered by Microsoft.AspNetCore.App FrameworkReference). This also removes the transitive Newtonsoft.Json 9.0.1 vulnerability (NU1903).
+			BREAKING: Removed VianaResultAction. IResult is now translated to native ASP.NET Core results (ObjectResult/StatusCodeResult) by VianaResultFilter and serialized by the framework's own formatters.
+			BREAKING: On error, ProblemResult is mapped to Microsoft.AspNetCore.Mvc.ProblemDetails. The "description" member is emitted as the RFC 9457 "detail" member, and error responses use the "application/problem+json" content type (was "application/json").
+			Added VianaResultMvcOptions.ProblemContentTypes, configurable via AddVianaResultFilter(o =&gt; ...). Defaults to "application/problem+json"; add "application/problem+xml" to also negotiate XML when an XML formatter is registered.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

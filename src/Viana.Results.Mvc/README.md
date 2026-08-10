@@ -1,7 +1,9 @@
 ## Viana.Results.Mvc
 
-Extensions to integrate `Viana.Results` with **ASP.NET Core MVC**, allowing you to
-convert `Result` into `ActionResult` and use a global filter to format responses.
+Integrates `Viana.Results` with **ASP.NET Core MVC**: a global result filter turns
+any `IResult` returned from an action into a native ASP.NET Core response — the
+correct HTTP status code, the payload written by the framework's own formatters,
+and **RFC 9457 `ProblemDetails`** on errors.
 
 ---
 
@@ -19,65 +21,68 @@ dotnet add package Viana.Results.Mvc
 
 ---
 
-### Converting `Result` to `ActionResult`
+### Register the filter and return `IResult`
+
+```csharp id="c6qq2u"
+using Microsoft.Extensions.DependencyInjection;
+using Viana.Results.Mvc;
+
+// Registers VianaResultFilter: every IResult returned from an action is
+// converted to a native response (ProblemDetails on error).
+builder.Services.AddControllers().AddVianaResultFilter();
+```
 
 ```csharp id="l37j1a"
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Viana.Results;
-using Viana.Results.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController : ControllerBase
+public class UsersController(IUserService userService) : ControllerBase
 {
-    private readonly IUserService _userService;
-
-    public UsersController(IUserService userService)
-    {
-        _userService = userService;
-    }
-
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(int id)
+    public async Task<IResult> GetUser(int id)
     {
-        var result = await _userService.GetUserByIdAsync(id);
-
-        // Converts Result to ActionResult with the appropriate status code
-        return result.ToActionResult();
+        // On success → the payload with status 200/201/…;
+        // on failure → application/problem+json with the mapped status.
+        return await userService.GetUserByIdAsync(id);
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateUser(CreateUserDto dto)
+    public async Task<IResult> CreateUser(CreateUserDto dto)
     {
-        var result = await _userService.CreateAsync(dto);
-        return result.ToActionResult();
+        return await userService.CreateAsync(dto);
     }
 }
 ```
 
 ---
 
-### Global filter (`VianaResultFilter`)
+### How results are written
 
-```csharp id="c6qq2u"
-using Microsoft.Extensions.DependencyInjection;
-using Viana.Results.Mvc;
-using Viana.Results.Mvc.Filters;
+| Result | Response |
+|---|---|
+| Failure (`Problem` set) | `ProblemDetails` as `application/problem+json`, with the result's status code |
+| `Result<T>` success | the payload, status from the result |
+| `ListResult<T>` success | the inner array (unwrapped) |
+| `PagedResult<T>` success | the paged wrapper (keeps `PageNumber`/`TotalPages`) |
+| No body (e.g. `NoContent()`, bare `Ok()`) | status code only |
 
-// Registers VianaResultFilter so that IResult is converted into JSON responses
-services.AddControllers().AddVianaResultFilter();
+The `ProblemResult` is mapped to `Microsoft.AspNetCore.Mvc.ProblemDetails`: the
+`description` extension becomes the RFC 9457 `detail` member, `instance` becomes
+`Instance`, and any other extensions (e.g. `errors`) are copied to `Extensions`.
 
-// Or manual registration:
-services.AddControllers(options =>
-{
-    options.Filters.Add<VianaResultFilter>();
-});
+---
 
-// Now you can return IResult directly
-[HttpGet]
-public async Task<IResult> GetUsers()
-{
-    var users = await _userService.GetAllAsync();
-    return users; // Will be automatically formatted
-}
+### Options
+
+Configure the problem content types offered for negotiation (default
+`application/problem+json`):
+
+```csharp
+// Also negotiate XML when an XML formatter is registered
+builder.Services.AddControllers()
+    .AddXmlSerializerFormatters()
+    .AddVianaResultFilter(o => o.ProblemContentTypes.Add("application/problem+xml"));
 ```

@@ -1,10 +1,21 @@
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 
 namespace Viana.Results;
 
 internal static class ResultReflections
 {
+    private static readonly ConcurrentDictionary<Type, bool> _unwrapBodyCache = new();
+
+    /// <summary>
+    /// Returns true when the response body for a result of the given concrete type should be the
+    /// unwrapped payload (i.e. the type is unwrappable and its payload is not scalar-like). The
+    /// result is a pure function of the type, so it is cached to avoid per-response reflection.
+    /// </summary>
+    public static bool ShouldUnwrapBody(Type type) =>
+        _unwrapBodyCache.GetOrAdd(type, static t => IsUnwrappableType(t) && !IsScalarLike(GetDataType(t)));
+
     /// <summary>
     /// Returns true when the result wrapper should be unwrapped in OpenAPI/MVC payloads
     /// (i.e. the response body is the inner data rather than the wrapper). <c>PagedResult</c>

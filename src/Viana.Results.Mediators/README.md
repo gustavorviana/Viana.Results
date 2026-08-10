@@ -14,7 +14,6 @@ dotnet add package Viana.Results.Mediators
 ### Supported frameworks
 
 * `netstandard2.0`
-* `net5.0`
 * `net6.0`
 * `net8.0`
 * `net10.0`
@@ -103,13 +102,12 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(int id)
+    public async Task<IResult> GetUser(int id)
     {
         var request = new GetUserByIdRequest { UserId = id };
-        var result = await _mediator.SendAsync(request);
 
-        // ASP.NET Core integration (Viana.Results.Mvc)
-        return result.ToActionResult();
+        // Returned directly; Viana.Results.Mvc's filter writes the HTTP response.
+        return await _mediator.SendAsync(request);
     }
 }
 ```

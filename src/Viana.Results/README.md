@@ -17,7 +17,7 @@ dotnet add package Viana.Results
 
 ### Target frameworks
 
-`netstandard2.0`, `net5.0`, `net8.0`, `net10.0`
+`netstandard2.0`, `net8.0`, `net10.0`
 
 ---
 
@@ -155,8 +155,8 @@ shape.
 
 ### Companion packages
 
-* **`Viana.Results.Mvc`** — `VianaResultAction` and filter converting any
-  `IResult` into a JSON response with the correct HTTP status.
+* **`Viana.Results.Mvc`** — a result filter that converts any `IResult` into a native
+  ASP.NET Core response (mapping errors to `ProblemDetails`) with the correct HTTP status.
 * **`Viana.Results.Mediators`** — minimalist mediator that returns `IResult`-typed values.
 * **`Viana.Results.OpenApi`** — native `Microsoft.AspNetCore.OpenApi` transformers
   (unwrap, problem responses, `[ResponseExample]`, etc.).
