@@ -361,3 +361,11 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Spec Kit (https://github.com/github/spec-kit)
+# Commit .specify/, specs/ and .claude/skills/. Machine-local Spec Kit state
+# (feature.json, integrations/packages/, extension local-config.yml) is
+# already ignored by .specify/.gitignore; Python caches by __pycache__/ above.
+
+# Claude Code: local, per-user settings
+.claude/settings.local.json
