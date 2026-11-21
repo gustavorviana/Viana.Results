@@ -98,6 +98,18 @@ examples:
 Issues and pull requests are welcome at
 [`gustavorviana/Viana.Results`](https://github.com/gustavorviana/Viana.Results).
 
+### Zero warnings
+
+Every project in this repository builds with warnings treated as errors (see
+[`Directory.Build.props`](Directory.Build.props)), locally and in CI:
+
+- Compiler, nullable, XML documentation and analyzer warnings fail the build.
+- NuGet vulnerability advisories (direct and transitive) fail the build. Fix them by upgrading the
+  package in [`Directory.Packages.props`](Directory.Packages.props), never by suppressing the warning.
+- Suppressions (`NoWarn`, `#pragma warning disable`, `[SuppressMessage]`, `!` to silence a real
+  null flow) must target a single warning code, use the narrowest possible scope, carry an inline
+  comment explaining why, and be approved in review.
+
 ## License
 
 [MIT](LICENSE)

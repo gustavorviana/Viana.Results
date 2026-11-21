@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    Repository-wide build rules (constitution: Technical Constraints).
+    Imported automatically by every project under this folder.
+    Any warning, including NuGet vulnerability audit (direct and transitive), fails the build.
+    Suppressions must target a single code, use the narrowest scope and carry an inline justification.
+  -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Nullable>enable</Nullable>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+  </PropertyGroup>
+</Project>

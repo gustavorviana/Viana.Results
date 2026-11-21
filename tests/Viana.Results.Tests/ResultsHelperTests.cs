@@ -142,7 +142,7 @@ namespace Viana.Results.Tests
         public void Results_Ok_WithNullData_WorksCorrectly()
         {
             // Act
-            var result = Results.Ok((object)null);
+            var result = Results.Ok((object?)null);
 
             // Assert
             Assert.Equal((int)HttpStatusCode.OK, result.Status);

@@ -108,6 +108,43 @@ public class ProblemResultJsonConverterTests
 	}
 
 	[Fact]
+	public void Deserialize_MissingTitle_DefaultsToError()
+	{
+		var json = """{"type":"https://example.com/not-found","status":404}""";
+
+		var problem = JsonSerializer.Deserialize<ProblemResult>(json, Options);
+
+		Assert.NotNull(problem);
+		Assert.Equal("Error", problem.Title);
+		Assert.Equal("https://example.com/not-found", problem.Type);
+	}
+
+	[Fact]
+	public void Deserialize_MissingType_DefaultsToAboutBlank()
+	{
+		var json = """{"title":"Not Found","status":404}""";
+
+		var problem = JsonSerializer.Deserialize<ProblemResult>(json, Options);
+
+		Assert.NotNull(problem);
+		Assert.Equal("about:blank", problem.Type);
+		Assert.Equal("Not Found", problem.Title);
+	}
+
+	[Fact]
+	public void Deserialize_MissingTitleAndType_AppliesBothDefaults()
+	{
+		var json = """{"status":404}""";
+
+		var problem = JsonSerializer.Deserialize<ProblemResult>(json, Options);
+
+		Assert.NotNull(problem);
+		Assert.Equal("about:blank", problem.Type);
+		Assert.Equal("Error", problem.Title);
+		Assert.Equal(404, problem.Status);
+	}
+
+	[Fact]
 	public void RoundTrip_ProblemResult_PreservesData()
 	{
 		var extensions = new Dictionary<string, object?>(StringComparer.Ordinal)

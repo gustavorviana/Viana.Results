@@ -133,7 +133,7 @@ namespace Viana.Results.Tests
         public void ResultT_WithNullData_AllowsNull()
         {
             // Act
-            var result = new Result<string>((string)null);
+            var result = new Result<string?>((string?)null);
 
             // Assert
             Assert.Equal((int)HttpStatusCode.OK, result.Status);

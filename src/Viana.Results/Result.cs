@@ -106,9 +106,9 @@ public class Result<TValue>(TValue? data, int status = 200, ProblemResult? probl
             return new Result<TValue>(default, result.Status, result.Problem);
 
         TValue? typedData = default;
-        if (((IResultData)result)?.Data is TValue value)
+        if (((IResultData)result).Data is TValue value)
             typedData = value;
 
-        return new Result<TValue>(typedData, result!.Status);
+        return new Result<TValue>(typedData, result.Status);
     }
 }

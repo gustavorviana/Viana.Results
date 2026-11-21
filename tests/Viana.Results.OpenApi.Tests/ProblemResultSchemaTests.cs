@@ -52,6 +52,7 @@ public class ProblemResultSchemaTests
     {
         var schema = new ProblemResultSchema(DefaultOptions, 404);
         var response = schema.Build([]);
+        Assert.NotNull(response.Content);
         Assert.Empty(response.Content);
         Assert.Equal("The Requested Resource Was Not Found.", response.Description);
     }
@@ -61,6 +62,7 @@ public class ProblemResultSchemaTests
     {
         var schema = new ProblemResultSchema(DefaultOptions, 404);
         var response = schema.Build(["application/json"]);
+        Assert.NotNull(response.Content);
         Assert.Single(response.Content);
         Assert.True(response.Content.ContainsKey("application/json"));
     }

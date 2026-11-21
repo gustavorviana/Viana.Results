@@ -39,7 +39,7 @@ public class ProblemResultAttributeTests
     [Fact]
     public void Attribute_AllowsMultiple()
     {
-        var usage = (AttributeUsageAttribute)Attribute.GetCustomAttribute(
+        var usage = (AttributeUsageAttribute?)Attribute.GetCustomAttribute(
             typeof(ProblemResultAttribute), typeof(AttributeUsageAttribute));
 
         Assert.NotNull(usage);

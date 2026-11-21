@@ -48,11 +48,7 @@ public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 				extensions[propName] = ReadExtensionValue(ref reader, options);
 		}
 
-		if (string.IsNullOrWhiteSpace(title))
-			title = "Error";
-		if (string.IsNullOrWhiteSpace(type))
-			type = "about:blank";
-
+		// Missing "title"/"type" are defaulted by the ProblemResult constructor ("Error" / "about:blank").
 		// "description" might have been read as an extension; use it for WithDescription
 		if (extensions.TryGetValue("description", out var descObj))
 		{
@@ -61,8 +57,8 @@ public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 		}
 
 		return string.IsNullOrEmpty(description)
-			? new ProblemResult(status ?? 500, title!, type!, extensions.Count > 0 ? extensions : null)
-			: ProblemResult.WithDescription(status ?? 500, title!, description, type!, extensions.Count > 0 ? extensions : null);
+			? new ProblemResult(status ?? 500, title ?? string.Empty, type ?? string.Empty, extensions.Count > 0 ? extensions : null)
+			: ProblemResult.WithDescription(status ?? 500, title ?? string.Empty, description, type ?? string.Empty, extensions.Count > 0 ? extensions : null);
 	}
 
 	/// <inheritdoc />
