@@ -48,7 +48,7 @@ public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 				extensions[propName] = ReadExtensionValue(ref reader, options);
 		}
 
-		// Missing "title"/"type" are defaulted by the ProblemResult constructor ("Error" / "about:blank").
+		// Missing "title"/"type" are defaulted by the ProblemResult constructor (status reason phrase, or "Error" / "about:blank").
 		// "description" might have been read as an extension; use it for WithDescription
 		if (extensions.TryGetValue("description", out var descObj))
 		{

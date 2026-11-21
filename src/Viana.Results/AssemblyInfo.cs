@@ -19,3 +19,4 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Viana.Results.Mvc")]
 [assembly: InternalsVisibleTo("Viana.Results.OpenApi")]
 [assembly: InternalsVisibleTo("Viana.Results.OpenApi.Swashbuckle")]
+[assembly: InternalsVisibleTo("Viana.Results.Tests")]

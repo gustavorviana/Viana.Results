@@ -97,25 +97,25 @@ public class ProblemResultJsonConverterTests
 	}
 
 	[Fact]
-	public void Deserialize_EmptyTitle_DefaultsToError()
+	public void Deserialize_EmptyTitle_DefaultsToReasonPhrase()
 	{
 		var json = """{"type":"about:blank","title":"","status":404}""";
 
 		var problem = JsonSerializer.Deserialize<ProblemResult>(json, Options);
 
 		Assert.NotNull(problem);
-		Assert.Equal("Error", problem.Title);
+		Assert.Equal("Not Found", problem.Title);
 	}
 
 	[Fact]
-	public void Deserialize_MissingTitle_DefaultsToError()
+	public void Deserialize_MissingTitle_DefaultsToReasonPhrase()
 	{
 		var json = """{"type":"https://example.com/not-found","status":404}""";
 
 		var problem = JsonSerializer.Deserialize<ProblemResult>(json, Options);
 
 		Assert.NotNull(problem);
-		Assert.Equal("Error", problem.Title);
+		Assert.Equal("Not Found", problem.Title);
 		Assert.Equal("https://example.com/not-found", problem.Type);
 	}
 
@@ -140,8 +140,47 @@ public class ProblemResultJsonConverterTests
 
 		Assert.NotNull(problem);
 		Assert.Equal("about:blank", problem.Type);
-		Assert.Equal("Error", problem.Title);
+		Assert.Equal("Not Found", problem.Title);
 		Assert.Equal(404, problem.Status);
+	}
+
+	[Fact]
+	public void Deserialize_EmptyObject_DefaultsStatusAndTitle()
+	{
+		var problem = JsonSerializer.Deserialize<ProblemResult>("{}", Options);
+
+		Assert.NotNull(problem);
+		Assert.Equal(500, problem.Status);
+		Assert.Equal("Internal Server Error", problem.Title);
+	}
+
+	[Fact]
+	public void Deserialize_UnknownStatusWithoutTitle_FallsBackToError()
+	{
+		var problem = JsonSerializer.Deserialize<ProblemResult>("""{"status":499}""", Options);
+
+		Assert.NotNull(problem);
+		Assert.Equal("Error", problem.Title);
+	}
+
+	[Fact]
+	public void Deserialize_ExplicitTitle_IsPreserved()
+	{
+		var problem = JsonSerializer.Deserialize<ProblemResult>("""{"status":404,"title":"Custom"}""", Options);
+
+		Assert.NotNull(problem);
+		Assert.Equal("Custom", problem.Title);
+	}
+
+	[Fact]
+	public void RoundTrip_DefaultedTitle_IsKept()
+	{
+		var json = JsonSerializer.Serialize(new ProblemResult(404, ""), Options);
+
+		var problem = JsonSerializer.Deserialize<ProblemResult>(json, Options);
+
+		Assert.NotNull(problem);
+		Assert.Equal("Not Found", problem.Title);
 	}
 
 	[Fact]

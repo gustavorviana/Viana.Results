@@ -17,7 +17,7 @@ public sealed class ProblemResult: IHasExtensions
     /// <summary>RFC 9457: problem type URI.</summary>
     public string Type { get; }
 
-    /// <summary>RFC 9457: short, human-readable summary of the problem type.</summary>
+    /// <summary>RFC 9457: short, human-readable summary of the problem type. Defaults to the status reason phrase (or "Error" for unknown statuses) when not provided.</summary>
     public string Title { get; }
 
     /// <summary>RFC 9457: HTTP status code.</summary>
@@ -30,7 +30,7 @@ public sealed class ProblemResult: IHasExtensions
     /// Initializes a new instance with the specified status, title, type and extensions (no description).
     /// </summary>
     /// <param name="status">RFC 9457: HTTP status code.</param>
-    /// <param name="title">RFC 9457: short, human-readable summary of the problem type.</param>
+    /// <param name="title">RFC 9457: short, human-readable summary of the problem type. When null, empty or whitespace, defaults to the reason phrase of <paramref name="status"/> (e.g. 404 "Not Found"), or "Error" for unknown statuses.</param>
     /// <param name="type">RFC 9457: problem type URI. Defaults to "about:blank".</param>
     /// <param name="extensions">RFC 9457: optional extension members.</param>
     public ProblemResult(
@@ -51,15 +51,21 @@ public sealed class ProblemResult: IHasExtensions
     {
         Status = status;
         Type = string.IsNullOrWhiteSpace(type) ? "about:blank" : type;
-        Title = string.IsNullOrWhiteSpace(title) ? "Error" : title;
+        Title = string.IsNullOrWhiteSpace(title) ? DefaultTitle(status) : title;
         Extensions = NormalizeExtensions(extensions, description);
     }
+
+    private const string FallbackTitle = "Error";
+
+    // RFC 9457 §3.1.4: a missing title defaults to the status reason phrase; unknown statuses use "Error".
+    private static string DefaultTitle(int status) =>
+        HttpStatusInfo.TryGetReasonPhrase(status, out var phrase) ? phrase : FallbackTitle;
 
     /// <summary>
     /// Creates a new instance. When <paramref name="description"/> is provided, it is stored in <see cref="Extensions"/> under key "description".
     /// </summary>
     /// <param name="status">RFC 9457: HTTP status code.</param>
-    /// <param name="title">RFC 9457: short, human-readable summary of the problem type.</param>
+    /// <param name="title">RFC 9457: short, human-readable summary of the problem type. When null, empty or whitespace, defaults to the reason phrase of <paramref name="status"/> (e.g. 404 "Not Found"), or "Error" for unknown statuses.</param>
     /// <param name="description">Optional. RFC 9457: human-readable explanation. Stored in <see cref="Extensions"/> when provided.</param>
     /// <param name="type">RFC 9457: problem type URI. Defaults to "about:blank".</param>
     /// <param name="extensions">RFC 9457: optional extension members.</param>

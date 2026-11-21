@@ -8,9 +8,27 @@ public class ProblemBuilderTests
         var problem = new ProblemBuilder(404).Build();
 
         Assert.Equal(404, problem.Status);
-        Assert.Equal("Error", problem.Title);
+        Assert.Equal("Not Found", problem.Title);
         Assert.Equal("about:blank", problem.Type);
         Assert.Empty(problem.Extensions);
+    }
+
+    [Fact]
+    public void Build_WithStatus409Only_TitleIsConflict()
+    {
+        Assert.Equal("Conflict", new ProblemBuilder(409).Build().Title);
+    }
+
+    [Fact]
+    public void Build_WithExplicitTitle_KeepsIt()
+    {
+        Assert.Equal("Custom", new ProblemBuilder(404).WithTitle("Custom").Build().Title);
+    }
+
+    [Fact]
+    public void Build_WithUnknownStatus_FallsBackToError()
+    {
+        Assert.Equal("Error", new ProblemBuilder(499).Build().Title);
     }
 
     [Fact]

@@ -19,13 +19,72 @@ public class ProblemResultTests
     }
 
     [Fact]
-    public void ProblemResult_WithEmptyTitle_DefaultsToError()
+    public void ProblemResult_WithEmptyTitle_DefaultsToReasonPhrase()
     {
         // Act
         var problem = new ProblemResult(400, "  ");
 
         // Assert
+        Assert.Equal("Bad Request", problem.Title);
+    }
+
+    [Theory]
+    [InlineData(null, 404, "Not Found")]
+    [InlineData("", 404, "Not Found")]
+    [InlineData("  ", 500, "Internal Server Error")]
+    public void ProblemResult_BlankTitle_DefaultsToReasonPhrase(string? title, int status, string expected)
+    {
+        var problem = new ProblemResult(status, title!);
+
+        Assert.Equal(expected, problem.Title);
+    }
+
+    [Fact]
+    public void WithDescription_BlankTitle_DefaultsToReasonPhrase()
+    {
+        var problem = ProblemResult.WithDescription(409, "", "Already exists");
+
+        Assert.Equal("Conflict", problem.Title);
+    }
+
+    [Theory]
+    [InlineData(306)]
+    [InlineData(418)]
+    [InlineData(499)]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void ProblemResult_BlankTitle_UnknownOrPlaceholderStatus_FallsBackToError(int status)
+    {
+        var problem = new ProblemResult(status, "");
+
         Assert.Equal("Error", problem.Title);
+    }
+
+    [Theory]
+    [InlineData(404)]
+    [InlineData(499)]
+    public void ProblemResult_ExplicitTitle_IsNeverChanged(int status)
+    {
+        var problem = new ProblemResult(status, "Order already shipped");
+
+        Assert.Equal("Order already shipped", problem.Title);
+    }
+
+    [Fact]
+    public void ProblemResult_CustomType_BlankTitle_UsesReasonPhraseAndKeepsType()
+    {
+        var problem = new ProblemResult(404, "", "https://example.com/probs/x");
+
+        Assert.Equal("Not Found", problem.Title);
+        Assert.Equal("https://example.com/probs/x", problem.Type);
+    }
+
+    [Fact]
+    public void ProblemResult_BlankType_DefaultsToAboutBlank()
+    {
+        var problem = new ProblemResult(404, "Missing", "  ");
+
+        Assert.Equal("about:blank", problem.Type);
     }
 
     [Fact]

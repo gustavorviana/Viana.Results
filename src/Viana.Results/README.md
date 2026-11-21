@@ -106,6 +106,17 @@ return Results.Validation(new Dictionary<string, string[]>
 });
 ```
 
+#### Default title and type
+
+- When `title` is null, empty or whitespace, it defaults to the standard reason phrase of the
+  status (e.g. `404` → `"Not Found"`, `500` → `"Internal Server Error"`). Statuses without a known
+  reason phrase fall back to `"Error"`. This applies to every `type`, to `ProblemBuilder` and to
+  JSON deserialization.
+- When `type` is missing, it defaults to `"about:blank"`.
+- An explicitly provided `title` or `type` is never changed.
+- Default titles are not configurable in the core. To customize them in ASP.NET Core, use
+  `CustomizeProblemDetails`.
+
 ### Fluent ProblemBuilder
 
 For richer problem payloads (custom type URI, RFC 9457 `detail` /
