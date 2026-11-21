@@ -100,14 +100,14 @@ public static class OpenApiOperationProcessor
         foreach (var pair in byStatus)
         {
             var statusKey = pair.Key.ToString();
-            if (!operation.Responses.TryGetValue(statusKey, out var response) || response.Content == null)
+            if (!operation.Responses.TryGetValue(statusKey, out var response) || response.Content is not { } content)
                 continue;
 
-            ApplyExamplesToResponse(response, pair.Value, json, services);
+            ApplyExamplesToContent(content, pair.Value, json, services);
         }
     }
 
-    private static void ApplyExamplesToResponse(IOpenApiResponse response, List<ResolvedExample> examples, JsonSerializerOptions json, IServiceProvider? services)
+    private static void ApplyExamplesToContent(IDictionary<string, OpenApiMediaType> content, List<ResolvedExample> examples, JsonSerializerOptions json, IServiceProvider? services)
     {
         var built = new List<(string Key, ResolvedExample Meta, System.Text.Json.Nodes.JsonNode? Node)>();
 
@@ -128,7 +128,7 @@ public static class OpenApiOperationProcessor
 
         var useExamplesMap = built.Count > 1 || built.Any(b => b.Meta.Name != null);
 
-        foreach (var media in response.Content!.Values)
+        foreach (var media in content.Values)
         {
             if (useExamplesMap)
             {

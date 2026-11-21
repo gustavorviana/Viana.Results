@@ -98,7 +98,7 @@ Hidden (suppressed) warnings found:
 | `ProblemResultJsonConverter.cs:38` (`reader.GetString()!` on a `PropertyName` token) | JSON property names are never null | Allowed |
 | `Mediator.cs:100,114,120` | `GetMethod("Handle")` guaranteed by `IHandler<,>`; `Invoke` of a `Task<T>`-returning method; `default!` after `ExceptionDispatchInfo.Throw()` (unreachable) | Allowed |
 | `Result.cs:112` (`result!.Status`) | Compensated a redundant `?.` on line 110 (`result` is a non-nullable parameter already dereferenced on line 105) | **Removed** both the `?.` and the `!`; no behavior change |
-| `OpenApiOperationProcessor.cs:131` (`response.Content!.Values`) | **Latent bug**: a response without content (e.g. 204 with `[ResponseExample]`) would throw `NullReferenceException` | **Deferred** to a dedicated bug-fix feature (requires its own failing test, Principle III) |
+| `OpenApiOperationProcessor.cs:131` (`response.Content!.Values`) | Initially flagged as a latent bug; **corrected**: the only (private) caller already skips responses with null `Content`, so null never reaches it — the compiler just cannot see the caller's check | **Refactored**: the caller passes the null-checked `Content` dictionary (`ApplyExamplesToContent`); `!` removed, no behavior change |
 
 Tests use `null!` to exercise argument validation and `Problem!` after asserting failure; both are
 idiomatic and allowed in test code.
