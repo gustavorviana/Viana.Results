@@ -73,7 +73,13 @@
 - [ ] T021 [P] Update README.md (root): add Viana.Results.AspNetCore to the packages table (targets net8.0, net10.0), install section and documentation links
 - [ ] T022 [P] Add benchmarks/Viana.Results.Benchmarks/AspNetCoreBenchmarks.cs (`[MemoryDiagnoser]`): execute `VianaActionResult` vs old `Viana.Results.Mvc.VianaResultAction` for success and failure on a `DefaultHttpContext` with a minimal service provider and `MemoryStream` body; add ProjectReferences to both packages in benchmarks/Viana.Results.Benchmarks/Viana.Results.Benchmarks.csproj (TargetFramework stays net10.0)
 - [ ] T023 Switch the example app from Viana.Results.Mvc to Viana.Results.AspNetCore in examples/Viana.Results.Examples.Shared (package/project reference + namespaces only, verifying SC-005), plus `services.AddProblemDetails()` in the example hosts
-- [ ] T024 Run quickstart.md steps 1–6: build 0 warnings; all tests pass (old Mvc tests unchanged); example 404 shows native type link + traceId + `application/problem+json`; run `--filter '*AspNetCore*' --job short` and record results in benchmarks/Viana.Results.Benchmarks/baseline/aspnetcore-1.0.0.md; `git diff --stat -- src/Viana.Results.Mvc` empty
+- [ ] T024 [P] (FR-013, FR-017) Tests first in tests/Viana.Results.OpenApi.Tests/ProblemResultSchemaTests.cs: the document contains one shared base problem component with members `type`, `title`, `status`, `detail`, `instance` (none required, nullable) and no `traceId`; responses reference it via `$ref`; a response with extra members (e.g. `errors`, `detail` example) uses `allOf` with the base `$ref` plus its own members
+- [ ] T025 [P] (FR-014, FR-015) Tests first in tests/Viana.Results.OpenApi.Tests/ProblemSourcePrecedenceTests.cs (new): for one status, endpoint `[ResponseExample]` > action `[ProblemResult]` > controller `[ProblemResult]` > global example, with schema and example from the same source; global example ignored when the endpoint declares the status; two endpoint examples → union of members, non-shared members optional; action beats controller (regression for the current order bug); success examples unchanged
+- [ ] T026 [P] (FR-016) Tests first: documented problem responses have only `application/problem+json` content, both pipelines (native transformer and Swashbuckle filter)
+- [ ] T027 Implement FR-013/FR-017 in src/Viana.Results.OpenApi/Schemas/ProblemResultSchema.cs (base component registration + `$ref`/`allOf`, component name `VianaProblemDetails` or as decided) and FR-016 (problem content type) in src/Viana.Results.OpenApi/Schemas/ProblemResultSchema.cs `ApplyTo`/`Build`; make T024 and T026 pass
+- [ ] T028 Implement FR-014/FR-015 in src/Viana.Results.OpenApi/Processing/OpenApiOperationProcessor.cs (`GetProblemAttributes` order: action wins; source selection per status merging `ApplyProblemResultAttributes` and `ApplyResponseExamples`; build schema from `ProblemResult` examples via the existing `ProblemResultSchema(options, ProblemResult)` constructor) and src/Viana.Results.OpenApi/ResponseExampleResolver.cs; make T025 pass
+- [ ] T029 Validate on the running example apps (Scalar and Swagger): `/ResultSamples/result-typed` 500 and 503 schema and example come from the same source, `application/problem+json`, shared `$ref`; update src/Viana.Results.OpenApi/README.md and src/Viana.Results.OpenApi.Swashbuckle/README.md (precedence table, content type, shared schema) and release notes of both packages
+- [ ] T030 Run quickstart.md steps 1–6: build 0 warnings; all tests pass (old Mvc tests unchanged); example 404 shows native type link + traceId + `application/problem+json`; run `--filter '*AspNetCore*' --job short` and record results in benchmarks/Viana.Results.Benchmarks/baseline/aspnetcore-1.0.0.md; `git diff --stat -- src/Viana.Results.Mvc` empty
 
 ## Dependencies & Execution Order
 
@@ -81,7 +87,7 @@
 - US1: (T011 ∥ T012) → T013 → T014 → T015
 - US2: T016 → T017 (same file as T014, after US1)
 - US3: T018 → T019 (needs T015)
-- Polish: (T020 ∥ T021 ∥ T022) → T023 → T024
+- Polish: (T020 ∥ T021 ∥ T022) → T023 → (T024 ∥ T025 ∥ T026) → T027 → T028 → T029 → T030
 
 ## Parallel Example
 

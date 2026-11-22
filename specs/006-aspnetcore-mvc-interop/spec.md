@@ -17,8 +17,8 @@ through normal MVC content negotiation and output formatters (including AddNewto
 ToActionResult() extension and an opt-in global filter so actions can return IResult directly, with
 the same public surface as Viana.Results.Mvc where it makes sense. The produced problem body must be
 RFC 9457 compliant and identical to what the native pipeline produces for the same values.
-Viana.Results.Mvc is not changed in this feature; Minimal APIs and Mvc deprecation are separate
-features."
+Viana.Results.Mvc is not changed in this feature; Minimal APIs are a separate
+feature."
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -142,6 +142,24 @@ works on its own.
 - **FR-011**: The existing MVC package MUST NOT change in this feature.
 - **FR-012**: The package MUST have XML docs, its own README and an updated example app
   (constitution Principle VIII).
+- **FR-013** (OpenAPI, base schema): Every documented problem schema MUST match the native
+  `ProblemDetails` schema: members `type`, `title`, `status`, `detail`, `instance`, all optional and
+  nullable; extra members allowed in the style of each generator (Swashbuckle `additionalProperties: {}`,
+  native OpenAPI 3.1 omits it); `traceId` is NOT declared (native does not declare it either).
+- **FR-014** (OpenAPI, source per status): For each status, schema AND example come from one source,
+  chosen by precedence: `[ResponseExample]` on the endpoint > `[ProblemResult]` on the action >
+  `[ProblemResult]` on the controller > global example (fallback). A global example is ignored when the
+  endpoint declares anything for that status. Several endpoint examples for one status → schema is the
+  union of their members (members not present in all examples are optional). Applies only to problem
+  responses; success examples keep today's behavior.
+- **FR-015** (OpenAPI, precedence bug): When the action and its controller declare `[ProblemResult]` for
+  the same status, the action MUST win (today the controller overwrites the action).
+- **FR-016** (OpenAPI, content type): Documented problem responses MUST use `application/problem+json`
+  (matching the runtime response, FR-005, and native `ProducesProblem`), instead of copying the success
+  content types (`application/json`, `text/json`, `text/plain`) as today.
+- **FR-017** (OpenAPI, shared schema): The base problem schema MUST be emitted once as a shared component
+  (`#/components/schemas/ProblemDetails`-style, referenced with `$ref`), like the native generators;
+  responses with extra members reference the base and add their members (`allOf` with the base `$ref`).
 
 ### Key Entities
 
@@ -168,12 +186,26 @@ works on its own.
 - **SC-006**: Conversion overhead follows Principle V: benchmarked, with no unjustified allocation
   regression versus the old package.
 
+## Clarifications
+
+### Session 2026-11-22 (OpenAPI schema)
+
+- Native behavior verified on net10.0 (Microsoft.AspNetCore.OpenApi 10.0.15, Swashbuckle 10.3.1) with a
+  throwaway app: `ProblemDetails` schema = type/title/status/detail/instance, none required, all nullable,
+  no `traceId`; action-level declaration overrides controller-level for the same status; controller
+  `[ProducesResponseType(typeof(ProblemDetails), 500)]` documents `application/json`/`text/json`/`text/plain`,
+  minimal `ProducesProblem(500)` documents `application/problem+json`; schema shared via `$ref`.
+- Q: Global example vs endpoint attribute for the same status? → A: Option A — the endpoint declaration
+  wins for schema and example; the global example is only a fallback.
+- Q: Content type and shared schema (FR-016/FR-017)? → A: Recorded as requirements with the proposed
+  direction (`application/problem+json`, shared `$ref` component); confirm before `/speckit-implement`.
+
 ## Assumptions
 
 - net6.0 is not targeted (out of support); apps on net6.0 keep the old MVC package.
 - The old package's custom headers/content-type extension points are not carried over; headers are
   set through the normal framework mechanisms.
-- Minimal APIs support (feature 007) and deprecation of the old package (feature 008) are out of scope.
+- Minimal APIs support (feature 008) is out of scope; deprecation of the old package is not planned now; bug fixes from the 2026-11-22 review are feature 007.
 - Depends on feature 005 (core: `detail` replaces the obsolete `description`); the mapper promotes only `detail`.
 - The package ships as a new package, version 1.0.0.
 - ASP.NET Core result-conversion benchmarks (Principle V hot path) are added with this package.

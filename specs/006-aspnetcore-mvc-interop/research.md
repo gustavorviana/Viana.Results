@@ -53,3 +53,22 @@
 
 - **Decision**: `AspNetCoreBenchmarks` executes `VianaActionResult` (success and failure) against a
   `DefaultHttpContext` with a minimal service provider, side by side with the old `VianaResultAction`.
+
+## R8 – OpenAPI problem schemas aligned with native (FR-013..FR-017)
+
+- **Evidence** (throwaway probe app, 2026-11-22): native `ProblemDetails` component = `type`, `title`,
+  `status`, `detail`, `instance`; no `required`; nullable; native 3.1 has no `additionalProperties`,
+  Swashbuckle 3.0 has `additionalProperties: {}`; `ValidationProblemDetails` adds `errors`; action-level
+  `[ProducesResponseType]` replaces controller-level for the same status; responses reference a shared
+  component via `$ref`.
+- **Decisions**:
+  - Base schema = native members (FR-013); keep `status`, `type`, `title` examples from the source.
+  - Source selection per status (FR-014): endpoint example > action attribute > controller attribute >
+    global example; schema and example from the same source; union for several examples.
+  - Fix `GetProblemAttributes` order (today method attributes are added before class attributes and the
+    last write wins) so the action wins (FR-015).
+  - Problem responses documented as `application/problem+json` only (FR-016).
+  - Emit the base once as a component and reference it; extra members via `allOf` (FR-017). Component
+    name to be chosen to avoid clashing with an app's own `ProblemDetails` component (e.g. `VianaProblemDetails`).
+- **Impact**: documents change shape (content types, `$ref`), so `Viana.Results.OpenApi` and
+  Swashbuckle get a MINOR bump with release notes (still within the unreleased 1.1.0 / 1.1.2 if released together).
