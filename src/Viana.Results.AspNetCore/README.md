@@ -68,6 +68,24 @@ Success payloads are written with `ObjectResult`, so content negotiation and the
   `HttpNoContentOutputFormatter.TreatNullValueAsNoContent = false` (then `null` with the result status).
   This differs from `Viana.Results.Mvc`, which writes `null` with the result status.
 
+### Minimal APIs
+
+```csharp
+using Viana.Results.AspNetCore;
+
+app.MapGet("/users/{id}", (int id) => service.GetUser(id).ToHttpResult());
+
+// Or let handlers return Viana results directly (endpoint or group):
+var users = app.MapGroup("/users").AddVianaResults();
+users.MapGet("/{id}", (int id) => service.GetUser(id));
+users.MapGet("/async/{id}", async (int id) => await service.GetUserAsync(id));
+```
+
+Same rules as MVC: failures through the native problem details pipeline (native `traceId`, extension
+names with the minimal API JSON naming policy `Microsoft.AspNetCore.Http.Json.JsonOptions`), successes as
+JSON with the result status. A null value answers 204, like the MVC default, so controllers and minimal
+APIs answer identically when both JSON options are configured the same way.
+
 ### Migrating from Viana.Results.Mvc
 
 1. Replace the package `Viana.Results.Mvc` with `Viana.Results.AspNetCore`.

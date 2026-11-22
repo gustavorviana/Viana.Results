@@ -54,4 +54,10 @@ public class AspNetCoreBenchmarks
 
     [Benchmark]
     public Task AspNetCoreFailure() => new VianaActionResult(_failure).ExecuteResultAsync(NewContext());
+
+    [Benchmark]
+    public Task MinimalSuccess() => new VianaHttpResult(_success).ExecuteAsync(NewContext().HttpContext);
+
+    [Benchmark]
+    public Task MinimalFailure() => new VianaHttpResult(_failure).ExecuteAsync(NewContext().HttpContext);
 }

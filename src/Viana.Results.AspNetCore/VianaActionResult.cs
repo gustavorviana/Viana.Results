@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -50,45 +49,23 @@ public sealed class VianaActionResult(IResult result) : IActionResult
         return new ObjectResult(ResultResponseBody.GetBody(Result)) { StatusCode = Result.Status }.ExecuteResultAsync(context);
     }
 
-    private async Task WriteProblemAsync(ActionContext context)
+    private Task WriteProblemAsync(ActionContext context)
     {
         var httpContext = context.HttpContext;
-        var services = httpContext.RequestServices;
-        var namingPolicy = services.GetService<IOptions<JsonOptions>>()?.Value.JsonSerializerOptions.PropertyNamingPolicy;
+        var namingPolicy = httpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value.JsonSerializerOptions.PropertyNamingPolicy;
 
-        var details = ProblemDetailsMapper.ToProblemDetails(Result, namingPolicy, out var vianaTraceId);
-        httpContext.Response.StatusCode = Result.Status;
-
-        var problemService = services.GetService<IProblemDetailsService>();
-        if (problemService != null)
+        return ResultResponseWriter.WriteProblemAsync(httpContext, Result, namingPolicy, (details, vianaTraceId) =>
         {
-            // The native trace id always wins (same source as the framework factory); the Viana one is a fallback.
-            // net8.0's writer does not add it, net10.0's overwrites it: setting it here keeps both identical.
-            details.Extensions[ProblemDetailsMapper.TraceIdName] = NativeTraceId(httpContext) ?? vianaTraceId;
-        }
+            // No problem details service: native MVC factory defaults, then the Viana values on top.
+            var factory = httpContext.RequestServices.GetService<ProblemDetailsFactory>();
+            var output = factory?.CreateProblemDetails(httpContext, Result.Status, details.Title, details.Type, details.Detail, details.Instance)
+                ?? details;
+            ResultResponseWriter.MergeExtensions(output, details, vianaTraceId, httpContext);
+            output.Status = Result.Status;
 
-        if (problemService != null &&
-            await problemService.TryWriteAsync(new ProblemDetailsContext { HttpContext = httpContext, ProblemDetails = details }))
-            return;
-
-        // No problem details service: use the native factory defaults, then the Viana values on top.
-        var factory = services.GetService<ProblemDetailsFactory>();
-        var output = factory?.CreateProblemDetails(httpContext, Result.Status, details.Title, details.Type, details.Detail, details.Instance)
-            ?? details;
-
-        var extensions = new Dictionary<string, object?>(output.Extensions, StringComparer.OrdinalIgnoreCase);
-        foreach (var member in details.Extensions)
-            extensions[member.Key] = member.Value;
-        if (!extensions.ContainsKey(ProblemDetailsMapper.TraceIdName) && vianaTraceId != null)
-            extensions[ProblemDetailsMapper.TraceIdName] = NativeTraceId(httpContext) ?? vianaTraceId;
-        output.Extensions = extensions;
-        output.Status = Result.Status;
-
-        var objectResult = new ObjectResult(output) { StatusCode = Result.Status };
-        objectResult.ContentTypes.Add(ProblemContentType);
-        await objectResult.ExecuteResultAsync(context);
+            var objectResult = new ObjectResult(output) { StatusCode = Result.Status };
+            objectResult.ContentTypes.Add(ProblemContentType);
+            return objectResult.ExecuteResultAsync(context);
+        });
     }
-
-    private static string? NativeTraceId(HttpContext httpContext)
-        => System.Diagnostics.Activity.Current?.Id ?? httpContext.TraceIdentifier;
 }

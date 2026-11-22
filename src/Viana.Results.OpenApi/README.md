@@ -80,6 +80,36 @@ Actions returning `Task<T>` or `ValueTask<T>` are handled the same way.
 - Extension member names follow the application JSON naming policy (camelCase by default), like the
   runtime response.
 
+### Minimal API endpoints
+
+```csharp
+app.MapGet("/users/{id}", handler)
+   .ProducesResult<UserOkExample>()                 // example class returning Result<User>: status/example from it
+   .ProducesProblemResult<UserNotFoundExample>();   // example class returning a failed Result
+
+app.MapGet("/users", handler)
+   .ProducesResult<User[]>()                        // data type only (200)
+   .ProducesProblemResult(409, title: "Conflict");  // problem metadata
+
+// Inline values, for those who prefer not to create classes:
+app.MapGet("/me", handler)
+   .ProducesResult(Results.Ok(new User { Name = "Ana" }))
+   .ProducesProblemResult(new ProblemBuilder(401).WithTitle("Login required").BuildResult());
+```
+
+- `ProducesResult<T>()`: `T` is an example class when it implements `IExampleProvider<>`, otherwise the
+  documented data type.
+- When an example is given, the status comes from its result; an explicit `status:` that differs is an
+  error at document generation.
+- Same per-status precedence as controllers (endpoint examples > endpoint declarations > global example).
+
+### Example classes returning real results
+
+Example providers may return the real Viana result (`IExampleProvider<Result<User>>`, `ListResult<T>`,
+`PagedResult<T>`, a failed `Result`): the example is written exactly like the runtime body (value
+unwrapped, list as array, paged with metadata, failure as problem) and the status comes from the result.
+On controllers, use `[ResponseExample(typeof(Provider))]` without status (`StatusCode` is then `0`).
+
 ### Typed response examples
 
 Example providers are resolved from DI or created with their constructor dependencies injected;

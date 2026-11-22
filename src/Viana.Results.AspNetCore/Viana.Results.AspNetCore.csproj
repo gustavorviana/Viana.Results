@@ -27,6 +27,7 @@
 		<Version>1.0.0</Version>
 		<PackageReleaseNotes>
 			Initial release: MVC integration with native ProblemDetails interop.
+			Minimal APIs: VianaHttpResult, ToHttpResult() (and the Task overload) and AddVianaResults() (endpoint filter for endpoints and groups), with the same rules as MVC.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

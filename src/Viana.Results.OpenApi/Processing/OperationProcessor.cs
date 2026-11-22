@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Viana.Results.OpenApi.Schemas;
 
 namespace Viana.Results.OpenApi.Processing;
@@ -118,10 +119,16 @@ internal static class OperationProcessor
 
         var declared = new HashSet<int>(GetProblemAttributes(method).Select(a => a.Status));
 
-        foreach (var pair in byStatus)
+        // Feature 008: providers may return real Viana results; their status (and body) comes from the result,
+        // so examples are regrouped by the resolved status (attributes without status use 0 until resolved).
+        var regrouped = byStatus.Values
+            .SelectMany(list => BuildExamples(list, json, services, method))
+            .GroupBy(b => b.Status);
+
+        foreach (var pair in regrouped)
         {
             var statusKey = pair.Key.ToString();
-            var built = BuildExamples(pair.Value, json, services);
+            var built = pair.ToList();
             if (built.Count == 0)
                 continue;
 
@@ -151,9 +158,9 @@ internal static class OperationProcessor
         }
     }
 
-    private sealed record BuiltExample(string Key, ExampleRegistration Meta, System.Text.Json.Nodes.JsonNode? Node, ProblemResult? Problem);
+    private sealed record BuiltExample(string Key, ExampleRegistration Meta, System.Text.Json.Nodes.JsonNode? Node, ProblemResult? Problem, int Status = 0);
 
-    private static List<BuiltExample> BuildExamples(List<ExampleRegistration> examples, JsonSerializerOptions json, IServiceProvider? services)
+    private static List<BuiltExample> BuildExamples(List<ExampleRegistration> examples, JsonSerializerOptions json, IServiceProvider? services, MethodInfo method)
     {
         var built = new List<BuiltExample>();
         foreach (var ex in examples)
@@ -163,9 +170,20 @@ internal static class OperationProcessor
                 continue;
 
             var value = ExampleResolver.InvokeGetExample(provider);
-            var problem = value as ProblemResult ?? (value as IResult)?.Problem;
-            var node = ExampleResolver.Serialize((object?)problem ?? value, json);
-            built.Add(new BuiltExample(ex.Name ?? ex.ProviderType.Name, ex, node, problem));
+            var key = ex.Name ?? ex.ProviderType.Name;
+            if (value is IResult result)
+            {
+                if (ex.StatusCode != 0 && ex.StatusCode != result.Status)
+                    throw new InvalidOperationException(
+                        $"Endpoint '{method.DeclaringType?.Name}.{method.Name}': the declared example status {ex.StatusCode} differs from the example result status {result.Status} ({ex.ProviderType.Name}).");
+
+                var body = result.Problem ?? ResultResponseBody.GetBody(result);
+                built.Add(new BuiltExample(key, ex, ExampleResolver.Serialize(body, json), result.Problem, result.Status));
+                continue;
+            }
+
+            var problem = value as ProblemResult;
+            built.Add(new BuiltExample(key, ex, ExampleResolver.Serialize(value, json), problem, ex.StatusCode != 0 ? ex.StatusCode : problem?.Status ?? 200));
         }
         return built;
     }
@@ -183,7 +201,7 @@ internal static class OperationProcessor
             {
                 media.Example = null;
                 media.Examples ??= new Dictionary<string, IOpenApiExample>();
-                foreach (var (key, meta, node, _) in built)
+                foreach (var (key, meta, node, _, _) in built)
                 {
                     media.Examples[key] = new OpenApiExample
                     {
@@ -199,6 +217,183 @@ internal static class OperationProcessor
             }
         }
     }
+
+    private sealed record ResolvedDeclaration(VianaResponseMetadata Declaration, int Status, bool HasExample, ProblemResult? Problem, object? Body, bool WritesBody);
+
+    /// <summary>
+    /// Feature 008: documents the responses declared on a minimal API endpoint through
+    /// <see cref="VianaResponseMetadata"/> (ProducesResult / ProducesProblemResult). Runs after the
+    /// attribute/global processing so endpoint declarations win; within the endpoint, examples win over
+    /// metadata-only declarations for the same status. Async end to end: <paramref name="schemaFor"/> is the
+    /// pipeline's schema generator (native: awaited; Swashbuckle: already-completed ValueTask).
+    /// </summary>
+    internal static async ValueTask ApplyEndpointDeclarationsAsync(
+        OpenApiOperation operation,
+        IEnumerable<object>? metadata,
+        JsonSerializerOptions json,
+        IServiceProvider? services,
+        Func<Type, ValueTask<IOpenApiSchema>> schemaFor,
+        string endpointName)
+    {
+        var resolved = ResolveDeclarations(metadata, services, endpointName);
+        if (resolved.Count == 0)
+            return;
+
+        // Native pipeline: generate the needed schemas asynchronously, then build synchronously.
+        var schemas = new Dictionary<Type, IOpenApiSchema>();
+        foreach (var type in RequiredSchemaTypes(resolved))
+            schemas[type] = await schemaFor(type).ConfigureAwait(false);
+
+        BuildDeclarations(operation, resolved, json, type => schemas[type]);
+    }
+
+    /// <summary>
+    /// Synchronous variant for pipelines whose schema generator is synchronous (Swashbuckle): works on both
+    /// GetSwagger and GetSwaggerAsync without waiting on asynchronous code.
+    /// </summary>
+    internal static void ApplyEndpointDeclarations(
+        OpenApiOperation operation,
+        IEnumerable<object>? metadata,
+        JsonSerializerOptions json,
+        IServiceProvider? services,
+        Func<Type, IOpenApiSchema> schemaFor,
+        string endpointName)
+    {
+        var resolved = ResolveDeclarations(metadata, services, endpointName);
+        if (resolved.Count > 0)
+            BuildDeclarations(operation, resolved, json, schemaFor);
+    }
+
+    private static List<ResolvedDeclaration> ResolveDeclarations(IEnumerable<object>? metadata, IServiceProvider? services, string endpointName)
+        => metadata?.OfType<VianaResponseMetadata>().Select(d => Resolve(d, services, endpointName)).ToList() ?? new List<ResolvedDeclaration>();
+
+    private static IEnumerable<Type> RequiredSchemaTypes(List<ResolvedDeclaration> resolved)
+    {
+        foreach (var group in resolved.GroupBy(r => r.Status))
+        {
+            var examples = group.Where(r => r.HasExample).ToList();
+            if (examples.Any(r => r.Problem != null))
+                continue;
+            if (examples.Count > 0)
+            {
+                if (examples[0].WritesBody && examples[0].Body != null)
+                    yield return examples[0].Body!.GetType();
+                continue;
+            }
+            var declaration = group.First().Declaration;
+            if (!declaration.IsProblem && declaration.DataType != null)
+                yield return declaration.DataType;
+        }
+    }
+
+    private static void BuildDeclarations(OpenApiOperation operation, List<ResolvedDeclaration> resolved, JsonSerializerOptions json, Func<Type, IOpenApiSchema> schemaFor)
+    {
+        operation.Responses ??= new OpenApiResponses();
+
+        foreach (var group in resolved.GroupBy(r => r.Status))
+        {
+            var key = group.Key.ToString();
+            var examples = group.Where(r => r.HasExample).ToList();
+            var problems = examples.Where(r => r.Problem != null).ToList();
+
+            if (problems.Count > 0)
+            {
+                var schema = new ProblemResultSchema(json, problems[0].Problem!);
+                foreach (var other in problems.Skip(1))
+                {
+                    foreach (var member in other.Problem!.Extensions)
+                        schema.AddFieldCore(member.Value?.GetType(), member.Key, "", member.Value);
+                }
+                var response = schema.BuildCore([ProblemResultSchema.ProblemContentType]);
+                operation.Responses[key] = response;
+                ApplyExamplesToContent(response.Content!, problems.Select(r => ToBuilt(r, r.Problem, json)).ToList());
+                continue;
+            }
+
+            if (examples.Count > 0)
+            {
+                var first = examples[0];
+                if (!first.WritesBody)
+                {
+                    operation.Responses[key] = new OpenApiResponse { Description = Describe(group.Key) };
+                    continue;
+                }
+
+                var content = new Dictionary<string, OpenApiMediaType>
+                {
+                    ["application/json"] = new OpenApiMediaType { Schema = schemaFor(first.Body!.GetType()) }
+                };
+                operation.Responses[key] = new OpenApiResponse { Description = Describe(group.Key), Content = content };
+                ApplyExamplesToContent(content, examples.Select(r => ToBuilt(r, r.Body, json)).ToList());
+                continue;
+            }
+
+            var declaration = group.First().Declaration;
+            if (declaration.IsProblem)
+            {
+                var schema = new ProblemResultSchema(json, group.Key, declaration.Type, declaration.Title);
+                if (!string.IsNullOrEmpty(declaration.Detail))
+                    schema.AddFieldCore(JsonSchemaType.String, "detail", "RFC 9457: human-readable explanation specific to this occurrence", declaration.Detail);
+                operation.Responses[key] = schema.BuildCore([ProblemResultSchema.ProblemContentType]);
+            }
+            else if (declaration.DataType != null)
+            {
+                operation.Responses[key] = new OpenApiResponse
+                {
+                    Description = Describe(group.Key),
+                    Content = new Dictionary<string, OpenApiMediaType>
+                    {
+                        ["application/json"] = new OpenApiMediaType { Schema = schemaFor(declaration.DataType) }
+                    }
+                };
+            }
+        }
+    }
+
+    private static ResolvedDeclaration Resolve(VianaResponseMetadata declaration, IServiceProvider? services, string endpointName)
+    {
+        object? value = null;
+        var hasExample = false;
+        if (declaration.InlineExample != null)
+        {
+            value = declaration.InlineExample;
+            hasExample = true;
+        }
+        else if (declaration.ExampleProviderType != null)
+        {
+            var provider = ExampleResolver.CreateProvider(declaration.ExampleProviderType, services)
+                ?? throw new InvalidOperationException($"Endpoint '{endpointName}': could not create example provider '{declaration.ExampleProviderType.FullName}'.");
+            value = ExampleResolver.InvokeGetExample(provider);
+            hasExample = true;
+        }
+
+        if (value is IResult result)
+        {
+            if (declaration.Status is int explicitStatus && explicitStatus != result.Status)
+                throw new InvalidOperationException(
+                    $"Endpoint '{endpointName}': the declared status {explicitStatus} differs from the example result status {result.Status}.");
+
+            var writesBody = ResultResponseBody.HasBody(result);
+            var body = ResultResponseBody.GetBody(result);
+            if (result.Problem == null && writesBody && body == null)
+                return new ResolvedDeclaration(declaration, 204, true, null, null, false); // null value → 204 (runtime rule)
+
+            return new ResolvedDeclaration(declaration, result.Status, true, result.Problem, body, writesBody);
+        }
+
+        return new ResolvedDeclaration(declaration, declaration.Status ?? 200, hasExample, null, value, value != null);
+    }
+
+    private static BuiltExample ToBuilt(ResolvedDeclaration r, object? value, JsonSerializerOptions json)
+    {
+        var d = r.Declaration;
+        var registration = new ExampleRegistration(r.Status, d.ExampleProviderType ?? typeof(object), d.Name, d.Summary, null);
+        var key = d.Name ?? d.ExampleProviderType?.Name ?? "example";
+        return new BuiltExample(key, registration, ExampleResolver.Serialize(value, json), r.Problem, r.Status);
+    }
+
+    private static string Describe(int status)
+        => HttpStatusInfo.TryGetReasonPhrase(status, out var phrase) ? phrase : "Response";
 
     // FR-015: one attribute per status, the action's wins over the controller's (like native ApiExplorer).
     private static List<ProblemResultAttribute> GetProblemAttributes(MethodInfo method)

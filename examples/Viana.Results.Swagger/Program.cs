@@ -1,3 +1,4 @@
+using Viana.Results.Examples.Shared;
 using Viana.Results.Examples.Shared.Controllers;
 using Viana.Results.Examples.Shared.Examples;
 using Viana.Results.Mediators;
@@ -56,5 +57,6 @@ app.Use(async (context, next) =>
 });
 
 app.MapControllers();
+app.MapMinimalForecasts();
 
 app.Run();
