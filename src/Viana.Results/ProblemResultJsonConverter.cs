@@ -49,7 +49,7 @@ public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 		}
 
 		// Missing "title"/"type" are defaulted by the ProblemResult constructor (status reason phrase, or "Error" / "about:blank").
-		// "description" might have been read as an extension; use it for WithDescription
+		// Legacy "description" member is still read and kept under the "description" extension key
 		if (extensions.TryGetValue("description", out var descObj))
 		{
 			extensions.Remove("description");
@@ -58,7 +58,7 @@ public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 
 		return string.IsNullOrEmpty(description)
 			? new ProblemResult(status ?? 500, title ?? string.Empty, type ?? string.Empty, extensions.Count > 0 ? extensions : null)
-			: ProblemResult.WithDescription(status ?? 500, title ?? string.Empty, description, type ?? string.Empty, extensions.Count > 0 ? extensions : null);
+			: ProblemResult.CreateWithDescription(status ?? 500, title ?? string.Empty, description, type ?? string.Empty, extensions.Count > 0 ? extensions : null);
 	}
 
 	/// <inheritdoc />

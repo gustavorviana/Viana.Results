@@ -30,7 +30,7 @@ public class ResultSamplesController : ControllerBase
     /// </summary>
     [HttpGet("result-typed", Name = "GetResultTyped")]
     [ProblemResult(500, Title = "Internal Server Error")]
-    [ProblemResult(503, Title = "Service Unavailable")]
+    [ProblemResult(503, Title = "Service Unavailable", Detail = "The forecast provider is temporarily unavailable.")]
     [ResponseExample(200, typeof(WeatherForecastSuccessExample), Summary = "Typical forecast", Description = "A successful response for the typed endpoint.")]
     [ResponseExample(503, typeof(ServiceUnavailableExample), Summary = "Downstream provider down")]
     public Result<WeatherForecast> GetResultTyped()

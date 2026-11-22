@@ -18,4 +18,7 @@ public class ProblemBenchmarks
 
     [Benchmark]
     public ProblemResult BuilderWithoutTitle() => new ProblemBuilder(404).Build();
+
+    [Benchmark]
+    public Result BuilderBuildResult() => new ProblemBuilder(404).WithDetail("x").BuildResult();
 }

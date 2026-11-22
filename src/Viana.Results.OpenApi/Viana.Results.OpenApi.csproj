@@ -24,10 +24,11 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>1.0.1</Version>
+		<Version>1.1.0</Version>
 		<PackageReleaseNotes>
 			Security: updated Microsoft.AspNetCore.OpenApi to 10.0.15, which resolves the high-severity vulnerability in the transitive Microsoft.OpenApi dependency (GHSA-v5pm-xwqc-g5wc); Microsoft.OpenApi now resolves to 2.13.0.
-			No API or behavior changes.
+			Added: ProblemResultAttribute.Detail, documented as the RFC 9457 "detail" member of the problem schema.
+			Deprecated: ProblemResultAttribute.Description (it had no effect); it will be removed in 2.0.0. Use Detail.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

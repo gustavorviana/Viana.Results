@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Viana.Results.OpenApi.Processing;
 using Microsoft.OpenApi;
 using Viana.Results.OpenApi.Schemas;
 
@@ -65,5 +66,57 @@ public class ProblemResultSchemaTests
         Assert.NotNull(response.Content);
         Assert.Single(response.Content);
         Assert.True(response.Content.ContainsKey("application/json"));
+    }
+
+    private static IDictionary<string, IOpenApiSchema> PropertiesOf(OpenApiResponse response)
+    {
+        Assert.NotNull(response.Content);
+        var schema = response.Content["application/json"].Schema;
+        Assert.NotNull(schema);
+        Assert.NotNull(schema.Properties);
+        return schema.Properties;
+    }
+
+    [Fact]
+    public void FromAttribute_WithDetail_AddsDetailProperty()
+    {
+        var attr = new ProblemResultAttribute(400) { Detail = "One or more fields are invalid." };
+
+        var response = ProblemResultSchema.FromAttribute(DefaultOptions, attr).Build(["application/json"]);
+        var properties = PropertiesOf(response);
+
+        Assert.True(properties.ContainsKey("detail"));
+        Assert.Equal(JsonSchemaType.String, properties["detail"].Type);
+        Assert.Contains("One or more fields are invalid.", response.Content!["application/json"].Example!.ToJsonString());
+    }
+
+    [Fact]
+    public void FromAttribute_WithoutDetail_KeepsStandardPropertiesOnly()
+    {
+        var response = ProblemResultSchema.FromAttribute(DefaultOptions, new ProblemResultAttribute(400)).Build(["application/json"]);
+
+        Assert.Equal(new[] { "status", "title", "type" }, PropertiesOf(response).Keys.OrderBy(k => k).ToArray());
+    }
+
+    [ProblemResult(400, Detail = "Invalid input.")]
+    private static Result AnnotatedAction() => Results.Ok();
+
+    [Fact]
+    public void ApplyProblemResultAttributes_UsesDetail_ForBothPipelines()
+    {
+        // Native transformers and Swashbuckle's ProblemResponseOperationFilter both call this processor.
+        var operation = new OpenApiOperation
+        {
+            Responses = new OpenApiResponses
+            {
+                ["200"] = new OpenApiResponse { Content = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() } }
+            }
+        };
+        var method = typeof(ProblemResultSchemaTests).GetMethod(nameof(AnnotatedAction), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+
+        OpenApiOperationProcessor.ApplyProblemResultAttributes(operation, method, DefaultOptions);
+
+        Assert.True(operation.Responses.ContainsKey("400"));
+        Assert.True(PropertiesOf((OpenApiResponse)operation.Responses["400"]).ContainsKey("detail"));
     }
 }

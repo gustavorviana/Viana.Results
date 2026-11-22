@@ -33,7 +33,7 @@ Reports are written to `BenchmarkDotNet.Artifacts/results/` (git-ignored).
 | Class | What it measures |
 |-------|------------------|
 | [`ResultBenchmarks`](Viana.Results.Benchmarks/ResultBenchmarks.cs) | `Result`/`Result<T>` success and failure, implicit conversions |
-| [`ProblemBenchmarks`](Viana.Results.Benchmarks/ProblemBenchmarks.cs) | `ProblemResult` and `ProblemBuilder`, with and without title (reason-phrase default) |
+| [`ProblemBenchmarks`](Viana.Results.Benchmarks/ProblemBenchmarks.cs) | `ProblemResult` and `ProblemBuilder`, with and without title (reason-phrase default), `BuildResult()` |
 | [`JsonBenchmarks`](Viana.Results.Benchmarks/JsonBenchmarks.cs) | `ProblemResultJsonConverter` write/read, with and without extensions |
 
 ## Compare before and after a change

@@ -24,9 +24,12 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>2.1.0</Version>
+		<Version>3.0.0</Version>
 		<PackageReleaseNotes>
+			Major release. No public API removed; deprecations announced for 4.0.0. Behavior change: default title (feature 002).
 			Changed: a ProblemResult without a title now defaults to the HTTP reason phrase of its status (e.g. 404 "Not Found") instead of "Error"; unknown statuses keep "Error". Applies to constructors, ProblemBuilder and JSON deserialization. Explicit titles and types are unchanged.
+			Added: ProblemResult.WithDetail for the RFC 9457 "detail" member; ProblemBuilder.BuildResult() and BuildResult&lt;T&gt;() return a failed result holding the built problem.
+			Deprecated: ProblemResult.WithDescription and ProblemBuilder.WithDescription ("description" is not an RFC 9457 member); they will be removed in 4.0.0. Use WithDetail. Reading "description" from JSON keeps working.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

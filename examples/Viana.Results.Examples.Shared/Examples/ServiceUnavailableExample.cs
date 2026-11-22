@@ -4,10 +4,10 @@ namespace Viana.Results.Examples.Shared.Examples;
 
 public sealed class ServiceUnavailableExample : IExampleProvider<ProblemResult>
 {
-    public ProblemResult GetExample() => ProblemResult.WithDescription(
+    public ProblemResult GetExample() => ProblemResult.WithDetail(
         status: 503,
         title: "Service Unavailable",
-        description: "Downstream forecast provider is unreachable. Retry in a few seconds.",
+        detail: "Downstream forecast provider is unreachable. Retry in a few seconds.",
         type: "https://api.example.com/errors/service-unavailable",
         extensions: new Dictionary<string, object?>
         {

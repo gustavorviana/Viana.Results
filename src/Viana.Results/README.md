@@ -136,10 +136,28 @@ var problem = new ProblemBuilder(404)
 return new Result(problem);
 ```
 
+Failures are normally returned as a result holding the problem, so the builder can produce it
+directly:
+
+```csharp
+return new ProblemBuilder(409).WithDetail("Order already shipped.").BuildResult();        // Result
+return new ProblemBuilder(404).WithDetail("User not found.").BuildResult<User>();         // Result<User>
+```
+
+Without the builder, `ProblemResult.WithDetail(status, title, detail, type, extensions)` creates a
+problem with the RFC 9457 `detail` member in one call.
+
 `WithDetail` and `WithInstance` write to the RFC 9457 `detail` / `instance`
 keys under `Extensions`. Reserved members (`type`, `title`, `status`,
 `extensions`) added via `AddExtension` are silently filtered out by
 `ProblemResult`.
+
+#### Deprecated: `description`
+
+`ProblemResult.WithDescription` and `ProblemBuilder.WithDescription` are obsolete and will be
+removed in 4.0.0. `description` is not an RFC 9457 member; use `WithDetail`, which writes the
+standard [`detail`](https://www.rfc-editor.org/rfc/rfc9457.html#section-3.1.4) member. Reading a
+document that contains `description` keeps working.
 
 ---
 

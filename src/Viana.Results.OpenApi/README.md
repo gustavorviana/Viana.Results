@@ -52,9 +52,13 @@ This wires up the equivalent of every Swashbuckle filter:
 ```csharp
 [HttpGet("{id}")]
 [ProblemResult(404, Title = "User not found")]
-[ProblemResult(409, Title = "Conflict")]
+[ProblemResult(409, Title = "Conflict", Detail = "The user already exists.")]
 public Result<User> Get(int id) => repository.Find(id);
 ```
+
+`Detail` is documented as the RFC 9457 `detail` member of the problem schema (with the text as
+example). `Description` is obsolete: it never had an effect and will be removed in
+Viana.Results.OpenApi 2.0.0.
 
 ### Typed response examples
 

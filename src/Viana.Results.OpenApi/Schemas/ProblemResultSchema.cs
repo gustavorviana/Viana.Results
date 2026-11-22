@@ -68,7 +68,10 @@ public class ProblemResultSchema
     /// <returns>A configured <see cref="ProblemResultSchema"/>.</returns>
     public static ProblemResultSchema FromAttribute(JsonSerializerOptions options, ProblemResultAttribute attribute)
     {
-        return new ProblemResultSchema(options, attribute.Status, attribute.Type, attribute.Title);
+        var schema = new ProblemResultSchema(options, attribute.Status, attribute.Type, attribute.Title);
+        if (!string.IsNullOrEmpty(attribute.Detail))
+            schema.AddField(JsonSchemaType.String, "detail", "RFC 9457: human-readable explanation specific to this occurrence", attribute.Detail);
+        return schema;
     }
 
     /// <summary>
