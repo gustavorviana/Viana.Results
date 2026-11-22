@@ -86,7 +86,7 @@ Hidden (suppressed) warnings found:
 - **Decision**: Pass `title ?? string.Empty` / `type ?? string.Empty` to the constructor and let it
   apply its existing defaults; remove the duplicated defaulting in the converter. No behavior
   change.
-- **Deferred**: Defaulting `title` to the status reason phrase (RFC 9457 §3.1.4) changes tested,
+- **Deferred**: Defaulting `title` to the status reason phrase (RFC 9457 §4.2.1) changes tested,
   documented behavior in `ProblemResult`, `ProblemBuilder` and the converter; it becomes its own
   feature (maintainer decision, 2026-11-21).
 

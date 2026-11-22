@@ -7,7 +7,7 @@
 **Status**: Draft
 
 **Input**: User description: "Default the Problem Details "title" to the standard HTTP reason phrase
-of its status (RFC 9457 §3.1.4: when type is "about:blank", title SHOULD be the status code's
+of its status (RFC 9457 §4.2.1: when type is "about:blank", title SHOULD be the status code's
 reason phrase) instead of the fixed "Error". Today ProblemResult (constructor/WithDescription),
 ProblemBuilder and ProblemResultJsonConverter all fall back to "Error" when title is null, empty or
 whitespace; this is tested and documented behavior. The new default must be applied consistently by
@@ -103,6 +103,7 @@ with a title; the title is preserved.
   behavior change, following the constitution's versioning rules. It is classified as a compatible
   improvement (MINOR, `Viana.Results` 2.1.0, from the current 2.0.0): RFC 9457 treats `title` as advisory, so clients must
   not rely on its exact value. The release notes MUST call out the new default.
+  Update 2026-11-21 (owner decision): shipped in `Viana.Results` 3.0.0 together with feature 005.
 - **FR-007**: The default `type` behavior ("about:blank" when missing) MUST remain unchanged, and an
   explicitly provided `type` MUST never be changed.
 - **FR-008**: Default titles are not configurable in the core package; customization happens in the

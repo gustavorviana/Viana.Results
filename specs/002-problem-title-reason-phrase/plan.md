@@ -39,7 +39,7 @@ keep `"Error"`. Explicit `title` and `type` are never changed. Release as `Viana
 | I. Minimal core | PASS | No dependency, no configuration surface (FR-008) |
 | II. netstandard2.0 | PASS | Plain dictionary lookup |
 | III. TDD | PASS | Tests updated/added first (red), then constructor change |
-| IV. RFC 9457 | PASS | Implements §3.1.4 recommendation for `about:blank` |
+| IV. RFC 9457 | PASS | Implements §4.2.1 recommendation for `about:blank` |
 | V. Performance/simplicity | PASS | Single change point; no extra allocation |
 | VI. AOT/trimming | PASS | No reflection |
 | VII. SemVer | PASS | Discussed with owner: MINOR 2.1.0 + release notes |

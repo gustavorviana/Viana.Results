@@ -120,7 +120,7 @@ both builds must fail, except for warning categories covered by a documented exc
 - **FR-010**: Null-forgiving operators used only to silence the compiler in published code MUST be
   replaced by null-safe code. Observable behavior MUST NOT change: a Problem Details document read
   without `type` or `title` keeps the current defaults (`type` = `about:blank`, `title` = `Error`).
-  Aligning the default `title` with the status reason phrase (RFC 9457 §3.1.4) is out of scope and
+  Aligning the default `title` with the status reason phrase (RFC 9457 §4.2.1) is out of scope and
   tracked as a separate feature.
 
 ## Clarifications
