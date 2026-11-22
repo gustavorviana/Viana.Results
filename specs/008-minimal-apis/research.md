@@ -59,3 +59,15 @@
 
 ## R7 – Versions
 - Viana.Results.AspNetCore 1.0.0, Viana.Results.OpenApi 1.1.0, Swashbuckle 1.1.2 are unreleased: notes extended, no bump.
+
+## R8 – Documented problem `type` vs runtime
+
+- **Finding**: `ProblemDetailsMapper` turns `about:blank` into null, so the native pipeline fills the
+  RFC 9110 link (`ProblemDetailsDefaults`, also used by `ProblemDetailsFactory` and `TypedResults.Problem`).
+  The OpenAPI side used `ResultTypes.GetOrDefault` and documented `about:blank`.
+- **Decision**: an internal table in Viana.Results.OpenApi mirroring the ASP.NET Core defaults
+  (400, 401, 403, 404, 405, 406, 408, 409, 412, 415, 422, 426, 500, 502, 503, 504 → RFC 9110 section
+  links). Applied when the resolved type is null/empty/`about:blank`: in `ProblemResultSchema` and when
+  serializing problem examples. Statuses outside the table keep `about:blank`. No new dependency.
+- **Alternatives**: read the native table (internal in ASP.NET Core, not accessible); keep `about:blank`
+  (documentation would differ from the runtime).

@@ -31,7 +31,7 @@ public sealed class VianaResponseMetadata { /* Status, DataType, ExampleProvider
 
 public static class VianaRouteHandlerBuilderExtensions
 {
-    public static TBuilder ProducesResult<T>(this TBuilder builder, string? name = null, string? summary = null);          // T: data type or IExampleProvider<>
+    public static TBuilder ProducesResult<T>(this TBuilder builder, int? status = null, string? name = null, string? summary = null);          // T: data type or IExampleProvider<>; status: explicit status (validated against the example result)
     public static TBuilder ProducesResult(this TBuilder builder, IResult example, string? name = null, string? summary = null);
     public static TBuilder ProducesProblemResult(this TBuilder builder, int status, string? title = null, string? type = null, string? detail = null);
     public static TBuilder ProducesProblemResult<TProvider>(this TBuilder builder, string? name = null, string? summary = null);

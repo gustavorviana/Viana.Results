@@ -70,9 +70,15 @@
 - [X] T017 [P] Add `MinimalSuccess`/`MinimalFailure` to benchmarks/Viana.Results.Benchmarks/AspNetCoreBenchmarks.cs and record in benchmarks/Viana.Results.Benchmarks/baseline/aspnetcore-1.0.0.md
 - [X] T018 Run quickstart.md steps 1–5 (build, tests, both example apps runtime + OpenAPI documents for the minimal endpoint, benchmark)
 
+## Phase 7: Documented problem type (FR-011, research R8)
+
+- [X] T019 [P] Tests in tests/Viana.Results.OpenApi.Tests/ProblemTypeDefaultsTests.cs: problem without type documents the RFC 9110 link for 404/409/500 (schema default and example) on controllers, minimal declarations (metadata, example class, inline result) and global example; unmapped status (e.g. 418) keeps `about:blank`; explicit type unchanged; parity test against the runtime `type` from the AspNetCore test host for the same statuses
+- [X] T020 Add internal `NativeProblemTypes` table in src/Viana.Results.OpenApi/Schemas/NativeProblemTypes.cs (statuses and links mirroring ASP.NET Core `ProblemDetailsDefaults`) and apply it when the type is null/empty/`about:blank` in src/Viana.Results.OpenApi/Schemas/ProblemResultSchema.cs and in problem example serialization (src/Viana.Results.OpenApi/Processing/OperationProcessor.cs, example resolver); Swashbuckle uses the same code
+- [X] T021 Update OpenApi and Swashbuckle READMEs and release notes (documented `type` follows the runtime default), rerun the full test suite and both example documents
+
 ## Dependencies & Execution Order
 
-- T001 → T002 → US1 ((T003 ∥ T004) → T005 → T006) → US2 ((T007 ∥ T008) → T009 → T010 → T011 → T012) → US3 (T013 → T014) → (T015 ∥ T016 ∥ T017) → T018
+- T001 → T002 → US1 ((T003 ∥ T004) → T005 → T006) → US2 ((T007 ∥ T008) → T009 → T010 → T011 → T012) → US3 (T013 → T014) → (T015 ∥ T016 ∥ T017) → T018 → T019 → T020 → T021
 - US2/US3 do not depend on US1 code (OpenAPI package only) and could run in parallel with it.
 
 ## Parallel Example

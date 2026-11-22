@@ -154,6 +154,10 @@ user; a class returning a failed result documents a problem response.
 - **FR-008**: Per-status precedence MUST follow feature 006 (endpoint example > endpoint declaration >
   global example); problem responses MUST use the shared problem schema and media type.
 - **FR-009**: Existing raw-value example classes and existing controller documentation MUST keep working.
+- **FR-011**: When a documented problem has no type of its own (null, empty or `about:blank`), the
+  documented `type` (schema default and examples) MUST match what the runtime sends: the native RFC 9110
+  link for the statuses the ASP.NET Core defaults cover, `about:blank` otherwise. Explicit types are
+  never changed. Applies to controllers, minimal APIs and global examples in both pipelines.
 - **FR-010**: Docs (package READMEs, examples app with a minimal API endpoint) MUST cover the new APIs.
 
 ### Key Entities
@@ -172,6 +176,8 @@ user; a class returning a failed result documents a problem response.
 - **SC-002**: 100% of minimal API endpoints declared with the helpers appear in the OpenAPI document with
   the declared statuses, schemas and examples, in both pipelines.
 - **SC-003**: 100% of result-returning examples match the runtime body for the same result.
+- **SC-005**: For problems without an explicit type, the documented `type` equals the runtime `type` in
+  100% of the tested statuses.
 - **SC-004**: 0 changes in documentation output for existing controllers and raw-value examples.
 - **SC-005**: A developer can document an endpoint's success and error responses with at most one line per
   response.
