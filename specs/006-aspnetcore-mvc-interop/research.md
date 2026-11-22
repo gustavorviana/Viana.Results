@@ -19,6 +19,14 @@
   breaks "customization last"); writing JSON manually like the old package (no native defaults,
   ignores Newtonsoft).
 
+- **Spike result (2026-11-22, T008)**: net8.0 → all four assertions hold (preset `traceId` kept, missing
+  `type` gets the RFC 9110 link, `CustomizeProblemDetails` runs after the preset values, exactly once).
+  **net10.0 → the native pipeline overwrites a preset `traceId`** with the request trace id; (b), (c) and
+  (d) still hold. Decision (owner): the native `traceId` always wins;
+  the mapper removes the Viana `traceId` (case-insensitive) before writing and restores it only when the
+  native pipeline produced none (factory path check; the service path always produces one). Spike test
+  turned into a per-framework regression of the native behavior.
+
 ## R2 – Viana `type` default versus the native type link
 
 - **Decision**: Viana `ProblemResult.Type` defaults to `about:blank`. When it is `about:blank`, map it to
@@ -72,3 +80,19 @@
     name to be chosen to avoid clashing with an app's own `ProblemDetails` component (e.g. `VianaProblemDetails`).
 - **Impact**: documents change shape (content types, `$ref`), so `Viana.Results.OpenApi` and
   Swashbuckle get a MINOR bump with release notes (still within the unreleased 1.1.0 / 1.1.2 if released together).
+
+## R9 – Naming policy for extension names (FR-018, FR-019)
+- **Core**: `ProblemResultJsonConverter.Write` converts extension keys with
+  `options.PropertyNamingPolicy?.ConvertName(key) ?? key`; collisions after conversion: last value wins.
+  An internal converter mode `PreserveExtensionNames` keeps keys as stored.
+- **Old MVC package**: `VianaResultAction` serializes with a cached copy of the options (per options
+  instance, `ConditionalWeakTable`) whose `Converters` start with `new ProblemResultJsonConverter { PreserveExtensionNames = true }`
+  (options converters win over the `[JsonConverter]` on the type) → JSON unchanged.
+- **ASP.NET Core package**: the mapper applies `IOptions<Microsoft.AspNetCore.Mvc.JsonOptions>.Value.JsonSerializerOptions.PropertyNamingPolicy`
+  to extension keys and fills `ProblemDetails.Extensions` (replaced by an `OrdinalIgnoreCase` dictionary).
+- **OpenAPI**: schema/example member names use the same policy as the runtime JSON options.
+- **Newtonsoft**: not handled (future package); names as stored.
+
+## R10 – Null success value (H1)
+- `ObjectResult(null)` and the MVC default `HttpNoContentOutputFormatter` → 204. No special handling;
+  documented in the package README as a difference from the old package.

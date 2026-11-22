@@ -109,9 +109,11 @@ works on its own.
   body is still produced.
 - **Problem details service not registered by the app**: failures still produce an RFC 9457 body with
   the Viana values and the framework's factory defaults; nothing throws.
-- **Title defaulted by the core** (reason phrase, feature 002): treated as a Viana value; it is the
-  same text the framework uses for that status.
-- **Null payload in a success with a value**: written the way the configured formatter writes null.
+- **Title defaulted by the core** (reason phrase, feature 002): it is a Viana value and wins over the
+  framework's own default title (names may differ, e.g. 422 "Unprocessable Content").
+- **Null payload in a success with a value**: follows the MVC default (the null value is treated as no
+  content, 204, unless the app disables `TreatNullValueAsNoContent`). This differs from the old MVC
+  package (which writes `null` with the result status) and is recorded as such.
 - **Old MVC package installed alongside**: both packages can be referenced without conflicts; the new
   package does not change the old one's behavior.
 
@@ -127,19 +129,25 @@ works on its own.
 - **FR-003**: Precedence MUST be: values set on the Viana problem (status, title, type, detail,
   instance, extension members) > framework defaults; the app customization runs last and can change
   anything.
+- **FR-003a** (traceId): The `traceId` member MUST come from the native pipeline; a Viana `traceId`
+  extension (any casing) is used only when the native pipeline does not provide one. Same behavior on
+  net8.0 and net10.0.
 - **FR-004**: For the same values, the produced problem body MUST have the same members and values as
   the framework's own problem response (excluding per-request values) and MUST be RFC 9457 compliant.
 - **FR-005**: Failure responses MUST use the problem details media type.
 - **FR-006**: Successful results MUST go through the framework's normal response formatting (content
   negotiation, configured formatters/serializers), with the result's status.
-- **FR-007**: Body shapes MUST match current library behavior: no body when there is no value, list
-  results unwrapped, paged results wrapped with metadata.
+- **FR-007**: Body shapes MUST match current library behavior (list results unwrapped, paged results
+  wrapped with metadata, no body when the result has none), except a null success value, which follows
+  the MVC default for null values (see Edge Cases).
 - **FR-008**: An explicit conversion from any result type to an action result MUST be available.
 - **FR-009**: An opt-in global registration MUST let actions return results directly (sync and async),
   producing responses identical to the explicit conversion; other action results are untouched.
 - **FR-010**: The public surface MUST mirror the existing MVC package where it makes sense (same names
   for the conversion and the global registration), so migration is a package/namespace change.
-- **FR-011**: The existing MVC package MUST NOT change in this feature.
+- **FR-011**: The JSON written by the existing MVC package MUST NOT change in this feature; its only
+  change is keeping extension member names as written when the core starts applying naming policies
+  (FR-018).
 - **FR-012**: The package MUST have XML docs, its own README and an updated example app
   (constitution Principle VIII).
 - **FR-013** (OpenAPI, base schema): Every documented problem schema MUST match the native
@@ -160,6 +168,15 @@ works on its own.
 - **FR-017** (OpenAPI, shared schema): The base problem schema MUST be emitted once as a shared component
   (`#/components/schemas/ProblemDetails`-style, referenced with `$ref`), like the native generators;
   responses with extra members reference the base and add their members (`allOf` with the base `$ref`).
+- **FR-018** (naming policy): Problem extension member names are stored case-insensitively (core rule
+  I10) and MUST be written using the application's JSON naming policy: the core JSON converter applies
+  the serializer's `PropertyNamingPolicy`; the ASP.NET Core package applies the MVC JSON options policy
+  to `ProblemDetails` extensions; OpenAPI schemas and examples apply the same policy. After applying the
+  policy, names that collide keep the last value.
+- **FR-019** (old MVC package preserved): The old MVC package MUST keep writing extension names exactly
+  as stored (original rule), regardless of the naming policy.
+- **FR-020** (Newtonsoft): Newtonsoft-specific naming is out of scope (a dedicated package will come
+  later); with Newtonsoft, extension names are written as stored.
 
 ### Key Entities
 
@@ -199,6 +216,20 @@ works on its own.
   wins for schema and example; the global example is only a fallback.
 - Q: Content type and shared schema (FR-016/FR-017)? → A: Recorded as requirements with the proposed
   direction (`application/problem+json`, shared `$ref` component); confirm before `/speckit-implement`.
+
+### Session 2026-11-22 (traceId)
+
+- Spike (T008): on net10.0 the native pipeline overwrites a preset `traceId`; on net8.0 it keeps it.
+- Q: Which `traceId` wins? → A: The MVC/native one, always (both frameworks). The Viana `traceId`
+  extension is used only when the native pipeline does not provide one. Documented in the package README.
+
+### Session 2026-11-22 (analysis)
+
+- Q: Null success value? → A: Follow the MVC default (null → 204 unless disabled); a known difference
+  from the old package.
+- Q: Extension names and naming policy? → A: Case-insensitive storage; written with the app naming
+  policy (core converter, ASP.NET Core package, OpenAPI); the old MVC package keeps names as stored;
+  Newtonsoft via a future package.
 
 ## Assumptions
 
