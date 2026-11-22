@@ -110,6 +110,11 @@ Every project in this repository builds with warnings treated as errors (see
   null flow) must target a single warning code, use the narrowest possible scope, carry an inline
   comment explaining why, and be approved in review.
 
+### Benchmarks
+
+Hot-path changes must include before/after benchmark results. See
+[`benchmarks/README.md`](benchmarks/README.md).
+
 ## License
 
 [MIT](LICENSE)

@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/Viana.Results.Benchmarks/Viana.Results.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/examples/">
     <Project Path="examples/Viana.Results.Examples.Shared/Viana.Results.Examples.Shared.csproj" />
     <Project Path="examples/Viana.Results.Scalar/Viana.Results.Scalar.csproj" />
