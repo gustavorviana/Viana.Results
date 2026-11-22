@@ -18,7 +18,8 @@ Pick only what you need — every package ships independently.
 |---|---|---|---|
 | **Viana.Results** — core types (`Result`, `Result<T>`, `ListResult<T>`, `PagedResult<T>`, `ProblemBuilder`) | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.svg)](https://www.nuget.org/packages/Viana.Results) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.svg)](https://www.nuget.org/packages/Viana.Results) | `netstandard2.0`, `net5.0`, `net8.0`, `net10.0` |
 | **Viana.Results.Mediators** — minimal Mediator with `Activity` telemetry | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.Mediators.svg)](https://www.nuget.org/packages/Viana.Results.Mediators) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.Mediators.svg)](https://www.nuget.org/packages/Viana.Results.Mediators) | `netstandard2.0`, `net5.0`, `net6.0`, `net8.0`, `net10.0` |
-| **Viana.Results.Mvc** — `Result → ActionResult` + global `IResult` filter | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.Mvc.svg)](https://www.nuget.org/packages/Viana.Results.Mvc) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.Mvc.svg)](https://www.nuget.org/packages/Viana.Results.Mvc) | `net6.0`, `net8.0`, `net10.0` |
+| **Viana.Results.AspNetCore** — `Result → IActionResult` through the native pipeline (ProblemDetails, MVC formatters) + global filter | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.AspNetCore.svg)](https://www.nuget.org/packages/Viana.Results.AspNetCore) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.AspNetCore.svg)](https://www.nuget.org/packages/Viana.Results.AspNetCore) | `net8.0`, `net10.0` |
+| **Viana.Results.Mvc** — `Result → ActionResult` + global `IResult` filter (net6.0 and existing apps) | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.Mvc.svg)](https://www.nuget.org/packages/Viana.Results.Mvc) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.Mvc.svg)](https://www.nuget.org/packages/Viana.Results.Mvc) | `net6.0`, `net8.0`, `net10.0` |
 | **Viana.Results.OpenApi** — native `Microsoft.AspNetCore.OpenApi` transformers (no Swashbuckle) | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.OpenApi.svg)](https://www.nuget.org/packages/Viana.Results.OpenApi) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.OpenApi.svg)](https://www.nuget.org/packages/Viana.Results.OpenApi) | `net10.0` |
 | **Viana.Results.OpenApi.Swashbuckle** — `SwaggerGen` filters for the same OpenAPI output | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.OpenApi.Swashbuckle.svg)](https://www.nuget.org/packages/Viana.Results.OpenApi.Swashbuckle) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.OpenApi.Swashbuckle.svg)](https://www.nuget.org/packages/Viana.Results.OpenApi.Swashbuckle) | `net10.0` |
 
@@ -35,7 +36,8 @@ dotnet add package Viana.Results
 
 # Optional, mix and match:
 dotnet add package Viana.Results.Mediators
-dotnet add package Viana.Results.Mvc
+dotnet add package Viana.Results.AspNetCore           # ASP.NET Core (net8.0+), native ProblemDetails
+dotnet add package Viana.Results.Mvc                  # ASP.NET Core MVC on net6.0 / existing apps
 dotnet add package Viana.Results.OpenApi              # native AddOpenApi pipeline
 dotnet add package Viana.Results.OpenApi.Swashbuckle  # SwaggerGen pipeline
 ```
@@ -57,14 +59,14 @@ public Result<User> GetUser(int id)
 }
 ```
 
-In an ASP.NET Core controller, with `Viana.Results.Mvc`:
+In an ASP.NET Core controller, with `Viana.Results.AspNetCore`:
 
 ```csharp
-using Viana.Results.Mvc;
+using Viana.Results.AspNetCore;
 
 [HttpGet("{id}")]
 public Task<IActionResult> Get(int id) =>
-    _service.GetUserAsync(id).ContinueWith(t => t.Result.ToActionResult());
+    _service.GetUserAsync(id).ToActionResult();
 ```
 
 Or register the global filter once and return `IResult` directly from actions:
@@ -87,7 +89,8 @@ examples:
 
 - [Viana.Results](src/Viana.Results/README.md) — core result types, `Results` factory, `ProblemBuilder`
 - [Viana.Results.Mediators](src/Viana.Results.Mediators/README.md) — `IRequest<T>`, `IHandler<,>`, DI registration, Activity tags
-- [Viana.Results.Mvc](src/Viana.Results.Mvc/README.md) — `ToActionResult()`, `VianaResultFilter`
+- [Viana.Results.AspNetCore](src/Viana.Results.AspNetCore/README.md) — `ToActionResult()`, `AddVianaResultFilter()`, native ProblemDetails interop
+- [Viana.Results.Mvc](src/Viana.Results.Mvc/README.md) — `VianaResultAction`, `VianaResultFilter`
 - [Viana.Results.OpenApi](src/Viana.Results.OpenApi/README.md) — native OpenAPI transformers, `[ProblemResult]`, `[ResponseExample]`
 - [Viana.Results.OpenApi.Swashbuckle](src/Viana.Results.OpenApi.Swashbuckle/README.md) — same surface for `SwaggerGen`
 

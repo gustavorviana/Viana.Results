@@ -12,6 +12,7 @@
     <File Path="Directory.Packages.props" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Viana.Results.AspNetCore/Viana.Results.AspNetCore.csproj" />
     <Project Path="src/Viana.Results.Mediators/Viana.Results.Mediators.csproj" />
     <Project Path="src/Viana.Results.Mvc/Viana.Results.Mvc.csproj" />
     <Project Path="src/Viana.Results.OpenApi/Viana.Results.OpenApi.csproj" />
@@ -19,6 +20,7 @@
     <Project Path="src/Viana.Results/Viana.Results.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Viana.Results.AspNetCore.Tests/Viana.Results.AspNetCore.Tests.csproj" />
     <Project Path="tests/Viana.Results.Mediators.Tests/Viana.Results.Mediators.Tests.csproj" />
     <Project Path="tests/Viana.Results.Mvc.Tests/Viana.Results.Mvc.Tests.csproj" />
     <Project Path="tests/Viana.Results.OpenApi.Tests/Viana.Results.OpenApi.Tests.csproj" />

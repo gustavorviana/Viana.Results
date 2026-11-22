@@ -108,7 +108,7 @@ public class UsersController : ControllerBase
         var request = new GetUserByIdRequest { UserId = id };
         var result = await _mediator.SendAsync(request);
 
-        // ASP.NET Core integration (Viana.Results.Mvc)
+        // ASP.NET Core integration (Viana.Results.AspNetCore)
         return result.ToActionResult();
     }
 }
