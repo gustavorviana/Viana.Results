@@ -15,7 +15,7 @@ namespace Viana.Results.OpenApi.Schemas;
 /// </summary>
 public class ProblemResultSchema
 {
-    private readonly List<ProblemFieldSchema> _schemas = [];
+    private readonly List<ProblemField> _schemas = [];
     private readonly JsonSerializerOptions _options;
     private readonly string _title;
 
@@ -33,7 +33,7 @@ public class ProblemResultSchema
     public ProblemResultSchema(JsonSerializerOptions options, ProblemResult result) : this(options, result.Status, result.Type, result.Title)
     {
         foreach (var extension in result.Extensions)
-            AddField(GetType(extension.Value?.GetType()), extension.Key, "", extension.Value);
+            AddFieldCore(GetType(extension.Value?.GetType()), extension.Key, "", extension.Value);
     }
 
     /// <summary>
@@ -54,9 +54,9 @@ public class ProblemResultSchema
         Status = status;
 
         _schemas.AddRange([
-            new ProblemFieldSchema(JsonSchemaType.Integer, "status", "RFC 9457: HTTP status code", status),
-            new ProblemFieldSchema(JsonSchemaType.String, "type", "RFC 9457: problem type URI", type),
-            new ProblemFieldSchema(JsonSchemaType.String, "title", "RFC 9457: short, human-readable summary", _title)
+            new ProblemField(JsonSchemaType.Integer, "status", "RFC 9457: HTTP status code", status),
+            new ProblemField(JsonSchemaType.String, "type", "RFC 9457: problem type URI", type),
+            new ProblemField(JsonSchemaType.String, "title", "RFC 9457: short, human-readable summary", _title)
         ]);
     }
 
@@ -70,7 +70,7 @@ public class ProblemResultSchema
     {
         var schema = new ProblemResultSchema(options, attribute.Status, attribute.Type, attribute.Title);
         if (!string.IsNullOrEmpty(attribute.Detail))
-            schema.AddField(JsonSchemaType.String, "detail", "RFC 9457: human-readable explanation specific to this occurrence", attribute.Detail);
+            schema.AddFieldCore(JsonSchemaType.String, "detail", "RFC 9457: human-readable explanation specific to this occurrence", attribute.Detail);
         return schema;
     }
 
@@ -79,10 +79,10 @@ public class ProblemResultSchema
     /// </summary>
     /// <param name="field">Field schema definition.</param>
     /// <returns>The current instance for fluent chaining.</returns>
+    [Obsolete("Internal helper; it will become internal in Viana.Results.OpenApi 2.0.0.")]
     public ProblemResultSchema AddField(ProblemFieldSchema field)
     {
-        _schemas.Add(field);
-        return this;
+        return AddFieldCore(field.Type, field.Name, field.Description, field.ExampleValue);
     }
 
     /// <summary>
@@ -93,9 +93,19 @@ public class ProblemResultSchema
     /// <param name="description">Field description.</param>
     /// <param name="exampleValue">Optional example value.</param>
     /// <returns>The current instance for fluent chaining.</returns>
+    [Obsolete("Internal helper; it will become internal in Viana.Results.OpenApi 2.0.0.")]
     public ProblemResultSchema AddField(JsonSchemaType type, string name, string description, object? exampleValue = null)
+        => AddFieldCore(type, name, description, exampleValue);
+
+    // Names are case-insensitive like the runtime (I10): an existing name is updated in place,
+    // keeping the first casing; the last type/description/example wins.
+    internal ProblemResultSchema AddFieldCore(JsonSchemaType type, string name, string description, object? exampleValue = null)
     {
-        _schemas.Add(new ProblemFieldSchema(type, name, description, exampleValue));
+        var index = _schemas.FindIndex(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (index >= 0)
+            _schemas[index] = new ProblemField(type, _schemas[index].Name, description, exampleValue);
+        else
+            _schemas.Add(new ProblemField(type, name, description, exampleValue));
         return this;
     }
 
@@ -107,11 +117,12 @@ public class ProblemResultSchema
     /// <param name="description">Field description.</param>
     /// <param name="exampleValue">Optional example value.</param>
     /// <returns>The current instance for fluent chaining.</returns>
+    [Obsolete("Internal helper; it will become internal in Viana.Results.OpenApi 2.0.0.")]
     public ProblemResultSchema AddField(Type? type, string name, string description, object? exampleValue = null)
-    {
-        _schemas.Add(new ProblemFieldSchema(GetType(type), name, description, exampleValue));
-        return this;
-    }
+        => AddFieldCore(type, name, description, exampleValue);
+
+    internal ProblemResultSchema AddFieldCore(Type? type, string name, string description, object? exampleValue = null)
+        => AddFieldCore(GetType(type), name, description, exampleValue);
 
     private JsonSchemaType GetType(Type? type)
     {
@@ -171,7 +182,10 @@ public class ProblemResultSchema
     /// Applies this problem schema to the specified OpenAPI responses collection.
     /// </summary>
     /// <param name="responses">OpenAPI responses collection.</param>
-    public void ApplyTo(OpenApiResponses? responses)
+    [Obsolete("Internal helper; it will become internal in Viana.Results.OpenApi 2.0.0.")]
+    public void ApplyTo(OpenApiResponses? responses) => ApplyToCore(responses);
+
+    internal void ApplyToCore(OpenApiResponses? responses)
     {
         if (responses == null) return;
 
@@ -182,14 +196,17 @@ public class ProblemResultSchema
             .Where(x => x.Contains("json", StringComparison.OrdinalIgnoreCase) || string.Equals(x, "text/plain", StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
-        responses[Status.ToString()] = Build(jsonTypes);
+        responses[Status.ToString()] = BuildCore(jsonTypes);
     }
 
     /// <summary>
     /// Builds the final <see cref="OpenApiResponse"/> for the configured status code.
     /// </summary>
     /// <param name="jsonContentTypes">Content types that should receive the schema.</param>
-    public OpenApiResponse Build(string[] jsonContentTypes)
+    [Obsolete("Internal helper; it will become internal in Viana.Results.OpenApi 2.0.0.")]
+    public OpenApiResponse Build(string[] jsonContentTypes) => BuildCore(jsonContentTypes);
+
+    internal OpenApiResponse BuildCore(string[] jsonContentTypes)
     {
         var apiTypes = new Dictionary<string, OpenApiMediaType>();
         foreach (var type in jsonContentTypes)
@@ -208,7 +225,11 @@ public class ProblemResultSchema
 
     private JsonNode? BuildNode()
     {
-        return $"{{{string.Join(",", _schemas.Select(x => x.GetExampleJsonField()))}}}";
+        // A real JSON object: numbers/booleans keep their type and text is escaped by the serializer.
+        var node = new JsonObject();
+        foreach (var field in _schemas)
+            node[field.Name] = field.ExampleValue is null ? null : JsonSerializer.SerializeToNode(field.ExampleValue, field.ExampleValue.GetType(), _options);
+        return node;
     }
 
     private IOpenApiSchema CreateSchema()
@@ -216,7 +237,7 @@ public class ProblemResultSchema
         var properties = new Dictionary<string, IOpenApiSchema>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var extension in _schemas)
-            properties.TryAdd(extension.Name, extension.ToOpenApi());
+            properties[extension.Name] = extension.ToOpenApi();
 
         return new OpenApiSchema
         {
@@ -227,9 +248,7 @@ public class ProblemResultSchema
 
     private static string GetDefaultDescription(int statusCode)
     {
-        if (ResultMessages.TryGet(statusCode, out var description) && !string.IsNullOrEmpty(description))
-            return description;
-
-        return "Internal Server Error";
+        // Same default as the runtime ProblemResult title (feature 002): reason phrase, or "Error".
+        return HttpStatusInfo.TryGetReasonPhrase(statusCode, out var phrase) ? phrase : "Error";
     }
 }

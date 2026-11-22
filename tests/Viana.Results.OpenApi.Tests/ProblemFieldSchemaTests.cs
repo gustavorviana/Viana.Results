@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // this file tests the obsolete ProblemFieldSchema until it becomes internal in 2.0.0
 using Microsoft.OpenApi;
 using Viana.Results.OpenApi.Schemas;
 
@@ -35,3 +36,4 @@ public class ProblemFieldSchemaTests
         Assert.Equal("404", field.GetExampleJsonValue());
     }
 }
+#pragma warning restore CS0618

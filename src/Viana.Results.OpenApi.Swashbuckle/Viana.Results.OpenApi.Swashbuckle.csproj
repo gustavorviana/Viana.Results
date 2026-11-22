@@ -28,6 +28,12 @@
 		<PackageReleaseNotes>
 			Security: updated Microsoft.AspNetCore.OpenApi to 10.0.15 and Swashbuckle.AspNetCore to 10.3.1, which resolves the high-severity vulnerability in the transitive Microsoft.OpenApi dependency (GHSA-v5pm-xwqc-g5wc); Microsoft.OpenApi now resolves to 2.13.0.
 			ProblemResultAttribute.Detail (from Viana.Results.OpenApi 1.1.0) is documented in the Swashbuckle output.
+			Fixed: examples generated from [ProblemResult] are JSON objects with typed values (numbers/booleans no longer quoted, text correctly escaped).
+			Fixed: the documented default problem title is the status reason phrase, matching the runtime (e.g. 404 "Not Found").
+			Fixed: ValueTask&lt;T&gt; return types are handled like Task&lt;T&gt;.
+			Fixed: 401/403 responses honor [AllowAnonymous] and are added for minimal API endpoints using RequireAuthorization().
+			Fixed: schema member names are case-insensitive like the runtime (no member silently dropped).
+			Fixed: unwrapping Result&lt;T&gt; response schemas keeps existing examples and media-type settings.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

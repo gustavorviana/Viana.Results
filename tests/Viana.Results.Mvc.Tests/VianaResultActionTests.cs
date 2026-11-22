@@ -53,7 +53,7 @@ public class VianaResultActionTests
         await action.ExecuteResultAsync(context);
 
         Assert.Equal(422, context.HttpContext.Response.StatusCode);
-        Assert.Equal("application/json", context.HttpContext.Response.ContentType);
+        Assert.Equal("application/problem+json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
         Assert.Equal(422, json.RootElement.GetProperty("status").GetInt32());
@@ -140,7 +140,7 @@ public class VianaResultActionTests
         await action.ExecuteResultAsync(context);
 
         Assert.Equal(400, context.HttpContext.Response.StatusCode);
-        Assert.Equal("application/json", context.HttpContext.Response.ContentType);
+        Assert.Equal("application/problem+json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
         Assert.Equal(400, json.RootElement.GetProperty("status").GetInt32());
@@ -181,7 +181,7 @@ public class VianaResultActionTests
         await action.ExecuteResultAsync(context);
 
         Assert.Equal(404, context.HttpContext.Response.StatusCode);
-        Assert.Equal("application/json", context.HttpContext.Response.ContentType);
+        Assert.Equal("application/problem+json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
         Assert.Equal(404, json.RootElement.GetProperty("status").GetInt32());
@@ -334,5 +334,47 @@ public class VianaResultActionTests
         var body = ReadResponseBody(context);
         Assert.Contains("Data", body);
         Assert.DoesNotContain("Status", body);
+    }
+
+    [Fact]
+    public async Task ExecuteResultAsync_RequestAborted_CompletesWithoutBody()
+    {
+        var action = new VianaResultAction(Results.Ok(new { Id = 1 }));
+        var context = CreateActionContext();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        context.HttpContext.RequestAborted = cts.Token;
+
+        await action.ExecuteResultAsync(context);
+
+        Assert.Equal(string.Empty, ReadResponseBody(context));
+    }
+
+    private sealed class CustomSerializationAction(IResult result) : VianaResultAction(result)
+    {
+        protected override string SerializeToJson(HttpResponse response, object? value) => "{\"custom\":true}";
+    }
+
+    [Fact]
+    public async Task ExecuteResultAsync_SubclassOverridingSerializeToJson_IsHonored()
+    {
+        var action = new CustomSerializationAction(Results.Ok(new { Id = 1 }));
+        var context = CreateActionContext();
+
+        await action.ExecuteResultAsync(context);
+
+        Assert.Equal("{\"custom\":true}", ReadResponseBody(context));
+    }
+
+    [Fact]
+    public async Task ExecuteResultAsync_SuccessWithNullValue_WritesJsonNull()
+    {
+        var action = new VianaResultAction(new Result<Dictionary<string, int>>((Dictionary<string, int>?)null));
+        var context = CreateActionContext();
+
+        await action.ExecuteResultAsync(context);
+
+        Assert.Equal("null", ReadResponseBody(context));
+        Assert.Equal("application/json", context.HttpContext.Response.ContentType);
     }
 }

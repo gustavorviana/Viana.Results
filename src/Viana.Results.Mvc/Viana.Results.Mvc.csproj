@@ -24,10 +24,12 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>2.0.0</Version>
+		<Version>2.1.0</Version>
 		<PackageReleaseNotes>
-			BREAKING: serialized response shape changed. ListResult&lt;T&gt; is now emitted as a plain JSON array (was an object with "data"). Result&lt;T&gt; no longer emits the "status" or "problem" wrapper fields. PagedResult&lt;T&gt; keeps its metadata. Clients that depended on the wrapper shape must be updated.
-			Removed redundant Microsoft.AspNetCore.Mvc.Core PackageReference (already covered by Microsoft.AspNetCore.App FrameworkReference). This also removes the transitive Newtonsoft.Json 9.0.1 vulnerability (NU1903).
+			Fixed: problem responses use the RFC 9457 media type application/problem+json (was application/json).
+			Fixed: a successful typed result with a null value is written as JSON null (was "{}"); a failure with status 204 keeps its problem body (via Viana.Results 3.0.0).
+			Improved: bodies are streamed to the response (no intermediate string) and writing stops when the request is aborted. A subclass overriding SerializeToJson keeps working.
+			Fixed: calling AddVianaResultFilter more than once registers the filter once.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

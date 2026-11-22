@@ -231,4 +231,26 @@ public class ProblemBuilderTests
         Assert.Same(builder, builder.AddExtension("k", "v"));
         Assert.Same(builder, builder.AddExtensions(new Dictionary<string, object?>()));
     }
+
+    [Fact]
+    public void AddExtension_NamesDifferingByCase_LastValueWinsFirstCasingKept()
+    {
+        var problem = new ProblemBuilder(400).AddExtension("errorCode", "E1").AddExtension("ErrorCode", "E2").Build();
+
+        var single = Assert.Single(problem.Extensions);
+        Assert.Equal("errorCode", single.Key);
+        Assert.Equal("E2", single.Value);
+    }
+
+    [Fact]
+    public void AddExtensions_NamesDifferingByCase_FollowSameRule()
+    {
+        var problem = new ProblemBuilder(400)
+            .AddExtensions(new[] { new KeyValuePair<string, object?>("errorCode", "E1"), new KeyValuePair<string, object?>("ERRORCODE", "E2") })
+            .Build();
+
+        var single = Assert.Single(problem.Extensions);
+        Assert.Equal("errorCode", single.Key);
+        Assert.Equal("E2", single.Value);
+    }
 }

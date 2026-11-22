@@ -15,7 +15,7 @@ public sealed class ProblemBuilder
     private string? _title;
     private string? _type;
     private string? _description;
-    private readonly Dictionary<string, object?> _extensions = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, object?> _extensions = new(StringComparer.OrdinalIgnoreCase); // case-insensitive names (last value wins)
 
     /// <summary>Initializes a new builder for the given HTTP status code.</summary>
     /// <param name="status">RFC 9457 HTTP status code (e.g. 400, 404, 422, 500).</param>

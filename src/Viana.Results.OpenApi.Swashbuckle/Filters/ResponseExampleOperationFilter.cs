@@ -29,5 +29,5 @@ public sealed class ResponseExampleOperationFilter : IOperationFilter
 
     /// <inheritdoc />
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        => OpenApiOperationProcessor.ApplyResponseExamples(operation, context.MethodInfo, _httpJson.Value.SerializerOptions, _services, _options);
+        => OperationProcessor.ApplyResponseExamples(operation, context.MethodInfo, _httpJson.Value.SerializerOptions, _services, _options);
 }

@@ -21,5 +21,5 @@ public class ProblemResponseOperationFilter : IOperationFilter
 
     /// <inheritdoc />
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        => OpenApiOperationProcessor.ApplyProblemResultAttributes(operation, context.MethodInfo, _httpJson.Value.SerializerOptions);
+        => OperationProcessor.ApplyProblemResultAttributes(operation, context.MethodInfo, _httpJson.Value.SerializerOptions);
 }

@@ -29,6 +29,14 @@
 			Security: updated Microsoft.AspNetCore.OpenApi to 10.0.15, which resolves the high-severity vulnerability in the transitive Microsoft.OpenApi dependency (GHSA-v5pm-xwqc-g5wc); Microsoft.OpenApi now resolves to 2.13.0.
 			Added: ProblemResultAttribute.Detail, documented as the RFC 9457 "detail" member of the problem schema.
 			Deprecated: ProblemResultAttribute.Description (it had no effect); it will be removed in 2.0.0. Use Detail.
+			Fixed: examples generated from [ProblemResult] are JSON objects with typed values (numbers/booleans no longer quoted, text correctly escaped).
+			Fixed: the documented default problem title is the status reason phrase, matching the runtime (e.g. 404 "Not Found").
+			Fixed: ValueTask&lt;T&gt; return types are handled like Task&lt;T&gt;.
+			Fixed: 401/403 responses honor [AllowAnonymous] and are added for minimal API endpoints using RequireAuthorization().
+			Fixed: schema member names are case-insensitive like the runtime (no member silently dropped).
+			Fixed: AddVianaResultExamples composes across multiple calls (options pattern); VianaResultOptions stays resolvable from DI.
+			Fixed: example providers receive constructor dependencies from DI; a clear error names the provider otherwise.
+			Deprecated: OpenApiOperationProcessor, OpenApiDocumentProcessor, OpenApiSchemaProcessor, ResponseExampleResolver, ResolvedExample, ProblemFieldSchema and ProblemResultSchema.AddField/Build/ApplyTo are internal helpers; they will become internal in 2.0.0.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

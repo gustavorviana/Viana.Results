@@ -42,7 +42,7 @@ This wires up the equivalent of every Swashbuckle filter:
 | `RemoveResultSchemaDocumentTransformer` | Drops the bare `Result` schema from components |
 | `UnwrapResultSchemaTransformer` | Rewrites `Result<T>`/`ListResult<T>` wrapper schemas as `allOf:[dataSchema]` |
 | `ProblemResponseOperationTransformer` | Emits RFC 9457 problem responses declared via `[ProblemResult(status)]` |
-| `UnauthorizedAndForbiddenOperationTransformer` | Auto-adds 401/403 problem responses to `[Authorize]` endpoints |
+| `UnauthorizedAndForbiddenOperationTransformer` | Auto-adds 401/403 problem responses to endpoints requiring authorization (`[Authorize]`, `RequireAuthorization()`), except `[AllowAnonymous]` / `AllowAnonymous()` |
 | `ResponseExampleOperationTransformer` | Materializes `[ResponseExample]` and globally-registered examples |
 
 ---
@@ -60,7 +60,12 @@ public Result<User> Get(int id) => repository.Find(id);
 example). `Description` is obsolete: it never had an effect and will be removed in
 Viana.Results.OpenApi 2.0.0.
 
+Actions returning `Task<T>` or `ValueTask<T>` are handled the same way.
+
 ### Typed response examples
+
+Example providers are resolved from DI or created with their constructor dependencies injected;
+`AddVianaResultExamples` can be called more than once (registrations are combined).
 
 Same API as the Swashbuckle integration. Define a provider:
 

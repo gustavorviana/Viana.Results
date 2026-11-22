@@ -33,7 +33,7 @@ public sealed class ResponseExampleOperationTransformer : IOpenApiOperationTrans
     {
         var method = TransformerHelper.GetMethodInfo(context.Description);
         if (method != null)
-            OpenApiOperationProcessor.ApplyResponseExamples(operation, method, _httpJson.Value.SerializerOptions, _services, _options);
+            OperationProcessor.ApplyResponseExamples(operation, method, _httpJson.Value.SerializerOptions, _services, _options);
         return Task.CompletedTask;
     }
 }

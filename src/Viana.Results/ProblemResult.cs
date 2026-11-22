@@ -99,7 +99,7 @@ public sealed class ProblemResult: IHasExtensions
         if (string.IsNullOrEmpty(detail))
             return new ProblemResult(status, title, type, extensions);
 
-        var copy = new Dictionary<string, object?>(StringComparer.Ordinal);
+        var copy = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         if (extensions != null)
         {
             foreach (var kv in extensions)
@@ -125,7 +125,7 @@ public sealed class ProblemResult: IHasExtensions
 
     private static IReadOnlyDictionary<string, object?> NormalizeExtensions(IReadOnlyDictionary<string, object?>? extensions, string? description)
     {
-        var copy = new Dictionary<string, object?>(StringComparer.Ordinal);
+        var copy = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
         if (extensions != null)
         {
@@ -134,7 +134,7 @@ public sealed class ProblemResult: IHasExtensions
                 if (IsStandardMember(kv.Key))
                     continue;
 
-                copy[kv.Key] = kv.Value;
+                copy[kv.Key] = kv.Value; // case-insensitive: last value wins, first casing kept
             }
         }
 
@@ -142,10 +142,13 @@ public sealed class ProblemResult: IHasExtensions
             copy["description"] = description;
 
         if (copy.Count == 0)
-            return new Dictionary<string, object?>();
+            return EmptyExtensions;
 
         return new ReadOnlyDictionary<string, object?>(copy);
     }
+
+    private static readonly IReadOnlyDictionary<string, object?> EmptyExtensions =
+        new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase));
 
     private static bool IsStandardMember(string key)
     {

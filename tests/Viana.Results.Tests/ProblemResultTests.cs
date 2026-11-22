@@ -234,4 +234,29 @@ public class ProblemResultTests
         // Assert
         Assert.False(problem.Extensions.ContainsKey("description"));
     }
+
+    [Fact]
+    public void Extensions_WhenEmpty_AreReadOnly()
+    {
+        Assert.IsNotType<Dictionary<string, object?>>(new ProblemResult(404, "x").Extensions);
+    }
+
+    [Fact]
+    public void Extensions_WithDetail_AreReadOnly()
+    {
+        Assert.IsNotType<Dictionary<string, object?>>(ProblemResult.WithDetail(400, "x", "d").Extensions);
+    }
+
+    [Fact]
+    public void Extensions_NamesDifferingByCase_LastValueWinsFirstCasingKept()
+    {
+        var input = new Dictionary<string, object?>(StringComparer.Ordinal) { ["errorCode"] = "E1", ["ErrorCode"] = "E2" };
+
+        var problem = new ProblemResult(400, "x", "about:blank", input);
+
+        var single = Assert.Single(problem.Extensions);
+        Assert.Equal("errorCode", single.Key);
+        Assert.Equal("E2", single.Value);
+        Assert.True(problem.Extensions.ContainsKey("ERRORCODE"));
+    }
 }

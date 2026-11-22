@@ -255,4 +255,15 @@ public class ProblemResultJsonConverterTests
 
 		Assert.Contains("Expected start of object", ex.Message);
 	}
+
+	[Fact]
+	public void Deserialize_ExtensionNamesDifferingByCase_LastValueWinsFirstCasingKept()
+	{
+		var problem = JsonSerializer.Deserialize<ProblemResult>("""{"status":400,"errorCode":"E1","ErrorCode":"E2"}""", Options);
+
+		Assert.NotNull(problem);
+		var single = Assert.Single(problem.Extensions);
+		Assert.Equal("errorCode", single.Key);
+		Assert.Equal("E2", single.Value);
+	}
 }

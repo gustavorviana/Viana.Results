@@ -117,6 +117,16 @@ return Results.Validation(new Dictionary<string, string[]>
 - Default titles are not configurable in the core. To customize them in ASP.NET Core, use
   `CustomizeProblemDetails`.
 
+#### Response body rules
+
+- A successful `Result<T>` writes its value; a `null` value is written as `null` (never `{}`).
+- Simple values (numbers, booleans, text, dates, identifiers, enums) keep the `{"data": ...}` wrapper;
+  custom structs are unwrapped like classes. `ListResult<T>` writes the items; `PagedResult<T>` keeps its
+  metadata.
+- A failed result always writes its problem, whatever its status.
+- Extension member names are case-insensitive: adding the same name twice keeps one member with the
+  last value and the casing of the first.
+
 ### Fluent ProblemBuilder
 
 For richer problem payloads (custom type URI, RFC 9457 `detail` /

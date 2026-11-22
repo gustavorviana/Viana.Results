@@ -48,14 +48,20 @@ internal static class ResultReflections
         if (type is null)
             return false;
 
-        var underlying = Nullable.GetUnderlyingType(type);
+        type = Nullable.GetUnderlyingType(type) ?? type;
 
-        type = underlying ?? type;
-        return underlying != null ||
+        // Simple values only; any other struct is a structured DTO and is unwrapped like a class.
+        return type.IsPrimitive ||
             type.IsEnum ||
-            type.IsValueType ||
+            type == typeof(decimal) ||
             type == typeof(string) ||
+            type == typeof(DateTime) ||
+            type == typeof(DateTimeOffset) ||
+            type == typeof(TimeSpan) ||
+            type == typeof(Guid) ||
             type == typeof(Uri) ||
-            type == typeof(Version);
+            type == typeof(Version) ||
+            type.FullName == "System.DateOnly" ||
+            type.FullName == "System.TimeOnly";
     }
 }

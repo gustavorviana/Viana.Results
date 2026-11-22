@@ -25,7 +25,7 @@ public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 		string? title = null;
 		int? status = null;
 		string? description = null;
-		var extensions = new Dictionary<string, object?>(StringComparer.Ordinal);
+		var extensions = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
 		while (reader.Read())
 		{

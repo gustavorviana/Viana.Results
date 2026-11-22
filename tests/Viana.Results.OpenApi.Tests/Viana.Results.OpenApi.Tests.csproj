@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Viana.Results.OpenApi\Viana.Results.OpenApi.csproj" />
+    <ProjectReference Include="..\..\src\Viana.Results.OpenApi.Swashbuckle\Viana.Results.OpenApi.Swashbuckle.csproj" />
   </ItemGroup>
 
   <ItemGroup>

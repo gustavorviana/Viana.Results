@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Concurrent;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -38,13 +40,40 @@ public class VianaResultAction(IResult result) : ActionResult
         response.StatusCode = result.Status;
         WriteHeaders(response);
 
-        var body = ResultResponseBody.GetBody(result);
-        if (body == null)
+        if (!ResultResponseBody.HasBody(result))
             return;
 
-        response.ContentType = ContentType;
-        await response.WriteAsync(SerializeToJson(response, body));
+        var body = ResultResponseBody.GetBody(result);
+        response.ContentType = result.Problem != null ? ProblemContentType : ContentType;
+
+        var cancellationToken = context.HttpContext.RequestAborted;
+        if (cancellationToken.IsCancellationRequested)
+            return;
+
+        try
+        {
+            if (OverridesSerializeToJson(GetType()))
+            {
+                await response.WriteAsync(SerializeToJson(response, body), cancellationToken);
+                return;
+            }
+
+            await JsonSerializer.SerializeAsync(response.Body, body, body?.GetType() ?? typeof(object), GetJsonSerializerOptions(response), cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The client went away: stop writing silently.
+        }
     }
+
+    /// <summary>RFC 9457 media type used for problem responses.</summary>
+    private const string ProblemContentType = "application/problem+json";
+
+    private static readonly ConcurrentDictionary<Type, bool> SerializeOverrides = new();
+
+    // A subclass that overrides SerializeToJson keeps its custom output (legacy string path).
+    private static bool OverridesSerializeToJson(Type type) => SerializeOverrides.GetOrAdd(type, static t =>
+        t.GetMethod(nameof(SerializeToJson), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(HttpResponse), typeof(object) }, null)?.DeclaringType != typeof(VianaResultAction));
 
     /// <summary>
     /// Writes <see cref="Headers"/> to the response, excluding "content-type" (case-insensitive),

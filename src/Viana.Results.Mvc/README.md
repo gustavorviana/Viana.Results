@@ -57,6 +57,9 @@ public class UsersController : ControllerBase
 
 ---
 
+Failures are written with the RFC 9457 media type `application/problem+json`; successes with
+`application/json`. Bodies are streamed and writing stops when the request is aborted.
+
 ### Global filter (`VianaResultFilter`)
 
 ```csharp id="c6qq2u"

@@ -21,5 +21,5 @@ public class UnauthorizedAndForbiddenOperationFilter : IOperationFilter
 
     /// <inheritdoc />
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        => OpenApiOperationProcessor.ApplyAuthorizeResponses(operation, context.MethodInfo, _httpJson.Value.SerializerOptions);
+        => OperationProcessor.ApplyAuthorizeResponses(operation, context.ApiDescription.ActionDescriptor?.EndpointMetadata, context.MethodInfo, _httpJson.Value.SerializerOptions);
 }

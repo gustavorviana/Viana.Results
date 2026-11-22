@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Viana.Results.Mvc.Filters;
 
@@ -19,11 +20,9 @@ public static class VianaResultFilterExtensions
     /// <returns>The same <see cref="IMvcBuilder"/> for chaining.</returns>
     public static IMvcBuilder AddVianaResultFilter(this IMvcBuilder builder)
     {
-        builder.Services.AddScoped<VianaResultFilter>();
-
-        builder.Services.AddTransient<IConfigureOptions<MvcOptions>>(_ =>
-            new ConfigureNamedOptions<MvcOptions>(Options.DefaultName, options =>
-                options.Filters.AddService<VianaResultFilter>()));
+        // Idempotent: calling it more than once registers the filter once.
+        builder.Services.TryAddScoped<VianaResultFilter>();
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, VianaResultFilterSetup>());
 
         return builder;
     }

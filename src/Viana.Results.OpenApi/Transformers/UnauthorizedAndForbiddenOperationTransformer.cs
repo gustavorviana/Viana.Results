@@ -27,8 +27,7 @@ public sealed class UnauthorizedAndForbiddenOperationTransformer : IOpenApiOpera
     public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
     {
         var method = TransformerHelper.GetMethodInfo(context.Description);
-        if (method != null)
-            OpenApiOperationProcessor.ApplyAuthorizeResponses(operation, method, _httpJson.Value.SerializerOptions);
+        OperationProcessor.ApplyAuthorizeResponses(operation, context.Description.ActionDescriptor?.EndpointMetadata, method, _httpJson.Value.SerializerOptions);
         return Task.CompletedTask;
     }
 }

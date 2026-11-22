@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Viana.Results.OpenApi;
 
@@ -53,7 +54,7 @@ public class ResponseExampleResolverTests
     {
         // Use a method on a class with no class-level attribute either
         var method = typeof(ResponseExampleResolverTests).GetMethod(nameof(Collect_NoAttributes_ReturnsEmpty))!;
-        var result = ResponseExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
+        var result = ExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
         Assert.Empty(result);
     }
 
@@ -61,7 +62,7 @@ public class ResponseExampleResolverTests
     public void Collect_PicksUpClassLevelAttribute()
     {
         var method = MethodOf(nameof(ClassWithExample.MethodWithoutOwn));
-        var result = ResponseExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
+        var result = ExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
 
         Assert.True(result.ContainsKey(500));
         Assert.Single(result[500]);
@@ -72,7 +73,7 @@ public class ResponseExampleResolverTests
     public void Collect_MethodAndClassAttributes_DifferentStatuses_BothApply()
     {
         var method = MethodOf(nameof(ClassWithExample.MethodWithDifferentStatus));
-        var result = ResponseExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
+        var result = ExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
 
         Assert.Contains(404, result.Keys);
         Assert.Contains(500, result.Keys);
@@ -84,7 +85,7 @@ public class ResponseExampleResolverTests
     public void Collect_MethodOverridesClassForSameStatus()
     {
         var method = MethodOf(nameof(ClassWithExample.MethodOverridesClassForSameStatus));
-        var result = ResponseExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
+        var result = ExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
 
         Assert.Single(result[500]);
         Assert.Equal(typeof(AnotherProvider), result[500][0].ProviderType);
@@ -98,7 +99,7 @@ public class ResponseExampleResolverTests
         {
             new GlobalExampleRegistration(500, typeof(FakeProvider), "global")
         };
-        var result = ResponseExampleResolver.Collect(method, globals);
+        var result = ExampleResolver.Collect(method, globals);
 
         Assert.Single(result[500]);
         Assert.Equal(typeof(AnotherProvider), result[500][0].ProviderType); // method wins, global dropped
@@ -112,7 +113,7 @@ public class ResponseExampleResolverTests
         {
             new GlobalExampleRegistration(500, typeof(FakeProvider))
         };
-        var result = ResponseExampleResolver.Collect(method, globals);
+        var result = ExampleResolver.Collect(method, globals);
 
         Assert.True(result.ContainsKey(500));
         Assert.Equal(typeof(FakeProvider), result[500][0].ProviderType);
@@ -126,7 +127,7 @@ public class ResponseExampleResolverTests
         {
             new GlobalExampleRegistration(500, typeof(AnotherProvider))
         };
-        var result = ResponseExampleResolver.Collect(method, globals);
+        var result = ExampleResolver.Collect(method, globals);
 
         // class declares 500, global must NOT add another 500 entry
         Assert.Single(result[500]);
@@ -137,7 +138,7 @@ public class ResponseExampleResolverTests
     public void Collect_MultipleNamedExamplesForSameStatus_BothKept()
     {
         var method = MethodOf(nameof(ClassWithoutExample.MultiNamedSameStatus));
-        var result = ResponseExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
+        var result = ExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
 
         Assert.Equal(2, result[400].Count);
         Assert.Contains(result[400], r => r.Name == "default");
@@ -151,7 +152,7 @@ public class ResponseExampleResolverTests
         var preBuilt = new FakeProvider();
         var services = new FakeServiceProvider(typeof(FakeProvider), preBuilt);
 
-        var resolved = ResponseExampleResolver.CreateProvider(typeof(FakeProvider), services);
+        var resolved = ExampleResolver.CreateProvider(typeof(FakeProvider), services);
 
         Assert.Same(preBuilt, resolved);
     }
@@ -160,7 +161,7 @@ public class ResponseExampleResolverTests
     public void CreateProvider_FallsBackToActivator_WhenNotInDi()
     {
         var services = new FakeServiceProvider(typeof(FakeProvider), null); // returns null
-        var resolved = ResponseExampleResolver.CreateProvider(typeof(FakeProvider), services);
+        var resolved = ExampleResolver.CreateProvider(typeof(FakeProvider), services);
 
         Assert.NotNull(resolved);
         Assert.IsType<FakeProvider>(resolved);
@@ -171,7 +172,7 @@ public class ResponseExampleResolverTests
     {
         // Provider needs ctor argument that Activator can't supply
         var resolved = Record.Exception(() =>
-            ResponseExampleResolver.CreateProvider(typeof(ProviderWithCtorDependency), services: null));
+            ExampleResolver.CreateProvider(typeof(ProviderWithCtorDependency), services: null));
 
         // Activator.CreateInstance throws MissingMethodException for unsatisfiable ctors;
         // ensure callers see a meaningful failure rather than silent null.
@@ -182,7 +183,7 @@ public class ResponseExampleResolverTests
     public void InvokeGetExample_ReturnsProviderOutput()
     {
         var provider = new FakeProvider();
-        var result = ResponseExampleResolver.InvokeGetExample(provider);
+        var result = ExampleResolver.InvokeGetExample(provider);
         Assert.NotNull(result);
     }
 
@@ -190,20 +191,20 @@ public class ResponseExampleResolverTests
     public void InvokeGetExample_NonProvider_Throws()
     {
         Assert.Throws<InvalidOperationException>(() =>
-            ResponseExampleResolver.InvokeGetExample(new object()));
+            ExampleResolver.InvokeGetExample(new object()));
     }
 
     [Fact]
     public void Serialize_NullInput_ReturnsNull()
     {
-        var node = ResponseExampleResolver.Serialize(null, options: null);
+        var node = ExampleResolver.Serialize(null, options: null);
         Assert.Null(node);
     }
 
     [Fact]
     public void Serialize_Object_ProducesJsonNode()
     {
-        var node = ResponseExampleResolver.Serialize(new { value = 42 }, options: null);
+        var node = ExampleResolver.Serialize(new { value = 42 }, options: null);
         Assert.NotNull(node);
         Assert.Equal(42, node!["value"]!.GetValue<int>());
     }
@@ -214,5 +215,27 @@ public class ResponseExampleResolverTests
         private readonly object? _value;
         public FakeServiceProvider(Type key, object? value) { _key = key; _value = value; }
         public object? GetService(Type serviceType) => serviceType == _key ? _value : null;
+    }
+
+    [Fact]
+    public void CreateProvider_InjectsConstructorDependencies()
+    {
+        using var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection()
+            .AddSingleton("from-di")
+            .BuildServiceProvider();
+
+        var provider = Assert.IsType<ProviderWithCtorDependency>(ExampleResolver.CreateProvider(typeof(ProviderWithCtorDependency), services));
+
+        Assert.Equal("from-di", provider.Injected);
+    }
+
+    [Fact]
+    public void CreateProvider_MissingDependency_ThrowsClearError()
+    {
+        using var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection().BuildServiceProvider();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => ExampleResolver.CreateProvider(typeof(ProviderWithCtorDependency), services));
+
+        Assert.Contains(nameof(ProviderWithCtorDependency), ex.Message);
     }
 }

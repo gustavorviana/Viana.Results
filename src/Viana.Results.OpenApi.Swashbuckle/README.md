@@ -38,7 +38,7 @@ This single call wires up:
 | `RemoveResultSchemaDocumentFilter` | Drops the bare `Result` schema from components |
 | `UnwrapResultFilter` | Replaces `Result<T>`/`ListResult<T>` response schemas with the payload schema |
 | `ProblemResponseOperationFilter` | Emits RFC 9457 problem responses declared via `[ProblemResult(status)]` |
-| `UnauthorizedAndForbiddenOperationFilter` | Auto-adds 401/403 problem responses to `[Authorize]` endpoints |
+| `UnauthorizedAndForbiddenOperationFilter` | Auto-adds 401/403 problem responses to endpoints requiring authorization (`[Authorize]`, `RequireAuthorization()`), except `[AllowAnonymous]` / `AllowAnonymous()` |
 | `ResponseExampleOperationFilter` | Materializes `[ResponseExample]` and globally-registered examples |
 
 ---
@@ -58,7 +58,12 @@ public Result<User> Get(int id) => repository.Find(id);
 example). `Description` is obsolete: it never had an effect and will be removed in
 Viana.Results.OpenApi 2.0.0.
 
+Actions returning `Task<T>` or `ValueTask<T>` are handled the same way.
+
 ### Typed response examples
+
+Example providers are resolved from DI or created with their constructor dependencies injected;
+`AddVianaResultExamples` can be called more than once (registrations are combined).
 
 Define a provider implementing `IExampleProvider<T>`:
 

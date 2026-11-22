@@ -16,7 +16,7 @@ public sealed class NoResponseBodyOperationTransformer : IOpenApiOperationTransf
     {
         var method = TransformerHelper.GetMethodInfo(context.Description);
         if (method != null)
-            OpenApiOperationProcessor.ClearBodyForBareResult(operation, method);
+            OperationProcessor.ClearBodyForBareResult(operation, method);
         return Task.CompletedTask;
     }
 }

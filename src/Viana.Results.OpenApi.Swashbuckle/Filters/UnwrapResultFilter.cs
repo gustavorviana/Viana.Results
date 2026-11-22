@@ -36,15 +36,10 @@ public class UnwrapResultFilter : IOperationFilter
             if (dataType == null || ResultReflections.IsScalarLike(dataType))
                 continue;
 
-            var keys = response.Value.Content.Keys.ToArray();
-            for (int i = 0; i < keys.Length; i++)
-            {
-                var key = keys[i];
-                response.Value.Content[key] = new OpenApiMediaType
-                {
-                    Schema = context.SchemaGenerator.GenerateSchema(dataType, context.SchemaRepository)
-                };
-            }
+            // Replace only the schema; keep examples, encoding and extensions already set.
+            var schema = context.SchemaGenerator.GenerateSchema(dataType, context.SchemaRepository);
+            foreach (var media in response.Value.Content.Values)
+                media.Schema = schema;
         }
     }
 }

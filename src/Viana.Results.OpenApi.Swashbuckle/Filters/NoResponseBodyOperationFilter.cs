@@ -11,5 +11,5 @@ public class NoResponseBodyOperationFilter : IOperationFilter
 {
     /// <inheritdoc />
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        => OpenApiOperationProcessor.ClearBodyForBareResult(operation, context.MethodInfo);
+        => OperationProcessor.ClearBodyForBareResult(operation, context.MethodInfo);
 }
