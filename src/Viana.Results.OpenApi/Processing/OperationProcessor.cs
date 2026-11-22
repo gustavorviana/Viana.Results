@@ -193,6 +193,10 @@ internal static class OperationProcessor
         if (built.Count == 0)
             return;
 
+        // FR-011: a problem example without its own type documents the native link the runtime sends.
+        foreach (var b in built.Where(b => b.Problem != null))
+            Schemas.NativeProblemTypes.Apply(b.Node, b.Status != 0 ? b.Status : b.Problem!.Status);
+
         var useExamplesMap = built.Count > 1 || built.Any(b => b.Meta.Name != null);
 
         foreach (var media in content.Values)

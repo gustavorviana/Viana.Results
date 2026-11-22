@@ -108,6 +108,10 @@ Example providers may return the real Viana result (`IExampleProvider<Result<Use
 unwrapped, list as array, paged with metadata, failure as problem) and the status comes from the result.
 On controllers, use `[ResponseExample(typeof(Provider))]` without status (`StatusCode` is then `0`).
 
+A documented problem without its own type (null, empty or `about:blank`) shows the type the runtime sends:
+the ASP.NET Core RFC 9110 link for the statuses it covers (400, 401, 403, 404, 405, 406, 408, 409, 412, 415,
+422, 426, 500, 502, 503, 504), `about:blank` otherwise. Explicit types are never changed.
+
 ### Typed response examples
 
 Example providers are resolved from DI or created with their constructor dependencies injected;

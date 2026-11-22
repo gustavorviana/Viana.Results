@@ -50,6 +50,7 @@ public class ProblemResultSchema
         _title = string.IsNullOrEmpty(title) ? GetDefaultDescription(status) : title;
         if (string.IsNullOrEmpty(type))
             type = ResultTypes.GetOrDefault(status);
+        type = NativeProblemTypes.Resolve(type, status); // FR-011: document what the runtime sends
 
         Status = status;
 
