@@ -377,4 +377,20 @@ public class VianaResultActionTests
         Assert.Equal("null", ReadResponseBody(context));
         Assert.Equal("application/json", context.HttpContext.Response.ContentType);
     }
+
+    [Fact]
+    public async Task ExecuteResultAsync_CamelCaseOptions_KeepsExtensionNamesAsStored()
+    {
+        var services = new ServiceCollection();
+        services.Configure<JsonOptions>(o => o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+        var problem = new ProblemResult(400, "Bad Request", "about:blank", new Dictionary<string, object?> { ["TraceId"] = "t" });
+        var action = new VianaResultAction(new Result(problem));
+        var context = CreateActionContext(services.BuildServiceProvider());
+
+        await action.ExecuteResultAsync(context);
+
+        var body = ReadResponseBody(context);
+        Assert.Contains("\"TraceId\":\"t\"", body);
+        Assert.DoesNotContain("\"traceId\"", body);
+    }
 }

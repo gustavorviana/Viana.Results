@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -103,8 +104,22 @@ public class VianaResultAction(IResult result) : ActionResult
 
     private static JsonSerializerOptions GetJsonSerializerOptions(HttpResponse response)
     {
-        return response.HttpContext.RequestServices
+        var options = response.HttpContext.RequestServices
             .GetService<IOptions<JsonOptions>>()?.Value?.JsonSerializerOptions
-            ?? new JsonSerializerOptions();
+            ?? DefaultOptions;
+        return LegacyNameOptions.GetValue(options, CreateLegacyNameOptions);
+    }
+
+    private static readonly JsonSerializerOptions DefaultOptions = new();
+
+    // The old MVC package keeps extension names as stored (original rule), even when the core
+    // converter applies the naming policy. Options converters win over the [JsonConverter] on the type.
+    private static readonly ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions> LegacyNameOptions = new();
+
+    private static JsonSerializerOptions CreateLegacyNameOptions(JsonSerializerOptions source)
+    {
+        var copy = new JsonSerializerOptions(source);
+        copy.Converters.Insert(0, new ProblemResultJsonConverter { PreserveExtensionNames = true });
+        return copy;
     }
 }

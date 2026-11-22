@@ -15,6 +15,12 @@ public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 	private const string TitleName = "title";
 	private const string StatusName = "status";
 
+	/// <summary>
+	/// When true, extension names are written as stored, ignoring the serializer naming policy
+	/// (used by Viana.Results.Mvc to keep its original output).
+	/// </summary>
+	internal bool PreserveExtensionNames { get; set; }
+
 	/// <inheritdoc />
 	public override ProblemResult? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{
@@ -69,12 +75,29 @@ public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 		writer.WriteString(TitleName, value.Title);
 		writer.WriteNumber(StatusName, value.Status);
 
-		if (value.Extensions != null)
+		if (value.Extensions != null && value.Extensions.Count > 0)
 		{
-			foreach (var kv in value.Extensions)
+			var policy = PreserveExtensionNames ? null : options.PropertyNamingPolicy;
+			if (policy == null)
 			{
-				writer.WritePropertyName(kv.Key);
-				WriteExtensionValue(writer, kv.Value, options);
+				foreach (var kv in value.Extensions)
+				{
+					writer.WritePropertyName(kv.Key);
+					WriteExtensionValue(writer, kv.Value, options);
+				}
+			}
+			else
+			{
+				// Names follow the serializer naming policy; names colliding after conversion keep the last value.
+				var converted = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+				foreach (var kv in value.Extensions)
+					converted[policy.ConvertName(kv.Key)] = kv.Value;
+
+				foreach (var kv in converted)
+				{
+					writer.WritePropertyName(kv.Key);
+					WriteExtensionValue(writer, kv.Value, options);
+				}
 			}
 		}
 

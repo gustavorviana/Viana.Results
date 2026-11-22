@@ -266,4 +266,44 @@ public class ProblemResultJsonConverterTests
 		Assert.Equal("errorCode", single.Key);
 		Assert.Equal("E2", single.Value);
 	}
+
+	private static ProblemResult ProblemWith(params (string Key, object? Value)[] members)
+		=> new(400, "Bad Request", "about:blank", members.ToDictionary(m => m.Key, m => m.Value, StringComparer.Ordinal));
+
+	[Fact]
+	public void Serialize_CamelCasePolicy_ConvertsExtensionNames()
+	{
+		var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+		var json = JsonSerializer.Serialize(ProblemWith(("TraceId", "t"), ("ErrorCode", "E")), options);
+
+		Assert.Contains("\"traceId\":\"t\"", json);
+		Assert.Contains("\"errorCode\":\"E\"", json);
+	}
+
+	[Fact]
+	public void Serialize_SnakeCasePolicy_ConvertsExtensionNames()
+	{
+		var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+
+		Assert.Contains("\"trace_id\"", JsonSerializer.Serialize(ProblemWith(("TraceId", "t")), options));
+	}
+
+	[Fact]
+	public void Serialize_NoPolicy_KeepsExtensionNames()
+	{
+		Assert.Contains("\"TraceId\"", JsonSerializer.Serialize(ProblemWith(("TraceId", "t")), new JsonSerializerOptions()));
+	}
+
+	[Fact]
+	public void Serialize_NamesCollidingAfterPolicy_LastValueWins()
+	{
+		var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+
+		var json = JsonSerializer.Serialize(ProblemWith(("TraceId", "first"), ("trace_id", "second")), options);
+
+		Assert.Contains("\"trace_id\":\"second\"", json);
+		Assert.Single(System.Text.RegularExpressions.Regex.Matches(json, "\"trace_id\""));
+		Assert.DoesNotContain("\"TraceId\"", json);
+	}
 }
