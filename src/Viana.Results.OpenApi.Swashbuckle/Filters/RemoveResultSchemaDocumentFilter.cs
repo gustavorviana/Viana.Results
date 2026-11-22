@@ -11,5 +11,8 @@ public sealed class RemoveResultSchemaDocumentFilter : IDocumentFilter
 {
     /// <inheritdoc />
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
-        => DocumentProcessor.RemoveBareResultSchema(swaggerDoc);
+    {
+        DocumentProcessor.RemoveBareResultSchema(swaggerDoc);
+        DocumentProcessor.ApplySharedProblemSchema(swaggerDoc);
+    }
 }

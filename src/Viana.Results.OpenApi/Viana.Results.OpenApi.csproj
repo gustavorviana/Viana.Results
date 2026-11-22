@@ -37,6 +37,10 @@
 			Fixed: AddVianaResultExamples composes across multiple calls (options pattern); VianaResultOptions stays resolvable from DI.
 			Fixed: example providers receive constructor dependencies from DI; a clear error names the provider otherwise.
 			Deprecated: OpenApiOperationProcessor, OpenApiDocumentProcessor, OpenApiSchemaProcessor, ResponseExampleResolver, ResolvedExample, ProblemFieldSchema and ProblemResultSchema.AddField/Build/ApplyTo are internal helpers; they will become internal in 2.0.0.
+			Changed: problem responses are documented like the native ProblemDetails: a shared "VianaProblemDetails" component (type, title, status, detail, instance; optional and nullable) referenced with $ref, plus allOf for extra members; content type application/problem+json only.
+			Changed: one source per status for schema and example: endpoint [ResponseExample] &gt; action [ProblemResult] &gt; controller [ProblemResult] &gt; global example (fallback only); several endpoint examples are merged.
+			Fixed: an action [ProblemResult] now wins over the controller one for the same status.
+			Changed: extension member names follow the application JSON naming policy, like the runtime.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

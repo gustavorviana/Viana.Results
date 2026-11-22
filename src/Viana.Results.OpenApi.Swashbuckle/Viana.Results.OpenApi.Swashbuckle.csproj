@@ -34,6 +34,10 @@
 			Fixed: 401/403 responses honor [AllowAnonymous] and are added for minimal API endpoints using RequireAuthorization().
 			Fixed: schema member names are case-insensitive like the runtime (no member silently dropped).
 			Fixed: unwrapping Result&lt;T&gt; response schemas keeps existing examples and media-type settings.
+			Changed: problem responses are documented like the native ProblemDetails: a shared "VianaProblemDetails" component (type, title, status, detail, instance; optional and nullable) referenced with $ref, plus allOf for extra members; content type application/problem+json only.
+			Changed: one source per status for schema and example: endpoint [ResponseExample] &gt; action [ProblemResult] &gt; controller [ProblemResult] &gt; global example (fallback only); several endpoint examples are merged.
+			Fixed: an action [ProblemResult] now wins over the controller one for the same status.
+			Changed: extension member names follow the application JSON naming policy, like the runtime.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

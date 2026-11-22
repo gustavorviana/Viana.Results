@@ -71,7 +71,7 @@ public class ProblemResultSchemaTests
     private static IDictionary<string, IOpenApiSchema> PropertiesOf(OpenApiResponse response)
     {
         Assert.NotNull(response.Content);
-        var schema = response.Content["application/json"].Schema;
+        var schema = response.Content.Values.First().Schema;
         Assert.NotNull(schema);
         Assert.NotNull(schema.Properties);
         return schema.Properties;
@@ -86,16 +86,16 @@ public class ProblemResultSchemaTests
         var properties = PropertiesOf(response);
 
         Assert.True(properties.ContainsKey("detail"));
-        Assert.Equal(JsonSchemaType.String, properties["detail"].Type);
+        Assert.True(properties["detail"].Type!.Value.HasFlag(JsonSchemaType.String));
         Assert.Contains("One or more fields are invalid.", response.Content!["application/json"].Example!.ToJsonString());
     }
 
     [Fact]
-    public void FromAttribute_WithoutDetail_KeepsStandardPropertiesOnly()
+    public void FromAttribute_WithoutDetail_HasNativeBaseMembersOnly()
     {
         var response = ProblemResultSchema.FromAttribute(DefaultOptions, new ProblemResultAttribute(400)).BuildCore(["application/json"]);
 
-        Assert.Equal(new[] { "status", "title", "type" }, PropertiesOf(response).Keys.OrderBy(k => k).ToArray());
+        Assert.Equal(new[] { "detail", "instance", "status", "title", "type" }, PropertiesOf(response).Keys.OrderBy(k => k).ToArray());
     }
 
     [ProblemResult(400, Detail = "Invalid input.")]
@@ -175,13 +175,13 @@ public class ProblemResultSchemaTests
     }
 
     [Fact]
-    public void Fields_NoNamingPolicyApplied()
+    public void Fields_FollowNamingPolicy()
     {
         var camel = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
         var example = new ProblemResultSchema(camel, 400).AddFieldCore(typeof(string), "TraceId", "t", "x")
             .BuildCore(["application/json"]).Content!["application/json"].Example!.AsObject();
 
-        Assert.True(example.ContainsKey("TraceId"));
+        Assert.True(example.ContainsKey("traceId")); // FR-018 (006) supersedes the "no naming policy" rule of 007
     }
 }

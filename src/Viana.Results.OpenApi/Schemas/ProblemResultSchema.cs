@@ -101,6 +101,10 @@ public class ProblemResultSchema
     // keeping the first casing; the last type/description/example wins.
     internal ProblemResultSchema AddFieldCore(JsonSchemaType type, string name, string description, object? exampleValue = null)
     {
+        // Extension names follow the application naming policy, like the runtime (FR-018); RFC members are fixed.
+        if (!IsBaseMember(name))
+            name = _options.PropertyNamingPolicy?.ConvertName(name) ?? name;
+
         var index = _schemas.FindIndex(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
         if (index >= 0)
             _schemas[index] = new ProblemField(type, _schemas[index].Name, description, exampleValue);
@@ -189,14 +193,8 @@ public class ProblemResultSchema
     {
         if (responses == null) return;
 
-        var jsonTypes = responses
-            .Select(x => x.Value)
-            .SelectMany(x => x.Content ?? new Dictionary<string, OpenApiMediaType>())
-            .Select(x => x.Key)
-            .Where(x => x.Contains("json", StringComparison.OrdinalIgnoreCase) || string.Equals(x, "text/plain", StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        responses[Status.ToString()] = BuildCore(jsonTypes);
+        // Problem responses are documented with the RFC 9457 media type only (FR-016).
+        responses[Status.ToString()] = BuildCore([ProblemContentType]);
     }
 
     /// <summary>
@@ -232,18 +230,30 @@ public class ProblemResultSchema
         return node;
     }
 
+    internal const string ProblemContentType = "application/problem+json";
+
+    private static bool IsBaseMember(string name) => Array.Exists(ProblemSchemaRegistry.BaseMembers, m => string.Equals(m, name, StringComparison.OrdinalIgnoreCase));
+
+    // Native-like base members (FR-013) plus this response's extra members; the document step replaces
+    // it with the shared component (FR-017).
     private IOpenApiSchema CreateSchema()
     {
-        var properties = new Dictionary<string, IOpenApiSchema>(StringComparer.OrdinalIgnoreCase);
+        var schema = ProblemSchemaRegistry.CreateBaseSchema();
+        var properties = new Dictionary<string, IOpenApiSchema>(schema.Properties!, StringComparer.OrdinalIgnoreCase);
+        var extras = new Dictionary<string, IOpenApiSchema>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var extension in _schemas)
-            properties[extension.Name] = extension.ToOpenApi();
-
-        return new OpenApiSchema
+        foreach (var field in _schemas)
         {
-            Type = JsonSchemaType.Object,
-            Properties = properties
-        };
+            if (IsBaseMember(field.Name))
+                continue;
+            var member = field.ToOpenApi();
+            properties[field.Name] = member;
+            extras[field.Name] = member;
+        }
+
+        schema.Properties = properties;
+        ProblemSchemaRegistry.Register(schema, extras);
+        return schema;
     }
 
     private static string GetDefaultDescription(int statusCode)

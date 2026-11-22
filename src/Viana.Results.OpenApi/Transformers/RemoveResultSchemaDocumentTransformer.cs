@@ -15,6 +15,7 @@ public sealed class RemoveResultSchemaDocumentTransformer : IOpenApiDocumentTran
     public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
         DocumentProcessor.RemoveBareResultSchema(document);
+        DocumentProcessor.ApplySharedProblemSchema(document);
         return Task.CompletedTask;
     }
 }

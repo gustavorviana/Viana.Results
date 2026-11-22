@@ -60,6 +60,24 @@ Viana.Results.OpenApi 2.0.0.
 
 Actions returning `Task<T>` or `ValueTask<T>` are handled the same way.
 
+### How problem responses are documented
+
+- Every problem response uses the content type `application/problem+json` and references a shared
+  `VianaProblemDetails` component with the native `ProblemDetails` members (`type`, `title`, `status`,
+  `detail`, `instance`; optional and nullable). Responses with extra members use
+  `allOf: [VianaProblemDetails, { their members }]`.
+- For each status, schema and example come from **one** source, in this order:
+
+  | Priority | Source |
+  |----------|--------|
+  | 1 | `[ResponseExample]` on the endpoint (several examples are merged into one schema) |
+  | 2 | `[ProblemResult]` on the action |
+  | 3 | `[ProblemResult]` on the controller |
+  | 4 | global example from `AddVianaResultExamples` (fallback only) |
+
+- Extension member names follow the application JSON naming policy (camelCase by default), like the
+  runtime response.
+
 ### Typed response examples
 
 Example providers are resolved from DI or created with their constructor dependencies injected;

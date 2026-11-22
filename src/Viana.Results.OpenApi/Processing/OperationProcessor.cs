@@ -116,20 +116,46 @@ internal static class OperationProcessor
         if (byStatus.Count == 0)
             return;
 
+        var declared = new HashSet<int>(GetProblemAttributes(method).Select(a => a.Status));
+
         foreach (var pair in byStatus)
         {
             var statusKey = pair.Key.ToString();
+            var built = BuildExamples(pair.Value, json, services);
+            if (built.Count == 0)
+                continue;
+
+            // FR-014: a problem example defines schema and example of its status. Endpoint examples win over
+            // attributes; a global example is only a fallback when the endpoint declares nothing for the status.
+            var problems = built.Where(b => b.Problem != null).ToList();
+            if (problems.Count > 0 && (!problems[0].Meta.IsGlobal || !declared.Contains(pair.Key)))
+            {
+                var schema = new ProblemResultSchema(json, problems[0].Problem!);
+                foreach (var other in problems.Skip(1))
+                {
+                    foreach (var member in other.Problem!.Extensions)
+                        schema.AddFieldCore(member.Value?.GetType(), member.Key, "", member.Value);
+                }
+                operation.Responses[statusKey] = schema.BuildCore([ProblemResultSchema.ProblemContentType]);
+                ApplyExamplesToContent(operation.Responses[statusKey].Content!, problems);
+                continue;
+            }
+
+            if (problems.Count > 0)
+                continue; // global problem example, but the endpoint declared this status
+
             if (!operation.Responses.TryGetValue(statusKey, out var response) || response.Content is not { } content)
                 continue;
 
-            ApplyExamplesToContent(content, pair.Value, json, services);
+            ApplyExamplesToContent(content, built);
         }
     }
 
-    private static void ApplyExamplesToContent(IDictionary<string, OpenApiMediaType> content, List<ExampleRegistration> examples, JsonSerializerOptions json, IServiceProvider? services)
-    {
-        var built = new List<(string Key, ExampleRegistration Meta, System.Text.Json.Nodes.JsonNode? Node)>();
+    private sealed record BuiltExample(string Key, ExampleRegistration Meta, System.Text.Json.Nodes.JsonNode? Node, ProblemResult? Problem);
 
+    private static List<BuiltExample> BuildExamples(List<ExampleRegistration> examples, JsonSerializerOptions json, IServiceProvider? services)
+    {
+        var built = new List<BuiltExample>();
         foreach (var ex in examples)
         {
             var provider = ExampleResolver.CreateProvider(ex.ProviderType, services);
@@ -137,11 +163,15 @@ internal static class OperationProcessor
                 continue;
 
             var value = ExampleResolver.InvokeGetExample(provider);
-            var node = ExampleResolver.Serialize(value, json);
-            var key = ex.Name ?? ex.ProviderType.Name;
-            built.Add((key, ex, node));
+            var problem = value as ProblemResult ?? (value as IResult)?.Problem;
+            var node = ExampleResolver.Serialize((object?)problem ?? value, json);
+            built.Add(new BuiltExample(ex.Name ?? ex.ProviderType.Name, ex, node, problem));
         }
+        return built;
+    }
 
+    private static void ApplyExamplesToContent(IDictionary<string, OpenApiMediaType> content, List<BuiltExample> built)
+    {
         if (built.Count == 0)
             return;
 
@@ -153,7 +183,7 @@ internal static class OperationProcessor
             {
                 media.Example = null;
                 media.Examples ??= new Dictionary<string, IOpenApiExample>();
-                foreach (var (key, meta, node) in built)
+                foreach (var (key, meta, node, _) in built)
                 {
                     media.Examples[key] = new OpenApiExample
                     {
@@ -170,12 +200,19 @@ internal static class OperationProcessor
         }
     }
 
+    // FR-015: one attribute per status, the action's wins over the controller's (like native ApiExplorer).
     private static List<ProblemResultAttribute> GetProblemAttributes(MethodInfo method)
     {
-        var attributes = new List<ProblemResultAttribute>();
-        attributes.AddRange(method.GetCustomAttributes<ProblemResultAttribute>(true));
+        var attributes = new List<ProblemResultAttribute>(method.GetCustomAttributes<ProblemResultAttribute>(true));
+        var statuses = new HashSet<int>(attributes.Select(a => a.Status));
         if (method.DeclaringType != null)
-            attributes.AddRange(method.DeclaringType.GetCustomAttributes<ProblemResultAttribute>(true));
+        {
+            foreach (var attribute in method.DeclaringType.GetCustomAttributes<ProblemResultAttribute>(true))
+            {
+                if (statuses.Add(attribute.Status))
+                    attributes.Add(attribute);
+            }
+        }
         return attributes;
     }
 }

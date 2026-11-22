@@ -47,7 +47,7 @@ internal static class ExampleResolver
         {
             if (methodStatuses.Contains(g.StatusCode) || classStatuses.Contains(g.StatusCode))
                 continue;
-            Add(byStatus, new ExampleRegistration(g.StatusCode, g.ProviderType, g.Name, g.Summary, g.Description));
+            Add(byStatus, new ExampleRegistration(g.StatusCode, g.ProviderType, g.Name, g.Summary, g.Description, IsGlobal: true));
         }
 
         return byStatus;
@@ -123,4 +123,4 @@ internal static class ExampleResolver
 }
 
 /// <summary>A flat, resolved example entry (after merging method/class/global precedence).</summary>
-internal sealed record ExampleRegistration(int StatusCode, Type ProviderType, string? Name, string? Summary, string? Description);
+internal sealed record ExampleRegistration(int StatusCode, Type ProviderType, string? Name, string? Summary, string? Description, bool IsGlobal = false);
