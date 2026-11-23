@@ -208,10 +208,10 @@ public class MediatorTests
             return new Result<string>("Done", 200);
         });
 
-        serviceProvider.RegisterService(typeof(IHandler<TestRequest, Result<string>>), handler);
+        serviceProvider.RegisterService(typeof(IHandler<TokenRequest, Result<string>>), handler);
 
         var mediator = new Mediator(serviceProvider);
-        var request = new TestRequest { Value = "Test" };
+        var request = new TokenRequest { Value = "Test" };
 
         // Act
         await mediator.SendAsync(request, cts.Token);
@@ -234,10 +234,10 @@ public class MediatorTests
             await Task.CompletedTask;
             return new Result<string>("Done", 200);
         });
-        serviceProvider.RegisterService(typeof(IHandler<TestRequest, Result<string>>), handler);
+        serviceProvider.RegisterService(typeof(IHandler<TokenRequest, Result<string>>), handler);
 
         var mediator = new Mediator(serviceProvider);
-        var request = new TestRequest { Value = "Test" };
+        var request = new TokenRequest { Value = "Test" };
 
         // Act & Assert
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
@@ -276,16 +276,21 @@ public class MediatorTests
             await mediator.SendAsync((IRequest<Result<string>>)null!));
     }
 
-    private class CustomHandlerWithToken : IHandler<TestRequest, Result<string>>
+    private class TokenRequest : IRequest<Result<string>>
     {
-        private readonly Func<TestRequest, CancellationToken, Task<Result<string>>> _handleFunc;
+        public string Value { get; set; } = "";
+    }
 
-        public CustomHandlerWithToken(Func<TestRequest, CancellationToken, Task<Result<string>>> handleFunc)
+    private class CustomHandlerWithToken : IHandler<TokenRequest, Result<string>>
+    {
+        private readonly Func<TokenRequest, CancellationToken, Task<Result<string>>> _handleFunc;
+
+        public CustomHandlerWithToken(Func<TokenRequest, CancellationToken, Task<Result<string>>> handleFunc)
         {
             _handleFunc = handleFunc;
         }
 
-        public Task<Result<string>> Handle(TestRequest request, CancellationToken cancellationToken = default)
+        public Task<Result<string>> Handle(TokenRequest request, CancellationToken cancellationToken = default)
         {
             return _handleFunc(request, cancellationToken);
         }

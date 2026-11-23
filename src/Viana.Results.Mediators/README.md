@@ -1,7 +1,7 @@
 ## Viana.Results.Mediators
 
-A simple **Mediator** pattern implementation integrated with `Viana.Results`,
-allowing orchestration of *requests* and *handlers* returning `Result`.
+A small, fast **mediator** built on `Viana.Results`: requests are dispatched to handlers that return a
+`Result`, with built-in traces and metrics.
 
 ---
 
@@ -13,116 +13,129 @@ dotnet add package Viana.Results.Mediators
 
 ### Supported frameworks
 
-* `netstandard2.0`
-* `net5.0`
-* `net6.0`
-* `net8.0`
-* `net10.0`
+* `netstandard2.0` (dispatch only, no telemetry)
+* `net6.0`, `net8.0`, `net10.0` (dispatch + traces and metrics)
 
 ---
 
-### Defining Request and Handler
+### Defining a request and its handler
 
 ```csharp
 using Viana.Results;
 using Viana.Results.Mediators;
 
-// Request
 public class GetUserByIdRequest : IRequest<Result<User>>
 {
     public int UserId { get; set; }
 }
 
-// Handler
 public class GetUserByIdHandler : IHandler<GetUserByIdRequest, Result<User>>
 {
     private readonly IUserRepository _repository;
 
-    public GetUserByIdHandler(IUserRepository repository)
-    {
-        _repository = repository;
-    }
+    public GetUserByIdHandler(IUserRepository repository) => _repository = repository;
 
-    public async Task<Result<User>> Handle(
-        GetUserByIdRequest request,
-        CancellationToken cancellationToken = default)
+    public async Task<Result<User>> Handle(GetUserByIdRequest request, CancellationToken cancellationToken = default)
     {
         var user = await _repository.GetByIdAsync(request.UserId, cancellationToken);
-
         if (user == null)
             return Results.NotFound("User not found");
 
-        return user; // Implicit conversion to Result<User>
+        return user; // implicit conversion to Result<User>
     }
 }
 ```
 
 ---
 
-### Registering the Mediator
+### Registering
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
-using Viana.Results.Mediators;
+services.AddMediator(typeof(GetUserByIdHandler).Assembly);
 
-public class Startup
+// With options
+services.AddMediator(o =>
 {
-    public void ConfigureServices(IServiceCollection services)
-    {
-        // Registers the mediator and all handlers from an assembly
-        services.AddMediator(typeof(GetUserByIdHandler).Assembly);
-
-        // Or from multiple assemblies
-        services.AddMediator(
-            typeof(GetUserByIdHandler).Assembly,
-            typeof(AnotherHandler).Assembly
-        );
-    }
-}
+    o.HandlerLifetime = ServiceLifetime.Scoped;                  // default
+    o.Telemetry.Tracing = true;                                  // default
+    o.Telemetry.Metrics = true;                                  // default
+    o.Telemetry.ExceptionDetails = ExceptionDetailLevel.Full;    // default
+}, typeof(GetUserByIdHandler).Assembly, typeof(OtherHandler).Assembly);
 ```
+
+Registration rules:
+
+* Calling `AddMediator` more than once registers each service once; the **options of the first call win**.
+* Abstract classes and open generic handlers are skipped; types that cannot be loaded are ignored.
+* **Two different handlers for the same request and result type are an error** at registration.
+* Handlers are resolved by the **exact** request type: a request deriving from another request does not
+  use the base request's handler.
+* A `Singleton` handler lifetime cannot depend on scoped services (standard container validation applies).
 
 ---
 
-### Usage in a Controller (with MVC)
+### Sending (ASP.NET Core)
 
 ```csharp
-using Microsoft.AspNetCore.Mvc;
-using Viana.Results;
+using Viana.Results.AspNetCore;
 using Viana.Results.Mediators;
-using Viana.Results.Mvc;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController : ControllerBase
+public class UsersController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public UsersController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUser(int id)
-    {
-        var request = new GetUserByIdRequest { UserId = id };
-        var result = await _mediator.SendAsync(request);
-
-        // ASP.NET Core integration (Viana.Results.AspNetCore)
-        return result.ToActionResult();
-    }
+        => (await mediator.SendAsync(new GetUserByIdRequest { UserId = id })).ToActionResult();
 }
 ```
 
+Every dispatch error (null request, `HandlerNotFoundException`, a handler returning a null task, a handler
+throwing) surfaces through the returned task, never at call time. `HandlerNotFoundException` exposes
+`RequestType` and `ResultType`.
+
 ---
 
-### Telemetry and Activity (.NET 8+)
+### Telemetry (.NET 6+)
 
-In .NET 8+, the `IMediator` automatically creates an `Activity` to improve
-observability, including tags such as:
+The mediator uses the native .NET `ActivitySource` and `Meter`. Nothing is built unless a listener asks for
+it, so telemetry is free when nobody collects it.
 
-* `request.type`
-* `result.type`
-* `handler.type`
-* `result.success`
-* `result.statusCode`
+```csharp
+builder.Services.AddOpenTelemetry()
+    .WithTracing(t => t.AddSource(MediatorDiagnostics.SourceName))   // "Viana.Results.Mediators"
+    .WithMetrics(m => m.AddMeter(MediatorDiagnostics.MeterName));    // "Viana.Results.Mediators"
+```
+
+**Span** `Mediator.Send {RequestType}` (kind `Internal`, child of the current activity):
+
+| Tag | Example |
+|-----|---------|
+| `viana.mediator.request.type` | `GetUserByIdRequest` |
+| `viana.mediator.result.type` | `Result<User>` |
+| `viana.mediator.handler.type` | `GetUserByIdHandler` |
+| `viana.mediator.result.success` | `false` |
+| `viana.mediator.result.status` | `404` |
+| `viana.mediator.cancelled` | `true` (only when cancelled) |
+| `error.type` | exception type (failures) |
+
+**Status**: success and 4xx problems → `Ok`; 5xx problems → `Error` (problem title); exceptions and missing
+handlers → `Error`; cancellation is not an error.
+
+**Metric** `viana.mediator.request.duration` (histogram, seconds; its count is the number of dispatches),
+dimensions `viana.mediator.request.type`, `viana.mediator.result.status`, `viana.mediator.result.success`
+and `error.type` on failures.
+
+**Exception details** (`Telemetry.ExceptionDetails`), since messages and stack traces may contain sensitive
+data:
+
+| Level | Recorded |
+|-------|----------|
+| `Full` (default) | type, message and stack trace |
+| `TypeOnly` | exception type only |
+| `None` | no exception event (status stays `Error`, `error.type` kept) |
+
+**Turning it off**: `Telemetry.Tracing = false` and/or `Telemetry.Metrics = false`. A disabled kind is never
+consulted, even with active listeners.
+
+All names are available as constants in `MediatorDiagnostics`.

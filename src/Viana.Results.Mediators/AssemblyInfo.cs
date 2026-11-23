@@ -16,4 +16,4 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM.
 
 [assembly: Guid("ACBB9F0D-44BF-4773-B9DA-D9EB402FCD85")]
-[assembly: InternalsVisibleTo("Viana.Results.Mvc")]
+[assembly: InternalsVisibleTo("Viana.Results.Mediators.Tests")]
