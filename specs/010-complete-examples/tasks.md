@@ -67,12 +67,12 @@
 - [X] T022 [P] [US4] Create the requests and handlers in `examples/Viana.Results.Mediators.Example/UseCases/`: `CreateProduct`, `GetProduct`, `ListProducts`, `UpdateProduct` and `DeleteProduct`. They use the shared `ProductCatalog` and return `Result`/`Result<T>`.
 - [X] T023 [P] [US4] Create the scenario requests and handlers in `examples/Viana.Results.Mediators.Example/UseCases/Scenarios/`: `ThrowingRequest`, `UnavailableRequest` (through InventoryGateway), `SlowRequest` (`Task.Delay` with the token) and `UnregisteredRequest`, which has no handler on purpose.
 - [X] T024 [US4] Write `examples/Viana.Results.Mediators.Example/Program.cs`:
-  - Call `AddMediator(o => ...)` with every option commented: HandlerLifetime, Telemetry.Tracing, Telemetry.Metrics and Telemetry.ExceptionDetails, read from the `Mediator` configuration section, with the defaults stated.
+  - Call `AddMediator(o => ...)` with every option commented: Telemetry.Tracing, Telemetry.Metrics and Telemetry.ExceptionDetails, read from the `Mediator` configuration section, with the defaults stated.
   - Configure `AddOpenTelemetry()` with a service resource, `WithTracing` (`AddSource(MediatorDiagnostics.SourceName)`, ASP.NET Core instrumentation not required, console exporter) and `WithMetrics` (`AddMeter(MediatorDiagnostics.MeterName)`, console exporter). Add a comment showing the OTLP swap.
   - Map the endpoints under `/products` and `/scenarios`, passing `RequestAborted`. Catch `HandlerNotFoundException` and return `Results.Failure` with RequestType and ResultType.
   - Add `AddProblemDetails()`, `app.UseExceptionHandler()` and `app.UseStatusCodePages()`, so the throwing handler becomes a 500 problem.
   - Add the native OpenAPI and Scalar, and a `MediatorsHost` marker class for the tests.
-- [X] T025 [US4] Add a `Mediator` section to `examples/Viana.Results.Mediators.Example/appsettings.json` (`HandlerLifetime`, `Telemetry:Tracing`, `Telemetry:Metrics`, `Telemetry:ExceptionDetails`) and create `mediators.http` covering every route, including the slow request.
+- [X] T025 [US4] Add a `Mediator` section to `examples/Viana.Results.Mediators.Example/appsettings.json` (`Telemetry:Tracing`, `Telemetry:Metrics`, `Telemetry:ExceptionDetails`) and create `mediators.http` covering every route, including the slow request.
 
 ## Phase 6: US5 – Guided tour (P3)
 
@@ -87,6 +87,10 @@
 
 - [X] T028 Run `dotnet build -c Release` (0 warnings) and `dotnet test` (whole suite, including the examples tests). Confirm that `dotnet pack` produces no example package.
 - [X] T029 Follow `specs/010-complete-examples/quickstart.md` steps 3–6 manually, including SC-004 (a host running with console telemetry in under 5 minutes by following the README). Set the spec status to Ready. open both UIs and check the console telemetry and the option toggles. Check that no other mediator library is named in `examples/` or `specs/010-complete-examples/`.
+
+## Follow-up (2026-11-24)
+
+- [X] T030 One type per file in examples and their tests: split `Catalog/Product.cs` (Product, ProductInput, StockInfo), `Examples/CatalogExamples.cs` (one provider per file), the Mediators `UseCases` and `Scenarios` (one request or handler per file), move the host markers (`ScalarHost`, `SwaggerHost`, `MediatorsHost`) out of `Program.cs`, and `TelemetryCollection` out of `MediatorsExampleTests.cs`. Update the links in `examples/README.md`.
 
 ## Dependencies
 

@@ -33,7 +33,7 @@ handlers; configurable handler lifetime; pipeline behaviors out of scope; keep H
 - Q: Exception details in telemetry? → A: Configurable: record (default), mask, or omit message/stack.
 - Q: Two handlers for the same request? → A: Error at registration.
 - Q: Derived request types? → A: Not resolved to base-type handlers; documented.
-- Q: Handler lifetime? → A: Configurable through the registration options (default stays scoped).
+- Q: Handler lifetime? → A: Configurable through the registration options (default stays scoped). **Superseded 2026-11-24**: the option is removed before 1.1.0 ships; handlers are always registered scoped, and a handler registered by hand before `AddMediator` keeps its own lifetime.
 - Q: Pipeline behaviors? → A: Out of scope (future spec).
 - Q: Rename `Handle`? → A: No.
 - Q: Can telemetry be disabled? → A: Yes, with two independent switches (tracing, metrics), both enabled by
@@ -113,7 +113,7 @@ partially loadable assembly, lifetime option).
 3. **Given** an assembly with types that cannot be loaded, **Then** registration continues with the
    loadable types.
 4. **Given** open generic or abstract handler types, **Then** they are skipped.
-5. **Given** a lifetime option, **Then** handlers are registered with that lifetime (default scoped).
+5. **Given** a handler registered by hand (any lifetime) before `AddMediator`, **Then** the scan keeps that registration; scanned handlers are scoped.
 6. **Given** a derived request with a handler only for its base type, **Then** sending it reports
    handler-not-found (documented behavior).
 
@@ -187,7 +187,7 @@ the registration options.
 - **FR-010**: Telemetry source and meter names MUST be public constants and documented.
 - **FR-011**: Registration MUST be idempotent, skip abstract and open generic types, tolerate partially
   loadable assemblies, and fail on duplicate handlers for the same request and result.
-- **FR-012**: Registration MUST accept options: handler lifetime (default scoped), exception detail
+- **FR-012**: Registration MUST accept options (no handler lifetime option: scanned handlers are scoped, hand-registered handlers keep their lifetime): exception detail
   level (record by default) and the telemetry switches of FR-017.
 - **FR-013**: Derived request types MUST NOT be resolved to base-type handlers; documented.
 - **FR-014**: Public contracts (`IRequest<>`, `IHandler<,>`, `IMediator`, `Handle`, `SendAsync`) MUST keep
@@ -204,7 +204,7 @@ the registration options.
 ### Key Entities
 
 - **Dispatch entry**: cached per (request type, result type); knows the handler contract and invokes it.
-- **Mediator options**: handler lifetime; telemetry (tracing switch, metrics switch, exception detail level).
+- **Mediator options**: telemetry (tracing switch, metrics switch, exception detail level).
 - **Telemetry**: span with prefixed tags; metrics (count, duration) with request type and status
   dimensions.
 

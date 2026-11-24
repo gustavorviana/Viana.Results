@@ -61,6 +61,7 @@
 
 ## R6 – Options and switches
 
+- **Superseded 2026-11-24**: `HandlerLifetime` removed (see tasks Phase 9); handlers are scoped, hand-registered handlers keep their lifetime.
 - **Decision**: `MediatorOptions { HandlerLifetime = Scoped; Telemetry = new() }`,
   `MediatorTelemetryOptions { Tracing = true; Metrics = true; ExceptionDetails = Full }`. New overload
   `AddMediator(this IServiceCollection, Action<MediatorOptions> configure, params Assembly[] assemblies)`;

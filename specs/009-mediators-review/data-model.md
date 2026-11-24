@@ -4,7 +4,6 @@
 
 | Field | Type | Default | Rule |
 |-------|------|---------|------|
-| HandlerLifetime | ServiceLifetime | Scoped | applies to scanned handlers |
 | Telemetry | MediatorTelemetryOptions | new() | not null |
 
 ## MediatorTelemetryOptions (public)

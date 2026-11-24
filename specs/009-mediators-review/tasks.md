@@ -72,6 +72,17 @@
 - [X] T021 [P] Version 1.1.0 and release notes in src/Viana.Results.Mediators/Viana.Results.Mediators.csproj (fixes, renamed tags old → new, new options/metrics, duplicate-handler error)
 - [X] T022 Run quickstart.md steps 2–5 (build 0 warnings, full tests all TFMs, benchmark recorded, no other mediator library named in the package docs or specs)
 
+## Phase 9: Follow-up – remove the handler lifetime option (2026-11-24)
+
+The option adds little: handlers almost always depend on scoped services, a global Singleton breaks them,
+and a handler registered by hand before `AddMediator` already keeps its own lifetime. 1.1.0 is not
+published, so removing it breaks nobody.
+
+- [X] T023 Update tests first: in tests/Viana.Results.Mediators.Tests/OptionsTests.cs drop the `HandlerLifetime` default assertion; in tests/Viana.Results.Mediators.Tests/RegistrationTests.cs replace the `HandlerLifetime = Transient`/`Singleton` cases with: scanned handlers are `Scoped`; a handler registered by hand as `Singleton` (same implementation type) or through a factory before `AddMediator` keeps its descriptor and lifetime
+- [X] T024 Remove `HandlerLifetime` from src/Viana.Results.Mediators/MediatorOptions.cs and register scanned handlers with `ServiceLifetime.Scoped` in src/Viana.Results.Mediators/ServiceCollectionExtensions.cs — T023 green
+- [X] T025 [P] Docs: src/Viana.Results.Mediators/README.md (drop the option, add "Overriding a handler lifetime": register it before `AddMediator`); release notes in src/Viana.Results.Mediators/Viana.Results.Mediators.csproj (no lifetime option); examples/Viana.Results.Mediators.Example/Program.cs and appsettings.json (drop `HandlerLifetime`); examples/README.md options table; specs/010-complete-examples/spec.md, tasks.md (mention of the option)
+- [X] T026 Build `-c Release` (0 warnings) and run the full test suite
+
 ## Dependencies & Execution Order
 
 - T001 → T002 (baseline **before** any code change) → T003 → US1 (T004 → T005 → T006 → T007 → T008) → US2 ((T009 ∥ T010) → T011 → T012) → US5 (T013 → T014) → US4 (T015 → T016) → US3 (T017 → T018) → T019 → (T020 ∥ T021) → T022

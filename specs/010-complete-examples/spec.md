@@ -98,7 +98,7 @@ hosts with a schema and an example.
 ### User Story 4 - Mediator with options, errors and telemetry (Priority: P2)
 
 Catalog operations go through mediator requests and handlers that return results. The host shows mediator
-options (handler lifetime, tracing and metrics switches, exception detail level), a dispatch with no
+options (tracing and metrics switches, exception detail level), a dispatch with no
 handler, a handler that throws (500), a dependency unavailable (503), and request cancellation. Traces and
 metrics are exported to the console so the developer can see the span, its tags and the duration metric.
 
@@ -149,7 +149,7 @@ request files.
 - **FR-006**: Both hosts MUST document every operation with success and problem responses, examples, the
   native problem type and at least one custom registered example.
 - **FR-007**: In the Mediators example, catalog operations MUST be dispatched through the mediator and the host
-  MUST configure mediator options explicitly (handler lifetime, tracing, metrics, exception detail level) with comments on each.
+  MUST configure mediator options explicitly (tracing, metrics, exception detail level) with comments on each.
 - **FR-008**: The examples MUST include a missing-handler scenario, a throwing handler, an unavailable
   dependency (503) and a cancellable long-running request.
 - **FR-009**: Mediator traces and metrics MUST be exported to the console using the published diagnostic

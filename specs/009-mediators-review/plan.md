@@ -74,7 +74,7 @@ src/Viana.Results.Mediators/
 ├── Mediator.cs                       # SendAsync: cache lookup, fast path, telemetry path
 ├── Dispatch/HandlerWrapper.cs        # internal abstract HandlerWrapper<TResult> + HandlerWrapper<TRequest,TResult>
 ├── Dispatch/DispatchCache.cs         # internal static DispatchCache<TResult>
-├── MediatorOptions.cs                # public: HandlerLifetime, Telemetry
+├── MediatorOptions.cs                # public: Telemetry (HandlerLifetime removed, Phase 9)
 ├── MediatorTelemetryOptions.cs       # public: Tracing, Metrics, ExceptionDetails
 ├── ExceptionDetailLevel.cs           # public enum Full | TypeOnly | None
 ├── MediatorDiagnostics.cs            # public constants: SourceName, MeterName, tag names

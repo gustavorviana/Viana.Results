@@ -10,7 +10,6 @@ namespace Viana.Results.Mediators;
 
 public sealed class MediatorOptions
 {
-    public ServiceLifetime HandlerLifetime { get; set; } = ServiceLifetime.Scoped;
     public MediatorTelemetryOptions Telemetry { get; } = new();
 }
 
