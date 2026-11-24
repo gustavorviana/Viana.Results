@@ -59,6 +59,9 @@ Rules:
 
 ### Successes
 
+- `Results.Ok()` without a value is **204 No Content** with no body; a bodyless result keeps its own status
+  (`new Result(200)` answers 200).
+
 Success payloads are written with `ObjectResult`, so content negotiation and the configured formatters
 (System.Text.Json, `AddNewtonsoftJson()`, `AddXmlSerializerFormatters()`) apply, with `Result.Status`:
 

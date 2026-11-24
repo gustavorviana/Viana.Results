@@ -35,6 +35,7 @@
 			Changed: Result&lt;T&gt; whose value is a custom struct is unwrapped like a class; only simple values (numbers, booleans, text, dates, identifiers, enums) keep the wrapper.
 			Changed: problem extension names are case-insensitive (ProblemResult, ProblemBuilder, JSON reading): the same name twice keeps one member with the last value and the first casing.
 			Fixed: empty ProblemResult.Extensions is read-only, like non-empty ones.
+			Changed: Results.Ok() without a value returns status 204 No Content (was 200), the HTTP status of a success without a body. Results.Ok(value) and Results.Ok(string) stay 200; a result built with an explicit status (new Result(200)) keeps it.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

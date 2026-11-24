@@ -34,6 +34,7 @@
 			Added: AddMediator(options, assemblies) with Telemetry (Tracing, Metrics, ExceptionDetails: Full, TypeOnly, None); duration histogram viana.mediator.request.duration; MediatorDiagnostics name constants; cancellation is not an error; 5xx problem results set Error status; native exception recording on .NET 9+.
 			1.0.0
 			Provides IRequest&lt;T&gt;, IHandler&lt;TRequest, TResponse&gt; and IMediator for a minimal Mediator pattern integrated with Viana.Results.
+			The telemetry status of Results.Ok() without a value is 204 (via Viana.Results).
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

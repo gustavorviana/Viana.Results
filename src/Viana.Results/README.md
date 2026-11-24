@@ -51,7 +51,7 @@ public Result<User> Get(int id)
 
 | Method | Status | Notes |
 |---|---|---|
-| `Results.Ok()` | 200 | Empty success |
+| `Results.Ok()` | 204 | Success without a body (`new Result(200)` keeps 200) |
 | `Results.Ok(string message)` | 200 | Returns `Result<string>` |
 | `Results.Ok<T>(T data)` | 200 | Typed success |
 | `Results.Created<T>(T data)` | 201 | |

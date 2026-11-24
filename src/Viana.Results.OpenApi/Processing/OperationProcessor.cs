@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.OpenApi;
 using System;
 using System.Collections.Generic;
@@ -18,28 +20,130 @@ namespace Viana.Results.OpenApi.Processing;
 internal static class OperationProcessor
 {
     /// <summary>
-    /// When the action returns the non-generic <see cref="Result"/>, clears all response
-    /// content (Result has no body — only the HTTP status code).
+    /// Feature 011: documents the success of an endpoint that returns a Viana result.
+    /// <list type="bullet">
+    /// <item>Successes declared by hand win: <c>[ProducesResponseType]</c> / <c>Produces</c> (with no type, void or a
+    /// non-Viana type), <see cref="ResponseExampleAttribute"/> and <c>ProducesResult</c> (status from the example result).</item>
+    /// <item>The success inferred from the return type (ASP.NET Core's 200) is removed when another success is declared,
+    /// for a bare <see cref="Result"/>, or with <see cref="WithoutDefaultResultAttribute"/>.</item>
+    /// <item>A bare <see cref="Result"/> with nothing declared documents <c>204 No Content</c> (what <c>Results.Ok()</c> answers).</item>
+    /// <item><see cref="WithoutDefaultResultAttribute"/>: no inferred success at all; only the hand-registered ones.</item>
+    /// </list>
+    /// Runs before the problem and example steps; they add their responses afterwards.
     /// </summary>
-    internal static void ClearBodyForBareResult(OpenApiOperation operation, MethodInfo method)
+    /// <remarks>
+    /// <c>Produces&lt;Result&gt;(200)</c> cannot be told apart from the inferred 200 (same type); declare
+    /// <c>Produces(200)</c> or <c>ProducesResult</c> instead.
+    /// </remarks>
+    internal static void ApplyDefaultResult(OpenApiOperation operation, MethodInfo method, IReadOnlyList<object>? endpointMetadata, IServiceProvider? services, string endpointName)
     {
-        if (operation?.Responses is null || operation.Responses.Count == 0)
-            return;
-
         var returnType = UnwrapTaskType(method.ReturnType);
-
-        if (returnType != typeof(Result))
+        if (!typeof(IResult).IsAssignableFrom(returnType))
             return;
 
-        foreach (var response in operation.Responses.Values)
-        {
-            if (response.Content is null || response.Content.Count == 0)
-                continue;
+        operation.Responses ??= new OpenApiResponses();
+        var metadata = endpointMetadata ?? Array.Empty<object>();
+        var isBare = returnType == typeof(Result);
+        var without = metadata.OfType<WithoutDefaultResultAttribute>().Any()
+            || method.GetCustomAttribute<WithoutDefaultResultAttribute>(true) != null
+            || method.DeclaringType?.GetCustomAttribute<WithoutDefaultResultAttribute>(true) != null;
 
-            response.Content.Clear();
-            response.Description ??= "OK";
+        var declared = DeclaredSuccesses(method, metadata, services, endpointName);
+
+        // The response ASP.NET Core inferred from the return type (schema of T for Result<T>).
+        var inferredKeys = operation.Responses.Keys.Where(k => IsSuccess(k) && !declared.Statuses.Contains(int.Parse(k))).ToList();
+        var template = inferredKeys.Select(k => operation.Responses[k]).FirstOrDefault(r => r.Content is { Count: > 0 });
+
+        if (without || isBare || declared.Statuses.Count > 0)
+        {
+            foreach (var key in inferredKeys)
+                operation.Responses.Remove(key);
+        }
+
+        // Attribute examples only decorate existing responses: give their statuses the inferred response shape
+        // (e.g. [ResponseExample] of a Created result on Result<T> documents 201 with T).
+        foreach (var (status, writesBody) in declared.AttributeExamples)
+        {
+            var key = status.ToString();
+            if (operation.Responses.ContainsKey(key))
+                continue;
+            operation.Responses[key] = writesBody && template != null && !isBare
+                ? Clone(template, Describe(status))
+                : new OpenApiResponse { Description = Describe(status) };
+        }
+
+        if (isBare && !without && declared.Statuses.Count == 0)
+            operation.Responses["204"] = new OpenApiResponse { Description = Describe(204) };
+
+        if (!isBare)
+            return;
+
+        // A bare Result has no body: drop the content ApiExplorer derived from the return type, unless the
+        // success was declared with its own type ([ProducesResponseType<T>]).
+        foreach (var pair in operation.Responses)
+        {
+            if (IsSuccess(pair.Key) && !declared.Typed.Contains(int.Parse(pair.Key)) && pair.Value.Content is { Count: > 0 } content)
+                content.Clear();
         }
     }
+
+    private sealed record DeclaredSuccess(HashSet<int> Statuses, HashSet<int> Typed, List<(int Status, bool WritesBody)> AttributeExamples);
+
+    private static DeclaredSuccess DeclaredSuccesses(MethodInfo method, IReadOnlyList<object> metadata, IServiceProvider? services, string endpointName)
+    {
+        var statuses = new HashSet<int>();
+        var typed = new HashSet<int>();
+        var attributeExamples = new List<(int, bool)>();
+
+        // [ProducesResponseType] / Produces(...): the inferred metadata carries the Viana return type itself.
+        var produces = metadata.OfType<IProducesResponseTypeMetadata>()
+            .Concat(method.GetCustomAttributes(true).OfType<IProducesResponseTypeMetadata>())
+            .Concat(method.DeclaringType?.GetCustomAttributes(true).OfType<IProducesResponseTypeMetadata>() ?? []);
+        // MVC's [ProducesResponseType] exposes its status through IApiResponseMetadataProvider.
+        var mvc = method.GetCustomAttributes(true).OfType<IApiResponseMetadataProvider>()
+            .Concat(method.DeclaringType?.GetCustomAttributes(true).OfType<IApiResponseMetadataProvider>() ?? [])
+            .Select(p => (p.StatusCode, p.Type));
+        foreach (var (status, type) in produces.Select(p => (p.StatusCode, p.Type)).Concat(mvc))
+        {
+            if (!IsSuccess(status) || (type != null && typeof(IResult).IsAssignableFrom(type)))
+                continue;
+            statuses.Add(status);
+            if (type != null && type != typeof(void))
+                typed.Add(status);
+        }
+
+        // [ResponseExample] on the action or its type (globals are fallbacks, not declarations).
+        var byStatus = ExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
+        foreach (var example in byStatus.Values.SelectMany(list => BuildExamples(list, ExampleJson, services, method)))
+        {
+            if (example.Problem != null || !IsSuccess(example.Status))
+                continue;
+            statuses.Add(example.Status);
+            attributeExamples.Add((example.Status, example.Node != null));
+        }
+
+        // ProducesResult (minimal APIs): status from the example result, or the declared/default status.
+        foreach (var declaration in metadata.OfType<VianaResponseMetadata>().Where(d => !d.IsProblem))
+        {
+            var status = Resolve(declaration, services, endpointName).Status;
+            if (IsSuccess(status))
+                statuses.Add(status);
+        }
+
+        return new DeclaredSuccess(statuses, typed, attributeExamples);
+    }
+
+    private static readonly JsonSerializerOptions ExampleJson = new(JsonSerializerDefaults.Web);
+
+    private static bool IsSuccess(int status) => status is >= 200 and < 300;
+
+    private static bool IsSuccess(string key) => int.TryParse(key, out var status) && IsSuccess(status);
+
+    private static OpenApiResponse Clone(IOpenApiResponse template, string description) => new()
+    {
+        Description = description,
+        Content = template.Content?.ToDictionary(c => c.Key, c => new OpenApiMediaType { Schema = c.Value.Schema })
+    };
 
     /// <summary>
     /// Adds RFC 9457 problem responses for every <see cref="ProblemResultAttribute"/> declared

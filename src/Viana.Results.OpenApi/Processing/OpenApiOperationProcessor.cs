@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.OpenApi;
 using System;
 using System.Reflection;
@@ -11,9 +12,12 @@ namespace Viana.Results.OpenApi.Processing;
 [Obsolete("Internal helper; it will become internal in Viana.Results.OpenApi 2.0.0.")]
 public static class OpenApiOperationProcessor
 {
-    /// <summary>Clears the response body for actions returning a bare <see cref="Result"/>.</summary>
-    public static void ClearBodyForBareResult(OpenApiOperation operation, MethodInfo method)
-        => OperationProcessor.ClearBodyForBareResult(operation, method);
+    /// <summary>
+    /// Documents the success of an endpoint returning a Viana result: a bare <see cref="Result"/> is 204, hand-declared
+    /// successes win over the inferred one, and <see cref="WithoutDefaultResultAttribute"/> keeps only the declared ones.
+    /// </summary>
+    public static void ApplyDefaultResult(OpenApiOperation operation, MethodInfo method, IReadOnlyList<object>? endpointMetadata, IServiceProvider? services = null)
+        => OperationProcessor.ApplyDefaultResult(operation, method, endpointMetadata, services, method.Name);
 
     /// <summary>Adds RFC 9457 problem responses for every <see cref="ProblemResultAttribute"/> on the action or its type.</summary>
     public static void ApplyProblemResultAttributes(OpenApiOperation operation, MethodInfo method, JsonSerializerOptions json)

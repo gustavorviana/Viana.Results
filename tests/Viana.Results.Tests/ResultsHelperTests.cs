@@ -56,8 +56,8 @@ namespace Viana.Results.Tests
             // Act
             var result = Results.Ok();
 
-            // Assert
-            Assert.Equal((int)HttpStatusCode.OK, result.Status);
+            // Assert: a success without a body is 204 No Content (feature 011)
+            Assert.Equal((int)HttpStatusCode.NoContent, result.Status);
             Assert.Null(result.Problem);
         }
 
@@ -399,6 +399,15 @@ namespace Viana.Results.Tests
             Assert.Equal((int)HttpStatusCode.BadRequest, result.Status);
             Assert.NotNull(result.Problem);
             Assert.IsType<ProblemResult>(result.Problem);
+        }
+
+        [Fact]
+        public void Results_Ok_WithValue_StaysOk_And_ExplicitStatus_IsKept()
+        {
+            Assert.Equal(200, Results.Ok("x").Status);
+            Assert.Equal(200, Results.Ok(42).Status);
+            Assert.Equal(200, new Result(200).Status);
+            Assert.Equal(202, new Result(202).Status);
         }
     }
 }

@@ -24,7 +24,7 @@ public class MetricsTests
         Assert.Equal(2, capture.Measurements.Count);
         var (value, tags) = capture.Measurements.First();
         Assert.True(value >= 0);
-        Assert.Equal(200, tags[MediatorDiagnostics.StatusTag]);
+        Assert.Equal(204, tags[MediatorDiagnostics.StatusTag]); // Results.Ok() without a value is 204 (feature 011)
         Assert.Equal(true, tags[MediatorDiagnostics.SuccessTag]);
         Assert.False(tags.ContainsKey(MediatorDiagnostics.ErrorTypeTag));
     }

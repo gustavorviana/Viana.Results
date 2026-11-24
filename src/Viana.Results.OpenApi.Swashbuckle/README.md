@@ -101,6 +101,40 @@ app.MapGet("/me", handler)
   error at document generation.
 - Same per-status precedence as controllers (endpoint examples > endpoint declarations > global example).
 
+### Documented success: 204 by default, `WithoutDefaultResult` as a last resort
+
+The success is documented from the return type:
+
+| Endpoint returns | Documented success |
+|---|---|
+| bare `Result`, nothing declared | `204 No Content` (what `Results.Ok()` / `Results.NoContent()` answer) |
+| `Result<T>`, nothing declared | `200` with `T` |
+| anything with a success declared by hand (`[ProducesResponseType]`, `Produces`, `[ResponseExample]`, `ProducesResult`) | the declared successes only (the inferred one is removed; a `[ResponseExample]` of a `Created` result documents 201) |
+
+A bare result built with another status (`new Result(202)`) is still documented as 204: declare that status by hand.
+
+**Last resort:** an endpoint that answers different successes (for example 200 with a product or 202 with a
+reservation) can drop the inferred success and document them by hand. Declare it as `IResult` (a `Result<T>`
+converted to `Result` keeps only its status):
+
+```csharp
+[HttpGet("{id}")]
+[WithoutDefaultResult]
+[ProducesResponseType<Product>(StatusCodes.Status200OK)]
+[ProducesResponseType<Reservation>(StatusCodes.Status202Accepted)]
+[ResponseExample(typeof(ProductExample))]
+[ResponseExample(typeof(ReservationAcceptedExample))]
+public IResult Get(int id, bool reserve) => reserve ? new Result<Reservation>(new(id, "R-1"), 202) : Results.Ok(Find(id));
+
+app.MapGet("/products/{id}", IResult (int id, bool reserve) => ...)
+   .WithoutDefaultResult()
+   .ProducesResult<ProductExample>()
+   .ProducesResult<ReservationAcceptedExample>();
+```
+
+`WithoutDefaultResult` changes the documentation only; problem responses are unaffected. On a controller class it
+applies to every action; on a route group, to every endpoint in it. `Produces<Result>(200)` cannot be told apart
+from the inferred 200; use `Produces(200)` or `ProducesResult` instead.
 ### Example classes returning real results
 
 Example providers may return the real Viana result (`IExampleProvider<Result<User>>`, `ListResult<T>`,

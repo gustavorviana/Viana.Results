@@ -30,6 +30,8 @@ public static class MinimalEndpoints
         m.MapGet("/success/value", () => Results.Ok(new Forecast { TemperatureC = 22, Summary = "Mild" }).ToHttpResult());
         m.MapGet("/success/created", () => new Result<Forecast>(new Forecast { TemperatureC = 1 }, 201).ToHttpResult());
         m.MapGet("/success/no-content", () => new Result(204).ToHttpResult());
+        m.MapGet("/success/ok-empty", () => Results.Ok().ToHttpResult());
+        m.MapGet("/success/explicit-200", () => new Result(200).ToHttpResult());
         m.MapGet("/success/null-value", () => new Result<Forecast>((Forecast?)null).ToHttpResult());
         m.MapGet("/success/list", () => new ListResult<Forecast>(new List<Forecast> { new() { TemperatureC = 1 }, new() { TemperatureC = 2 } }).ToHttpResult());
         m.MapGet("/success/paged", () => new PagedResult<Forecast>(new List<Forecast> { new() { TemperatureC = 1 } }, 1, 3).ToHttpResult());
@@ -39,6 +41,7 @@ public static class MinimalEndpoints
         f.MapGet("/ok", () => Results.Ok(new Forecast { TemperatureC = 5 }));
         f.MapGet("/fail", async () => { await Task.Yield(); return new Result<Forecast>(new ProblemResult(404, "Missing")); });
         f.MapGet("/plain", () => "x");
+        f.MapGet("/ok-empty", () => Results.Ok());
         app.MapGet("/single/ok", () => Results.Ok(new Forecast { TemperatureC = 5 })).AddVianaResults();
         app.MapGet("/explicit/ok", () => Results.Ok(new Forecast { TemperatureC = 5 }).ToHttpResult());
         app.MapGet("/explicit/fail", () => new Result<Forecast>(new ProblemResult(404, "Missing")).ToHttpResult());

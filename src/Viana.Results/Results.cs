@@ -10,12 +10,13 @@ namespace Viana.Results;
 public static class Results
 {
     /// <summary>
-    /// Creates a successful result without payload (status 200, no problem).
+    /// Creates a successful result without payload: HTTP 204 No Content (a success without a body). To answer
+    /// another status without a body, build it explicitly (for example <c>new Result(200)</c>); that status is kept.
     /// </summary>
-    /// <returns>A successful result with no data.</returns>
+    /// <returns>A successful result with status 204 and no data.</returns>
     public static Result Ok()
     {
-        return new Result(200);
+        return new Result(204);
     }
 
     /// <summary>

@@ -101,6 +101,29 @@ public static class VianaRouteHandlerBuilderExtensions
     public static IEndpointConventionBuilder ProducesProblemResult(this IEndpointConventionBuilder builder, IResult failedExample, string? name = null, string? summary = null)
         => Add(builder, new VianaResponseMetadata { IsProblem = true, InlineExample = failedExample ?? throw new ArgumentNullException(nameof(failedExample)), Name = name, Summary = summary });
 
+    /// <summary>
+    /// Last resort: removes the success response inferred from the return type, so only the responses
+    /// registered by hand (<c>ProducesResult</c>, <c>Produces</c>) and the problem responses are documented.
+    /// See <see cref="WithoutDefaultResultAttribute"/>. Documentation only.
+    /// </summary>
+    public static RouteHandlerBuilder WithoutDefaultResult(this RouteHandlerBuilder builder)
+        => AddMarker(builder);
+
+    /// <inheritdoc cref="WithoutDefaultResult(RouteHandlerBuilder)"/>
+    public static RouteGroupBuilder WithoutDefaultResult(this RouteGroupBuilder builder)
+        => AddMarker(builder);
+
+    /// <inheritdoc cref="WithoutDefaultResult(RouteHandlerBuilder)"/>
+    public static IEndpointConventionBuilder WithoutDefaultResult(this IEndpointConventionBuilder builder)
+        => AddMarker(builder);
+
+    private static TBuilder AddMarker<TBuilder>(TBuilder builder) where TBuilder : IEndpointConventionBuilder
+    {
+        if (builder == null) throw new ArgumentNullException(nameof(builder));
+        builder.Add(e => e.Metadata.Add(new WithoutDefaultResultAttribute()));
+        return builder;
+    }
+
     private static TBuilder Add<TBuilder>(TBuilder builder, VianaResponseMetadata metadata) where TBuilder : IEndpointConventionBuilder
     {
         if (builder == null) throw new ArgumentNullException(nameof(builder));

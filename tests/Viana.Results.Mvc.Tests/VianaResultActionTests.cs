@@ -7,8 +7,6 @@ using System.Text.Json;
 
 namespace Viana.Results.Mvc.Tests;
 
-internal enum SampleEnum { None, First, Second }
-
 public class VianaResultActionTests
 {
     private static ActionContext CreateActionContext(IServiceProvider? requestServices = null)
@@ -224,7 +222,7 @@ public class VianaResultActionTests
 
         await action.ExecuteResultAsync(context);
 
-        Assert.Equal(200, context.HttpContext.Response.StatusCode);
+        Assert.Equal(204, context.HttpContext.Response.StatusCode);
         var body = ReadResponseBody(context);
         Assert.Empty(body);
     }

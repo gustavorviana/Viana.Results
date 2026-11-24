@@ -43,13 +43,16 @@ public class OperationProcessorTests
     [Theory]
     [InlineData(nameof(Actions.BareValueTask))]
     [InlineData(nameof(Actions.BareTask))]
-    public void ClearBodyForBareResult_HandlesTaskAndValueTask(string name)
+    public void ApplyDefaultResult_HandlesTaskAndValueTask(string name)
     {
         var operation = NewOperation();
 
-        OperationProcessor.ClearBodyForBareResult(operation, Method<Actions>(name));
+        OperationProcessor.ApplyDefaultResult(operation, Method<Actions>(name), null, null, name);
 
-        Assert.Empty(operation.Responses!["200"].Content!);
+        // Feature 011: the inferred 200 of a bare Result becomes 204 No Content.
+        Assert.False(operation.Responses!.ContainsKey("200"));
+        Assert.True(operation.Responses!.ContainsKey("204"));
+        Assert.Null(operation.Responses!["204"].Content);
     }
 
     [Fact]
