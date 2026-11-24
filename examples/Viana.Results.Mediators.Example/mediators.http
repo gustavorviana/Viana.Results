@@ -1,0 +1,50 @@
+# Mediators example. Watch the console: every call prints a "Mediator.Send {Request}" span and,
+# periodically, the viana.mediator.request.duration metric.
+@host = http://localhost:5031
+
+### List (200)
+GET {{host}}/products
+
+### Get (200) / missing (404)
+GET {{host}}/products/1
+
+###
+GET {{host}}/products/99
+
+### Create (201) – run twice to get a 409
+POST {{host}}/products
+Content-Type: application/json
+
+{ "sku": "HS-001", "name": "Headset", "price": 499.0, "stock": 5 }
+
+### Create invalid (400 validation problem)
+POST {{host}}/products
+Content-Type: application/json
+
+{ "sku": "", "name": "", "price": 0, "stock": -1 }
+
+### Update (204)
+PUT {{host}}/products/2
+Content-Type: application/json
+
+{ "sku": "MS-002", "name": "Wireless mouse v2", "price": 139.9, "stock": 20 }
+
+### Delete with stock (422) / without stock (204)
+DELETE {{host}}/products/1
+
+###
+DELETE {{host}}/products/3
+
+### ---------- Scenarios ----------
+
+### Handler throws: 500 problem; span Error + exception event (see Mediator:Telemetry:ExceptionDetails)
+GET {{host}}/scenarios/throws
+
+### No handler registered: 500 problem naming the request and result types; span Error, error.type = HandlerNotFoundException
+GET {{host}}/scenarios/unregistered
+
+### Dependency down: 503 problem; span Error (5xx)
+GET {{host}}/scenarios/unavailable
+
+### Slow request: cancel it from the client before it ends; the span gets viana.mediator.cancelled and is not an error
+GET {{host}}/scenarios/slow?seconds=10

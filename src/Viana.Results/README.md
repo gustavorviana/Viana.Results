@@ -201,3 +201,9 @@ shape.
   (unwrap, problem responses, `[ResponseExample]`, etc.).
 * **`Viana.Results.OpenApi.Swashbuckle`** — same features wired up as
   `Swashbuckle.AspNetCore` filters.
+
+---
+
+### Examples
+
+Runnable examples for every package: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).

@@ -165,3 +165,9 @@ the singular `example`.
   `AddOpenApi()` directly, e.g. with Scalar).
 * **`Viana.Results`** — the core package (`ProblemBuilder`, `Result<T>`,
   `ListResult<T>`, `PagedResult<T>`).
+
+---
+
+### Examples
+
+Runnable examples for every package: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).

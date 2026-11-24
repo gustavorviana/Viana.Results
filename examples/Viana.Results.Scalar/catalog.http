@@ -1,0 +1,134 @@
+# Catalog requests. Same file works for the Swagger host: change @host to http://localhost:5026.
+# Switch @api between the controller (/api/products) and minimal API (/minimal/products) styles.
+@host = http://localhost:5027
+@api = {{host}}/api/products
+# @api = {{host}}/minimal/products
+
+### List (200)
+GET {{api}}
+
+### Get (200)
+GET {{api}}/1
+
+### Get missing (404 problem)
+GET {{api}}/99
+
+### Create (201)
+POST {{api}}
+Content-Type: application/json
+
+{ "sku": "HS-001", "name": "Headset", "price": 499.0, "stock": 5 }
+
+### Create with the same SKU, any case (409 problem)
+POST {{api}}
+Content-Type: application/json
+
+{ "sku": "kb-001", "name": "Another keyboard", "price": 10, "stock": 1 }
+
+### Create invalid (400 validation problem, one error per field)
+POST {{api}}
+Content-Type: application/json
+
+{ "sku": "", "name": "", "price": 0, "stock": -1 }
+
+### Create malformed JSON (400 problem)
+POST {{api}}
+Content-Type: application/json
+
+{ not json
+
+### Update (204)
+PUT {{api}}/2
+Content-Type: application/json
+
+{ "sku": "MS-002", "name": "Wireless mouse v2", "price": 139.9, "stock": 20 }
+
+### Update missing (404 problem)
+PUT {{api}}/99
+Content-Type: application/json
+
+{ "sku": "XX-001", "name": "Ghost", "price": 1, "stock": 0 }
+
+### Delete with stock (422 business rule)
+DELETE {{api}}/1
+
+### Delete without stock (204)
+DELETE {{api}}/3
+
+### Stock (200)
+GET {{api}}/1/stock
+
+### Inventory down
+POST {{host}}/api/inventory/availability?available=false
+
+### Stock while inventory is down (503 problem with retryAfterSeconds)
+GET {{api}}/1/stock
+
+### Inventory back up
+POST {{host}}/api/inventory/availability?available=true
+
+### Viana.Results.Mvc controller (200 / 404)
+GET {{host}}/api/legacy/products/1
+
+###
+GET {{host}}/api/legacy/products/99
+
+### ---------- One route per core factory ----------
+GET {{host}}/api/samples/ok
+
+###
+GET {{host}}/api/samples/ok-message
+
+###
+GET {{host}}/api/samples/ok-value
+
+###
+GET {{host}}/api/samples/implicit
+
+###
+POST {{host}}/api/samples/created
+
+###
+DELETE {{host}}/api/samples/no-content
+
+###
+GET {{host}}/api/samples/list
+
+###
+GET {{host}}/api/samples/paged?page=2&pageSize=3
+
+###
+GET {{host}}/api/samples/bad-request
+
+###
+GET {{host}}/api/samples/validation
+
+###
+GET {{host}}/api/samples/unauthorized
+
+###
+GET {{host}}/api/samples/forbidden
+
+###
+GET {{host}}/api/samples/not-found
+
+###
+GET {{host}}/api/samples/conflict
+
+###
+GET {{host}}/api/samples/business-rule
+
+###
+GET {{host}}/api/samples/failure
+
+###
+GET {{host}}/api/samples/failure-exception
+
+###
+GET {{host}}/api/samples/builder
+
+###
+GET {{host}}/api/samples/problem-result
+
+### Unhandled exception (500 problem from the exception handler)
+GET {{host}}/api/samples/crash

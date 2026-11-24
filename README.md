@@ -92,6 +92,9 @@ examples:
 - [Viana.Results.AspNetCore](src/Viana.Results.AspNetCore/README.md) — `ToActionResult()`, `AddVianaResultFilter()`, native ProblemDetails interop
 - [Viana.Results.Mvc](src/Viana.Results.Mvc/README.md) — `VianaResultAction`, `VianaResultFilter`
 - [Viana.Results.OpenApi](src/Viana.Results.OpenApi/README.md) — native OpenAPI transformers, `[ProblemResult]`, `[ResponseExample]`
+
+Runnable examples (catalog API with controllers, minimal APIs, Scalar, Swagger, and a mediator app with
+OpenTelemetry): see [`examples/README.md`](examples/README.md).
 - [Viana.Results.OpenApi.Swashbuckle](src/Viana.Results.OpenApi.Swashbuckle/README.md) — same surface for `SwaggerGen`
 
 ---

@@ -102,3 +102,9 @@ headers through the normal framework mechanisms).
 Going through the native pipeline costs a little more than the old hand-written JSON (see
 [benchmarks](../../benchmarks/Viana.Results.Benchmarks/baseline/aspnetcore-1.0.0.md)): content
 negotiation, MVC formatters and `IProblemDetailsService` are what give the native interop.
+
+---
+
+### Examples
+
+Runnable examples for every package: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).

@@ -1,30 +1,31 @@
+using Viana.Results.AspNetCore;
 using Viana.Results.Examples.Shared;
 using Viana.Results.Examples.Shared.Controllers;
+using Viana.Results.Examples.Shared.Endpoints;
 using Viana.Results.Examples.Shared.Examples;
-using Viana.Results.Mediators;
-using Viana.Results.AspNetCore;
 using Viana.Results.OpenApi;
 using Viana.Results.OpenApi.Swashbuckle;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var sharedAssembly = typeof(ResultSamplesController).Assembly;
+var sharedAssembly = typeof(ProductsController).Assembly;
 
-// Viana.Results.AspNetCore converts actions that return IResult/Result<T> through the native pipeline
-// (ProblemDetails for failures, MVC formatters for successes).
+// Native problem details: Viana failures, unhandled exceptions and bare status codes share one format.
 builder.Services.AddProblemDetails();
-// Controllers and handlers live in Viana.Results.Examples.Shared.
+
+// Controllers live in Viana.Results.Examples.Shared. AddVianaResultFilter (Viana.Results.AspNetCore)
+// converts actions returning Result/Result<T>. The Viana.Results.Mvc controller needs no registration.
 builder.Services.AddControllers()
     .AddApplicationPart(sharedAssembly)
     .AddVianaResultFilter();
 
-builder.Services.AddMediator(sharedAssembly);
+builder.Services.AddCatalog();
 
+// Global example: used for 500 wherever an endpoint does not document its own.
 builder.Services.AddVianaResultExamples(opts =>
-{
-    opts.AddExample<InternalServerErrorExample>(500, summary: "Generic internal error");
-});
+    opts.AddExample<InternalServerErrorExample>(500, summary: "Generic internal error"));
 
+// Swashbuckle document (/swagger/v1/swagger.json) with the Viana filters and the XML comments.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -37,26 +38,24 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+// Malformed bodies in minimal APIs throw BadHttpRequestException in Development: keep its status (400).
+app.UseExceptionHandler(new ExceptionHandlerOptions
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-app.UseAuthorization();
-
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path == "/")
-    {
-        context.Response.Redirect("/swagger");
-        return;
-    }
-    await next();
+    StatusCodeSelector = ex => ex is BadHttpRequestException bad ? bad.StatusCode : StatusCodes.Status500InternalServerError
 });
+app.UseStatusCodePages();
+
+app.UseSwagger();
+app.UseSwaggerUI();
+app.MapGet("/", () => Microsoft.AspNetCore.Http.Results.Redirect("/swagger")).ExcludeFromDescription();
 
 app.MapControllers();
-app.MapMinimalForecasts();
+app.MapProductEndpoints();
 
 app.Run();
+
+namespace Viana.Results.Swagger
+{
+    /// <summary>Marker type for <c>WebApplicationFactory</c> (each example host has its own).</summary>
+    public sealed class SwaggerHost;
+}

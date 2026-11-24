@@ -84,3 +84,9 @@ public async Task<IResult> GetUsers()
     return users; // Will be automatically formatted
 }
 ```
+
+---
+
+### Examples
+
+Runnable examples for every package: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).

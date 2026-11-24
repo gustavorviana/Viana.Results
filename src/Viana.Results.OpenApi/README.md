@@ -164,3 +164,9 @@ The actual mutation logic lives in `Viana.Results.OpenApi.Processing`
 the filters in `Viana.Results.OpenApi.Swashbuckle` are thin adapters over
 these processors, so the OpenAPI document is identical regardless of
 which pipeline emits it.
+
+---
+
+### Examples
+
+Runnable examples for every package: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).

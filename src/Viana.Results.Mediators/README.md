@@ -107,6 +107,10 @@ builder.Services.AddOpenTelemetry()
     .WithMetrics(m => m.AddMeter(MediatorDiagnostics.MeterName));    // "Viana.Results.Mediators"
 ```
 
+In ASP.NET Core the mediator span is a child of the request span, and the default sampler follows the
+parent: also record the request (`t.AddSource("Microsoft.AspNetCore")` or the ASP.NET Core
+instrumentation), otherwise the mediator spans are dropped.
+
 **Span** `Mediator.Send {RequestType}` (kind `Internal`, child of the current activity):
 
 | Tag | Example |
@@ -139,3 +143,9 @@ data:
 consulted, even with active listeners.
 
 All names are available as constants in `MediatorDiagnostics`.
+
+---
+
+### Examples
+
+Runnable examples for every package: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).
