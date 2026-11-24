@@ -29,7 +29,6 @@ public class ProductsController(ProductCatalog catalog, InventoryGateway invento
     /// <summary>Creates a product.</summary>
     /// <param name="input">The product to create.</param>
     [HttpPost(Name = "CreateProduct")]
-    [ProducesResponseType<Product>(StatusCodes.Status201Created)] // documents 201: the success example alone keeps 200
     [ResponseExample(typeof(ProductCreatedExample))]
     [ResponseExample(typeof(InvalidProductExample))]
     [ResponseExample(typeof(DuplicateSkuExample))]
@@ -39,7 +38,6 @@ public class ProductsController(ProductCatalog catalog, InventoryGateway invento
     /// <param name="id">Product id.</param>
     /// <param name="input">The new product data.</param>
     [HttpPut("{id:int}", Name = "UpdateProduct")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ResponseExample(typeof(InvalidProductExample))]
     [ResponseExample(typeof(ProductNotFoundExample))]
     [ResponseExample(typeof(DuplicateSkuExample))]
@@ -48,7 +46,6 @@ public class ProductsController(ProductCatalog catalog, InventoryGateway invento
     /// <summary>Deletes a product without stock.</summary>
     /// <param name="id">Product id.</param>
     [HttpDelete("{id:int}", Name = "DeleteProduct")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ResponseExample(typeof(ProductNotFoundExample))]
     [ResponseExample(typeof(ProductHasStockExample))]
     public Result Delete(int id) => catalog.Delete(id);

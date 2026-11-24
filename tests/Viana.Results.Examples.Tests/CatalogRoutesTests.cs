@@ -116,6 +116,24 @@ public class CatalogRoutesTests
     [Theory]
     [InlineData(Hosts.Scalar)]
     [InlineData(Hosts.Swagger)]
+    public async Task Reservation_answers_200_or_202_or_404(string host)
+    {
+        var client = Hosts.Create(host);
+
+        var ok = await client.GetAsync("/minimal/products/1/reservation");
+        Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
+        Assert.Equal("KB-001", (await ok.Json()).GetProperty("sku").GetString());
+        var multi = await client.GetAsync("/api/samples/multi-success?reserve=true");
+        Assert.Equal("R-0001", (await multi.Json()).GetProperty("code").GetString());
+        var accepted = await client.GetAsync("/minimal/products/1/reservation?reserve=true");
+        Assert.Equal(HttpStatusCode.Accepted, accepted.StatusCode);
+        Assert.Equal("R-0001", (await accepted.Json()).GetProperty("code").GetString());
+        await AssertProblem(await client.GetAsync("/minimal/products/99/reservation?reserve=true"), HttpStatusCode.NotFound);
+    }
+
+    [Theory]
+    [InlineData(Hosts.Scalar)]
+    [InlineData(Hosts.Swagger)]
     public async Task Legacy_mvc_controller_answers_like_the_native_one(string host)
     {
         var client = Hosts.Create(host);

@@ -67,6 +67,12 @@ GET {{api}}/1/stock
 ### Inventory back up
 POST {{host}}/api/inventory/availability?available=true
 
+### Reservation, WithoutDefaultResult (200 with the product)
+GET {{host}}/minimal/products/1/reservation
+
+### Reservation accepted (202 with a reservation)
+GET {{host}}/minimal/products/1/reservation?reserve=true
+
 ### Viana.Results.Mvc controller (200 / 404)
 GET {{host}}/api/legacy/products/1
 
@@ -74,7 +80,14 @@ GET {{host}}/api/legacy/products/1
 GET {{host}}/api/legacy/products/99
 
 ### ---------- One route per core factory ----------
+# Results.Ok() without a value: 204 No Content
 GET {{host}}/api/samples/ok
+
+### WithoutDefaultResult: 200 with a product, or 202 with a reservation
+GET {{host}}/api/samples/multi-success
+
+###
+GET {{host}}/api/samples/multi-success?reserve=true
 
 ###
 GET {{host}}/api/samples/ok-message

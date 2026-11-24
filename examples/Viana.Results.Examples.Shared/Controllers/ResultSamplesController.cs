@@ -37,13 +37,11 @@ public class ResultSamplesController : ControllerBase
 
     /// <summary><c>Results.Created(value)</c>: 201 with the value.</summary>
     [HttpPost("created")]
-    [ProducesResponseType<Product>(StatusCodes.Status201Created)]
     [ResponseExample(typeof(ProductCreatedExample))]
     public Result<Product> CreatedSample() => Results.Created(Sample);
 
     /// <summary><c>Results.NoContent()</c>: 204 without body.</summary>
     [HttpDelete("no-content")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public Result NoContentSample() => Results.NoContent();
 
     /// <summary><c>ListResult&lt;T&gt;</c>: a list, written as a JSON array (implicit from <c>List&lt;T&gt;</c>).</summary>
@@ -60,6 +58,22 @@ public class ResultSamplesController : ControllerBase
         var number = Math.Max(1, page);
         return PagedResult<int>.Create(all.Skip((number - 1) * pageSize).Take(pageSize).ToList(), number, pageSize, all.Count);
     }
+
+    /// <summary>
+    /// Last resort: the action returns the common <c>IResult</c> but answers two different successes (200 with the
+    /// product, or 202 with a reservation). <c>[WithoutDefaultResult]</c> drops the inferred success, and the
+    /// successes are documented by hand. Declare <c>IResult</c>, not <c>Result</c>: a <c>Result&lt;T&gt;</c>
+    /// converted to <c>Result</c> keeps only the status, not the body.
+    /// </summary>
+    /// <param name="reserve">true answers 202 with a reservation; false answers 200 with the product.</param>
+    [HttpGet("multi-success")]
+    [WithoutDefaultResult]
+    [ProducesResponseType<Product>(StatusCodes.Status200OK)]
+    [ProducesResponseType<Reservation>(StatusCodes.Status202Accepted)]
+    [ResponseExample(typeof(ProductExample))]
+    [ResponseExample(typeof(ReservationAcceptedExample))]
+    public IResult MultiSuccess([FromQuery] bool reserve = false)
+        => reserve ? new Result<Reservation>(new Reservation(Sample.Id, "R-0001"), 202) : Results.Ok(Sample);
 
     // ---------- Problems (RFC 9457) ----------
 

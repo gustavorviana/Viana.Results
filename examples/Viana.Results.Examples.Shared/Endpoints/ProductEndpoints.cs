@@ -39,14 +39,12 @@ public static class ProductEndpoints
 
         products.MapPut("/{id:int}", (int id, [FromBody] ProductInput input, ProductCatalog catalog) => catalog.Update(id, input))
             .WithName("UpdateMinimalProduct")
-            .Produces(StatusCodes.Status204NoContent)
             .ProducesProblemResult<InvalidProductExample>()
             .ProducesProblemResult<ProductNotFoundExample>()
             .ProducesProblemResult<DuplicateSkuExample>();
 
         products.MapDelete("/{id:int}", (int id, ProductCatalog catalog) => catalog.Delete(id))
             .WithName("DeleteMinimalProduct")
-            .Produces(StatusCodes.Status204NoContent)
             .ProducesProblemResult<ProductNotFoundExample>()
             .ProducesProblemResult<ProductHasStockExample>();
 
@@ -56,6 +54,22 @@ public static class ProductEndpoints
             .ProducesProblemResult<ProductNotFoundExample>()
             .ProducesProblemResult<ServiceUnavailableExample>();
 
+        // Last resort: the handler returns the common IResult but answers 200 (the product) or 202 (a reservation).
+        // WithoutDefaultResult drops the inferred success; both successes are registered by hand. (Declare IResult,
+        // not Result: Result<T> converted to Result keeps only the status, not the body.)
+        products.MapGet("/{id:int}/reservation", IResult (int id, bool? reserve, ProductCatalog catalog) =>
+            {
+                var product = catalog.Get(id);
+                if (product.Problem is not null || reserve != true)
+                    return product;
+                return new Result<Reservation>(new Reservation(id, $"R-{id:0000}"), 202);
+            })
+            .WithName("ReserveMinimalProduct")
+            .WithoutDefaultResult()
+            .ProducesResult<ProductExample>()
+            .ProducesResult<ReservationAcceptedExample>()
+            .ProducesProblemResult<ProductNotFoundExample>();
+
         // Turns the fake inventory dependency on/off to reproduce the 503.
         app.MapPost("/api/inventory/availability", (bool available, InventoryGateway inventory) =>
             {
@@ -64,8 +78,7 @@ public static class ProductEndpoints
             })
             .AddVianaResults()
             .WithName("SetInventoryAvailability")
-            .WithTags("Inventory")
-            .Produces(StatusCodes.Status204NoContent);
+            .WithTags("Inventory");
 
         return app;
     }

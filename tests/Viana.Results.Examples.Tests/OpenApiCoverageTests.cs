@@ -20,6 +20,9 @@ public class OpenApiCoverageTests
         ("/minimal/products/{id}", "put", ["204", "400", "404", "409"]),
         ("/minimal/products/{id}", "delete", ["204", "404", "422"]),
         ("/minimal/products/{id}/stock", "get", ["200", "404", "503"]),
+        ("/minimal/products/{id}/reservation", "get", ["200", "202", "404"]),
+        ("/api/samples/multi-success", "get", ["200", "202"]),
+        ("/api/inventory/availability", "post", ["204"]),
     ];
 
     public static TheoryData<string> Documents() => new() { Hosts.Scalar, Hosts.Swagger };
@@ -70,5 +73,37 @@ public class OpenApiCoverageTests
             : problem.GetProperty("examples").EnumerateObject().First().Value.GetProperty("value");
 
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.5", example.GetProperty("type").GetString());
+    }
+
+    private static readonly (string Path, string Method, string[] Successes)[] ExactSuccesses =
+    [
+        ("/api/products", "post", ["201"]),
+        ("/minimal/products", "post", ["201"]),
+        ("/api/products/{id}", "put", ["204"]),
+        ("/minimal/products/{id}", "put", ["204"]),
+        ("/api/products/{id}", "delete", ["204"]),
+        ("/minimal/products/{id}", "delete", ["204"]),
+        ("/api/inventory/availability", "post", ["204"]),
+        ("/api/samples/ok", "get", ["204"]),
+        ("/api/samples/created", "post", ["201"]),
+        ("/api/samples/multi-success", "get", ["200", "202"]),
+        ("/minimal/products/{id}/reservation", "get", ["200", "202"]),
+    ];
+
+    [Theory, MemberData(nameof(Documents))]
+    public async Task Successes_are_exactly_the_runtime_ones(string host)
+    {
+        var paths = (await LoadDocument(host)).GetProperty("paths");
+        var wrong = new List<string>();
+
+        foreach (var (path, method, successes) in ExactSuccesses)
+        {
+            var documented = FindPath(paths, path).GetProperty(method).GetProperty("responses")
+                .EnumerateObject().Select(r => r.Name).Where(s => s.StartsWith('2')).OrderBy(s => s).ToArray();
+            if (!documented.SequenceEqual(successes))
+                wrong.Add($"{method.ToUpperInvariant()} {path}: [{string.Join(", ", documented)}]");
+        }
+
+        Assert.True(wrong.Count == 0, $"{host}: {string.Join("; ", wrong)}");
     }
 }

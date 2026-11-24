@@ -20,7 +20,7 @@ every host.
 
 | Feature | File | Request |
 |---|---|---|
-| `Results.Ok()`, `Ok(string)`, `Ok(value)` | [ResultSamplesController.cs](Viana.Results.Examples.Shared/Controllers/ResultSamplesController.cs) | `GET /api/samples/ok`, `/ok-message`, `/ok-value` |
+| `Results.Ok()` (204, no body), `Ok(string)`, `Ok(value)` (200) | [ResultSamplesController.cs](Viana.Results.Examples.Shared/Controllers/ResultSamplesController.cs) | `GET /api/samples/ok`, `/ok-message`, `/ok-value` |
 | Implicit conversion value → `Result<T>` | [ProductCatalog.cs](Viana.Results.Examples.Shared/Catalog/ProductCatalog.cs) (`Get`), samples | `GET /api/samples/implicit` |
 | `Results.Created`, `Results.NoContent` | catalog `Create`, `Update`, `Delete` | `POST /api/products`, `PUT`/`DELETE /api/products/{id}` |
 | `ListResult<T>`, `PagedResult<T>.Create` | samples, `ProductsController.List` | `GET /api/samples/list`, `/paged?page=2` |
@@ -38,6 +38,7 @@ every host.
 |---|---|---|
 | Controllers returning `Result` (`AddVianaResultFilter`, `Viana.Results.AspNetCore`) | [ProductsController.cs](Viana.Results.Examples.Shared/Controllers/ProductsController.cs) | `/api/products` |
 | Minimal APIs (`AddVianaResults`, `ProducesResult`, `ProducesProblemResult`) | [ProductEndpoints.cs](Viana.Results.Examples.Shared/Endpoints/ProductEndpoints.cs) | `/minimal/products` |
+| `WithoutDefaultResult` (last resort: one endpoint, several documented successes) | `ResultSamplesController.MultiSuccess`, `ProductEndpoints` (reservation) | `GET /api/samples/multi-success[?reserve=true]`, `GET /minimal/products/1/reservation[?reserve=true]` |
 | `Viana.Results.Mvc` (`VianaResultAction`) in the same app | [LegacyProductsController.cs](Viana.Results.Examples.Shared/Controllers/LegacyProductsController.cs) | `GET /api/legacy/products/1` |
 | Native problem details for exceptions and bad requests (`AddProblemDetails`, `UseExceptionHandler`, `UseStatusCodePages`) | `Program.cs` of each host | `GET /api/samples/crash`; malformed JSON |
 

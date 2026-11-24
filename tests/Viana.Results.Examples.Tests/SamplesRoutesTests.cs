@@ -9,7 +9,7 @@ public class SamplesRoutesTests
     {
         var routes = new (string Method, string Path, int Status)[]
         {
-            ("GET", "ok", 200), ("GET", "ok-message", 200), ("GET", "ok-value", 200), ("GET", "implicit", 200),
+            ("GET", "ok", 204), ("GET", "multi-success", 200), ("GET", "multi-success?reserve=true", 202), ("GET", "ok-message", 200), ("GET", "ok-value", 200), ("GET", "implicit", 200),
             ("POST", "created", 201), ("DELETE", "no-content", 204), ("GET", "list", 200), ("GET", "paged", 200),
             ("GET", "bad-request", 400), ("GET", "validation", 400), ("GET", "unauthorized", 401),
             ("GET", "forbidden", 403), ("GET", "not-found", 404), ("GET", "conflict", 409),
