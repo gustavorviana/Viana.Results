@@ -56,7 +56,6 @@ services.AddMediator(typeof(GetUserByIdHandler).Assembly);
 // With options
 services.AddMediator(o =>
 {
-    o.HandlerLifetime = ServiceLifetime.Scoped;                  // default
     o.Telemetry.Tracing = true;                                  // default
     o.Telemetry.Metrics = true;                                  // default
     o.Telemetry.ExceptionDetails = ExceptionDetailLevel.Full;    // default
@@ -70,7 +69,19 @@ Registration rules:
 * **Two different handlers for the same request and result type are an error** at registration.
 * Handlers are resolved by the **exact** request type: a request deriving from another request does not
   use the base request's handler.
-* A `Singleton` handler lifetime cannot depend on scoped services (standard container validation applies).
+* Scanned handlers are registered as **scoped**.
+
+#### Overriding a handler lifetime
+
+Register the handler yourself **before** `AddMediator`; the scan keeps your registration (lifetime or
+factory):
+
+```csharp
+services.AddSingleton<IHandler<GetCountriesRequest, ListResult<Country>>, GetCountriesHandler>();
+services.AddMediator(typeof(GetCountriesHandler).Assembly);
+```
+
+A singleton handler cannot depend on scoped services (standard container validation applies).
 
 ---
 

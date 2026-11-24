@@ -60,16 +60,41 @@ public class RegistrationTests
         services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true }).Dispose();
     }
 
-    [Theory]
-    [InlineData(ServiceLifetime.Transient)]
-    [InlineData(ServiceLifetime.Singleton)]
-    public void HandlerLifetime_IsHonored(ServiceLifetime lifetime)
+    [Fact]
+    public void ScannedHandlers_AreScoped()
     {
         var services = new ServiceCollection();
 
-        services.AddMediator(o => o.HandlerLifetime = lifetime, typeof(RegistrationTests).Assembly);
+        services.AddMediator(typeof(RegistrationTests).Assembly);
 
-        Assert.Equal(lifetime, services.Single(d => d.ServiceType == typeof(IHandler<RReq, Result>)).Lifetime);
+        Assert.Equal(ServiceLifetime.Scoped, services.Single(d => d.ServiceType == typeof(IHandler<RReq, Result>)).Lifetime);
+    }
+
+    [Theory]
+    [InlineData(ServiceLifetime.Transient)]
+    [InlineData(ServiceLifetime.Singleton)]
+    public void HandRegisteredHandler_KeepsItsLifetime(ServiceLifetime lifetime)
+    {
+        var services = new ServiceCollection();
+        ((IServiceCollection)services).Add(new ServiceDescriptor(typeof(IHandler<RReq, Result>), typeof(RHandler), lifetime));
+
+        services.AddMediator(typeof(RegistrationTests).Assembly);
+
+        var descriptor = services.Single(d => d.ServiceType == typeof(IHandler<RReq, Result>));
+        Assert.Equal(lifetime, descriptor.Lifetime);
+    }
+
+    [Fact]
+    public void HandRegisteredFactory_IsKept()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IHandler<RReq, Result>>(_ => new RHandler());
+
+        services.AddMediator(typeof(RegistrationTests).Assembly);
+
+        var descriptor = services.Single(d => d.ServiceType == typeof(IHandler<RReq, Result>));
+        Assert.Equal(ServiceLifetime.Singleton, descriptor.Lifetime);
+        Assert.NotNull(descriptor.ImplementationFactory);
     }
 
     [Fact]

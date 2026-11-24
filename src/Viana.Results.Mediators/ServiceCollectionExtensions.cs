@@ -41,10 +41,11 @@ namespace Viana.Results.Mediators
         /// <summary>
         /// Registers the mediator with options and all handlers from the given assemblies. Registration is
         /// idempotent: repeated calls register each service once and keep the options of the first call.
-        /// Two different handlers for the same request and result type are an error.
+        /// Two different handlers for the same request and result type are an error. Scanned handlers are scoped;
+        /// a handler registered before this call keeps its own registration and lifetime.
         /// </summary>
         /// <param name="services">The service collection.</param>
-        /// <param name="configure">Configures <see cref="MediatorOptions"/> (handler lifetime, telemetry).</param>
+        /// <param name="configure">Configures <see cref="MediatorOptions"/> (telemetry).</param>
         /// <param name="assemblies">The assemblies to scan for handlers.</param>
         /// <returns>The service collection for chaining.</returns>
         public static IServiceCollection AddMediator(this IServiceCollection services, Action<MediatorOptions> configure, params Assembly[] assemblies)
@@ -80,7 +81,7 @@ namespace Viana.Results.Mediators
                     var existing = services.FirstOrDefault(d => d.ServiceType == contract);
                     if (existing == null)
                     {
-                        services.Add(new ServiceDescriptor(contract, type, options.HandlerLifetime));
+                        services.Add(new ServiceDescriptor(contract, type, ServiceLifetime.Scoped));
                         continue;
                     }
 

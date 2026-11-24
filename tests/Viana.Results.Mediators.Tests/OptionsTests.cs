@@ -23,7 +23,6 @@ public class OptionsTests
         Assert.True(options.Telemetry.Tracing);
         Assert.True(options.Telemetry.Metrics);
         Assert.Equal(ExceptionDetailLevel.Full, options.Telemetry.ExceptionDetails);
-        Assert.Equal(ServiceLifetime.Scoped, options.HandlerLifetime);
     }
 
     [Fact]
