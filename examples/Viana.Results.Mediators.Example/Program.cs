@@ -20,15 +20,13 @@ builder.Services.AddCatalog();
 builder.Services.AddOpenApi();
 
 // ---------------------------------------------------------------------------------------------
-// Mediator: scans this assembly for IHandler<,> implementations. Every option is shown with its
+// Mediator: scans this assembly for IHandler<,> implementations (registered as scoped; register a
+// handler yourself before AddMediator to give it another lifetime). Every option is shown with its
 // default; the values come from the "Mediator" section of appsettings.json so they can be changed
 // without recompiling.
 // ---------------------------------------------------------------------------------------------
 builder.Services.AddMediator(options =>
 {
-    // Lifetime of the handlers (default Scoped). Singleton handlers cannot depend on scoped services.
-    options.HandlerLifetime = config.GetValue("Mediator:HandlerLifetime", ServiceLifetime.Scoped);
-
     // Spans "Mediator.Send {Request}" on the ActivitySource MediatorDiagnostics.SourceName (default true).
     options.Telemetry.Tracing = config.GetValue("Mediator:Telemetry:Tracing", true);
 
@@ -118,9 +116,3 @@ scenarios.MapGet("/unregistered", async (IMediator mediator, CancellationToken c
 });
 
 app.Run();
-
-namespace Viana.Results.Mediators.Example
-{
-    /// <summary>Marker type for <c>WebApplicationFactory</c> and handler scanning.</summary>
-    public sealed class MediatorsHost;
-}

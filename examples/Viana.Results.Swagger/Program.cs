@@ -53,9 +53,3 @@ app.MapControllers();
 app.MapProductEndpoints();
 
 app.Run();
-
-namespace Viana.Results.Swagger
-{
-    /// <summary>Marker type for <c>WebApplicationFactory</c> (each example host has its own).</summary>
-    public sealed class SwaggerHost;
-}

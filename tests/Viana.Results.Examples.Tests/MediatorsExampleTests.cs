@@ -7,9 +7,6 @@ using Viana.Results.Mediators;
 
 namespace Viana.Results.Examples.Tests;
 
-[CollectionDefinition(nameof(TelemetryCollection), DisableParallelization = true)]
-public sealed class TelemetryCollection;
-
 /// <summary>The Mediators example: statuses and the telemetry each scenario produces.</summary>
 [Collection(nameof(TelemetryCollection))]
 public sealed class MediatorsExampleTests : IDisposable

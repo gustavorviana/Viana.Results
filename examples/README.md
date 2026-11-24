@@ -48,7 +48,7 @@ The controller and minimal API routes give the same statuses and bodies. Failure
 
 | Feature | File |
 |---|---|
-| `[ResponseExample]` with providers that return the real result | [CatalogExamples.cs](Viana.Results.Examples.Shared/Examples/CatalogExamples.cs), `ProductsController` |
+| `[ResponseExample]` with providers that return the real result | [Examples/](Viana.Results.Examples.Shared/Examples/) (one provider per file), `ProductsController` |
 | `[ProblemResult(status, Title, Type, Detail)]` | `ResultSamplesController` |
 | Global 500 example (`AddVianaResultExamples`) | [InternalServerErrorExample.cs](Viana.Results.Examples.Shared/Examples/InternalServerErrorExample.cs), host `Program.cs` |
 | Native document + Scalar (`AddVianaResultTransformers`) | [Viana.Results.Scalar/Program.cs](Viana.Results.Scalar/Program.cs) → `/openapi/v1.json` |
@@ -58,10 +58,10 @@ The controller and minimal API routes give the same statuses and bodies. Failure
 
 | Feature | File | Request |
 |---|---|---|
-| Requests and handlers returning results | [ProductUseCases.cs](Viana.Results.Mediators.Example/UseCases/ProductUseCases.cs) | `/products` |
+| Requests and handlers returning results | [UseCases/](Viana.Results.Mediators.Example/UseCases/) (one request or handler per file) | `/products` |
 | Every `AddMediator` option, read from configuration | [Program.cs](Viana.Results.Mediators.Example/Program.cs), [appsettings.json](Viana.Results.Mediators.Example/appsettings.json) | — |
 | Traces and metrics with OpenTelemetry (console exporter) | `Program.cs` | any call |
-| Handler that throws (500, span `Error`, exception event) | [ScenarioUseCases.cs](Viana.Results.Mediators.Example/UseCases/Scenarios/ScenarioUseCases.cs) | `GET /scenarios/throws` |
+| Handler that throws (500, span `Error`, exception event) | [UseCases/Scenarios/](Viana.Results.Mediators.Example/UseCases/Scenarios/) | `GET /scenarios/throws` |
 | `HandlerNotFoundException` (`RequestType`, `ResultType`) | `Program.cs` | `GET /scenarios/unregistered` |
 | 5xx result marks the span as `Error` | scenarios | `GET /scenarios/unavailable` |
 | Cancellation is not an error (`viana.mediator.cancelled`) | scenarios | `GET /scenarios/slow?seconds=10`, cancelled from the client |
@@ -106,7 +106,6 @@ dotnet run --project examples/Viana.Results.Mediators.Example -- --Mediator:Tele
 
 | Setting | Default | Effect |
 |---|---|---|
-| `Mediator:HandlerLifetime` | `Scoped` | Lifetime of the handlers (`Transient`, `Scoped`, `Singleton`) |
 | `Mediator:Telemetry:Tracing` | `true` | `false`: no spans, even with OpenTelemetry listening |
 | `Mediator:Telemetry:Metrics` | `true` | `false`: no duration measurements |
 | `Mediator:Telemetry:ExceptionDetails` | `Full` | `TypeOnly`: exception type only; `None`: no exception event (span stays `Error`, `error.type` kept) |
