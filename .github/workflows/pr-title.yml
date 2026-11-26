@@ -1,0 +1,36 @@
+name: PR title
+
+# Feature 017 (dev flow): PRs into `dev` are squash-merged, so their title becomes the commit that release-please
+# reads after `dev` is merged into `main`. The title must be a Conventional Commit, e.g. `feat(openapi): …`,
+# `fix(core): …` or `feat!: …`.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+    branches: [dev]
+
+permissions:
+  contents: read
+
+jobs:
+  pr-title:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@2252a14e810aa9b85c2d560bd7070c802206ecf6 # v6.1.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            chore
+            ci
+            refactor
+            perf
+            test
+            style
+            build
+            revert
