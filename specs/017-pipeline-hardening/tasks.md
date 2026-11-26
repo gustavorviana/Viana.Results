@@ -152,7 +152,19 @@ a PR fails the dependency review; no workflow references an action by tag.
 
       Set the spec status to Ready.
 
-## Baselines
+## Phase 8: Fixes found on the first CI run (2026-11-26)
+
+- [X] T022 In `.github/workflows/ci.yml` (job `pack`) and `.github/workflows/release.yml` (step "Pack (with package
+      validation)"), add `-p:GeneratePackageOnBuild=false` to `dotnet pack`. The csproj files set
+      `GeneratePackageOnBuild=true`. Combined with a `dotnet pack` that builds a multi-target project from a clean
+      checkout, this packs before the TFM outputs exist (NU5026 `bin/Release/net10.0/Viana.Results.dll` not
+      found). It passed locally only because `bin/` already existed. Reproduced and verified locally from a clean
+      `bin/obj`.
+- [X] T023 Dependency review fails with `Forbidden` (dependency-graph API). This is a repository setting, not a
+      file: enable Settings → Code security → Dependency graph. Add this as the first item of the security step in
+      `RELEASING.md`, and note that the workflow needs it.
+
+
 
 Checked on nuget.org (flat-container index) on 2026-11-26. Every baseline exists:
 

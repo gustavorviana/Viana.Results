@@ -68,7 +68,9 @@ These settings live in GitHub and nuget.org, not in files.
      deletion. Add `dev` the same way when the dev flow starts.
    - Tags `*-v*`: only the release-please App and admins can create them, and nobody can update or delete them.
 6. **Security.**
-   - Enable secret scanning with push protection, the dependency graph and Dependabot alerts.
+   - Enable the **dependency graph** (Settings → Code security). The `dependency-review` workflow needs it and
+     fails with `Forbidden` without it. On a private repository it also needs GitHub Advanced Security.
+   - Enable secret scanning with push protection and Dependabot alerts.
    - In Settings → Actions, set the default workflow permissions to "Read repository contents".
 7. **Publish one release with the new flow.**
 8. **Only then revoke the old NuGet API key** on nuget.org, and delete the `NUGET_API_KEY` secret.
