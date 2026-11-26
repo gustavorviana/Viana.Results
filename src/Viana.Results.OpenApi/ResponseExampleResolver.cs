@@ -8,7 +8,7 @@ using System.Text.Json.Nodes;
 namespace Viana.Results.OpenApi;
 
 /// <summary>Resolves <see cref="ResponseExampleAttribute"/> and global example registrations.</summary>
-[Obsolete("Internal helper; it will become internal in Viana.Results.OpenApi 2.0.0.")]
+[Obsolete("Internal helper; not meant for direct use.")]
 public static class ResponseExampleResolver
 {
     /// <summary>Collects examples by status (method &gt; class &gt; global).</summary>
@@ -28,5 +28,5 @@ public static class ResponseExampleResolver
 }
 
 /// <summary>A resolved example registration.</summary>
-[Obsolete("Internal helper; it will become internal in Viana.Results.OpenApi 2.0.0.")]
+[Obsolete("Internal helper; not meant for direct use.")]
 public sealed record ResolvedExample(int StatusCode, Type ProviderType, string? Name, string? Summary, string? Description);

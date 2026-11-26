@@ -41,7 +41,7 @@ public class VianaResultActionTests
     [Fact]
     public async Task ExecuteResultAsync_WithProblem_SetsStatusCodeAndWritesProblemJson()
     {
-        #pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+        #pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(422, "Validation Error", "Invalid input");
         #pragma warning restore CS0618
         var result = new Result(problem);
@@ -128,7 +128,7 @@ public class VianaResultActionTests
     [Fact]
     public async Task ExecuteResultAsync_ListResult_WithProblem_SetsStatusCodeAndWritesProblemJson()
     {
-        #pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+        #pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(400, "Bad Request", "Invalid list request");
         #pragma warning restore CS0618
         ListResult<string> result = problem;
@@ -169,7 +169,7 @@ public class VianaResultActionTests
     [Fact]
     public async Task ExecuteResultAsync_PagedResult_WithProblem_SetsStatusCodeAndWritesProblemJson()
     {
-        #pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+        #pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(404, "Not Found", "Page not found");
         #pragma warning restore CS0618
         PagedResult<int> result = problem;

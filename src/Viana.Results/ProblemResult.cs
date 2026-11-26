@@ -70,7 +70,7 @@ public sealed class ProblemResult: IHasExtensions
     /// <param name="type">RFC 9457: problem type URI. Defaults to "about:blank".</param>
     /// <param name="extensions">RFC 9457: optional extension members.</param>
     /// <returns>A new <see cref="ProblemResult"/> instance.</returns>
-    [Obsolete("\"description\" is not an RFC 9457 member and will be removed in Viana.Results 4.0.0. Use ProblemResult.WithDetail (RFC 9457 \"detail\") instead.")]
+    [Obsolete("\"description\" is not an RFC 9457 member. Use ProblemResult.WithDetail (RFC 9457 \"detail\") instead.")]
     public static ProblemResult WithDescription(
         int status,
         string title,

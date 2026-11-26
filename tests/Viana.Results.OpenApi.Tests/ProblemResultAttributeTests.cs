@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Viana.Results.OpenApi;
 
 namespace Viana.Results.OpenApi.Tests;
@@ -18,7 +18,7 @@ public class ProblemResultAttributeTests
         var attr = new ProblemResultAttribute(400);
         Assert.Null(attr.Title);
         Assert.Null(attr.Type);
-        #pragma warning disable CS0618 // exercises the obsolete Description option until it is removed in 2.0.0
+        #pragma warning disable CS0618 // exercises the obsolete Description option
         Assert.Null(attr.Description);
         #pragma warning restore CS0618
     }
@@ -30,7 +30,7 @@ public class ProblemResultAttributeTests
         {
             Title = "Validation failed",
             Type = "https://example.com/validation",
-            #pragma warning disable CS0618 // exercises the obsolete Description option until it is removed in 2.0.0
+            #pragma warning disable CS0618 // exercises the obsolete Description option
             Description = "One or more fields are invalid."
             #pragma warning restore CS0618
         };
@@ -38,7 +38,7 @@ public class ProblemResultAttributeTests
         Assert.Equal(422, attr.Status);
         Assert.Equal("Validation failed", attr.Title);
         Assert.Equal("https://example.com/validation", attr.Type);
-        #pragma warning disable CS0618 // exercises the obsolete Description option until it is removed in 2.0.0
+        #pragma warning disable CS0618 // exercises the obsolete Description option
         Assert.Equal("One or more fields are invalid.", attr.Description);
         #pragma warning restore CS0618
     }
@@ -62,7 +62,7 @@ public class ProblemResultAttributeTests
     }
 
     [Fact]
-    public void Description_IsObsoleteWithRemovalNotice()
+    public void Description_IsObsoleteAndNamesTheReplacement()
     {
         var property = typeof(ProblemResultAttribute).GetProperty("Description");
         var obsolete = property?.GetCustomAttribute<ObsoleteAttribute>();
@@ -70,7 +70,7 @@ public class ProblemResultAttributeTests
         Assert.NotNull(obsolete);
         Assert.False(obsolete.IsError);
         Assert.Contains("no effect", obsolete.Message);
-        Assert.Contains("2.0.0", obsolete.Message);
+        Assert.DoesNotMatch(@"\d+\.\d+\.\d+", obsolete.Message); // feature 015: no future version
         Assert.Contains("Detail", obsolete.Message);
     }
 }

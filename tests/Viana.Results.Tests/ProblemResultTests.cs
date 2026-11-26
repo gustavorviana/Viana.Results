@@ -42,7 +42,7 @@ public class ProblemResultTests
     [Fact]
     public void WithDescription_BlankTitle_DefaultsToReasonPhrase()
     {
-        #pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+        #pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(409, "", "Already exists");
         #pragma warning restore CS0618
 
@@ -164,7 +164,7 @@ public class ProblemResultTests
         var description = "The request body contains invalid fields. See 'errors' for details.";
 
         // Act
-        #pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+        #pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(400, title, description);
         #pragma warning restore CS0618
 
@@ -182,7 +182,7 @@ public class ProblemResultTests
         var extensions = new Dictionary<string, object?> { ["field"] = "Email" };
 
         // Act
-        #pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+        #pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(400, "Bad request", "Invalid email format", "about:blank", extensions);
         #pragma warning restore CS0618
 
@@ -197,7 +197,7 @@ public class ProblemResultTests
     public void ProblemResult_Create_ReturnsInstanceWithoutDescription()
     {
         // Act
-        #pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+        #pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(404, "Not found");
         #pragma warning restore CS0618
 
@@ -227,7 +227,7 @@ public class ProblemResultTests
     public void ProblemResult_WithNullDescription_DoesNotAddDescriptionKey()
     {
         // Act
-        #pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+        #pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(500, "Error");
         #pragma warning restore CS0618
 

@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Viana.Results.OpenApi.Tests;
 
@@ -40,7 +40,7 @@ public class ObsoleteHelpersTests
     {
         Assert.NotNull(obsolete);
         Assert.False(obsolete.IsError);
-        Assert.Contains("internal", obsolete.Message);
-        Assert.Contains("2.0.0", obsolete.Message);
+        Assert.Contains("Internal helper", obsolete.Message);
+        Assert.DoesNotMatch(@"\d+\.\d+\.\d+", obsolete.Message); // feature 015: no future version
     }
 }

@@ -10,7 +10,7 @@ namespace Viana.Results.OpenApi.Schemas;
 /// <param name="Name">The field name.</param>
 /// <param name="Description">The human-readable description of the field.</param>
 /// <param name="ExampleValue">Optional example value used in the generated example payload.</param>
-[System.Obsolete("Internal helper; it will become internal in Viana.Results.OpenApi 2.0.0.")]
+[System.Obsolete("Internal helper; not meant for direct use.")]
 public record ProblemFieldSchema(JsonSchemaType Type, string Name, string Description, object? ExampleValue = null)
 {
     /// <summary>

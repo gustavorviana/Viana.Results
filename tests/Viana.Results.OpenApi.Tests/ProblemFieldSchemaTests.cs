@@ -1,4 +1,4 @@
-#pragma warning disable CS0618 // this file tests the obsolete ProblemFieldSchema until it becomes internal in 2.0.0
+#pragma warning disable CS0618 // this file tests the obsolete ProblemFieldSchema
 using Microsoft.OpenApi;
 using Viana.Results.OpenApi.Schemas;
 

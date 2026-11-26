@@ -45,6 +45,7 @@
 			Fixed: ProblemResult example providers on minimal APIs are documented as problems (via Viana.Results.OpenApi).
 			Changed: same return-type validation as Viana.Results.OpenApi (declarations need a Viana result return; class-level ones skip non-result actions with a warning). ProblemResponseOperationFilter takes an optional IServiceProvider for the warning logger.
 			Added: same envelope result documentation as Viana.Results.OpenApi.
+			Fixed: 401/403 and problem examples are documented on operations without responses (via Viana.Results.OpenApi).
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

@@ -42,6 +42,6 @@ public sealed class ProblemResultAttribute(int status) : Attribute
 	/// <summary>
 	/// Legacy option. It has no effect on the generated document; use <see cref="Detail"/>.
 	/// </summary>
-	[Obsolete("Description has no effect and will be removed in Viana.Results.OpenApi 2.0.0. Use Detail (RFC 9457 \"detail\") instead.")]
+	[Obsolete("Description has no effect. Use Detail (RFC 9457 \"detail\") instead.")]
 	public string? Description { get; set; }
 }

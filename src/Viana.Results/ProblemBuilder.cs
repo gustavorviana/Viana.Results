@@ -49,7 +49,7 @@ public sealed class ProblemBuilder
     /// Sets the optional human-readable description. Stored under the "description" key
     /// in <see cref="ProblemResult.Extensions"/>.
     /// </summary>
-    [Obsolete("\"description\" is not an RFC 9457 member and will be removed in Viana.Results 4.0.0. Use ProblemBuilder.WithDetail (RFC 9457 \"detail\") instead.")]
+    [Obsolete("\"description\" is not an RFC 9457 member. Use ProblemBuilder.WithDetail (RFC 9457 \"detail\") instead.")]
     public ProblemBuilder WithDescription(string? description)
     {
         _description = description;

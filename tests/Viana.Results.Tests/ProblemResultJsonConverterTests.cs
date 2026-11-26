@@ -30,7 +30,7 @@ public class ProblemResultJsonConverterTests
 			["description"] = "Invalid input",
 			["traceId"] = "abc-123"
 		};
-		#pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+		#pragma warning disable CS0618 // exercises the obsolete "description" API
 		var problem = ProblemResult.WithDescription(404, "Not Found", "Resource missing", "about:blank", extensions);
 		#pragma warning restore CS0618
 
@@ -193,7 +193,7 @@ public class ProblemResultJsonConverterTests
 			["description"] = "Detail text",
 			["key"] = "value"
 		};
-		#pragma warning disable CS0618 // exercises the obsolete "description" API until it is removed in 4.0.0
+		#pragma warning disable CS0618 // exercises the obsolete "description" API
 		var original = ProblemResult.WithDescription(422, "Unprocessable Entity", "Detail text", "https://api.example.com/err", extensions);
 		#pragma warning restore CS0618
 

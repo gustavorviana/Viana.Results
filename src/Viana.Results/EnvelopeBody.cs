@@ -18,10 +18,10 @@ internal static class EnvelopeBody
 {
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions> WithResolver = new();
 
-    // Per contract: whether it exposes Status/Problem/Extensions (or has extensions), i.e. needs a shaped node.
-    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JsonTypeInfo, object> NeedsShaping = new();
-    private static readonly object Yes = new();
-    private static readonly object No = new();
+    // Per options and type: whether the contract can write Status/Problem/Extensions, i.e. needs a shaped node.
+    // Keyed by options (not JsonTypeInfo): mutable options hand out a new JsonTypeInfo on every GetTypeInfo call,
+    // so the contract is only resolved when the decision is unknown or the body must be shaped.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JsonSerializerOptions, System.Collections.Concurrent.ConcurrentDictionary<Type, bool>> NeedsShaping = new();
 
     /// <summary>
     /// The body to write: the instance itself when its contract already hides the container members
@@ -30,28 +30,40 @@ internal static class EnvelopeBody
     internal static object Shape(IResult result, JsonSerializerOptions options)
     {
         options = EnsureResolver(options);
-        var info = options.GetTypeInfo(result.GetType());
-        var needs = NeedsShaping.GetValue(info, i => ComputeNeedsShaping(i, result, options) ? Yes : No);
-        return ReferenceEquals(needs, Yes) ? Build(result, info, options) : result;
+        var type = result.GetType();
+        var decisions = NeedsShaping.GetValue(options, static _ => new System.Collections.Concurrent.ConcurrentDictionary<Type, bool>());
+        if (!decisions.TryGetValue(type, out var needs))
+        {
+            needs = ComputeNeedsShaping(options.GetTypeInfo(type), result);
+            decisions[type] = needs;
+        }
+
+        return needs ? Build(result, options.GetTypeInfo(type), options) : result;
     }
 
-    // Decided once per contract from what is actually written: ignored members ([JsonIgnore], conditions)
-    // still appear in JsonTypeInfo.Properties, so the serialized output is checked instead.
-    private static bool ComputeNeedsShaping(JsonTypeInfo info, IResult result, JsonSerializerOptions options)
+    // Feature 015: decided once per contract from the contract itself, never from one instance's output.
+    // A container member is never written only when it has no getter or an unconditional [JsonIgnore];
+    // any conditional rule (or a global option the contract does not show) counts as may be written: shape.
+    private static bool ComputeNeedsShaping(JsonTypeInfo info, IResult result)
     {
         if (result is IHasExtensions)
             return true;
 
-        var written = JsonSerializer.SerializeToNode(result, info) as JsonObject;
-        if (written == null)
-            return false;
-
         foreach (var property in info.Properties)
         {
-            if (IsContainerMember(property, result) && written.ContainsKey(property.Name))
+            if (IsContainerMember(property, result) && !IsNeverWritten(property))
                 return true;
         }
         return false;
+    }
+
+    private static bool IsNeverWritten(JsonPropertyInfo property)
+    {
+        if (property.Get == null)
+            return true;
+
+        return property.AttributeProvider is PropertyInfo clr
+            && clr.GetCustomAttribute<System.Text.Json.Serialization.JsonIgnoreAttribute>(true) is { Condition: System.Text.Json.Serialization.JsonIgnoreCondition.Always };
     }
 
     internal static JsonObject Build(IResult result, JsonSerializerOptions options)

@@ -191,6 +191,7 @@ internal static class OperationProcessor
         if (!requiresAuthorization)
             return;
 
+        operation.Responses ??= new OpenApiResponses();
         new ProblemResultSchema(json, 401).ApplyToCore(operation.Responses);
         new ProblemResultSchema(json, 403).ApplyToCore(operation.Responses);
     }
@@ -226,8 +227,8 @@ internal static class OperationProcessor
         if (!ReturnTypeRules.Applies(method, owner, typeof(ResponseExampleAttribute), scope))
             return;
 
-        if (operation.Responses == null || operation.Responses.Count == 0)
-            return;
+        // Feature 015: problem examples create their own response, even on an operation without responses.
+        operation.Responses ??= new OpenApiResponses();
 
         var globals = options?.GlobalExamples ?? Array.Empty<GlobalExampleRegistration>();
         var byStatus = ExampleResolver.Collect(method, globals, owner);

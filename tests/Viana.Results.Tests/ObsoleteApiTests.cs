@@ -1,11 +1,11 @@
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Viana.Results.Tests;
 
 public class ObsoleteApiTests
 {
     [Fact]
-    public void ProblemResult_WithDescription_IsObsoleteWithRemovalNotice()
+    public void ProblemResult_WithDescription_IsObsoleteAndNamesTheReplacement()
     {
         var method = typeof(ProblemResult).GetMethod(nameof(ProblemResult.WithDescription), BindingFlags.Public | BindingFlags.Static);
 
@@ -13,7 +13,7 @@ public class ObsoleteApiTests
     }
 
     [Fact]
-    public void ProblemBuilder_WithDescription_IsObsoleteWithRemovalNotice()
+    public void ProblemBuilder_WithDescription_IsObsoleteAndNamesTheReplacement()
     {
         var method = typeof(ProblemBuilder).GetMethod(nameof(ProblemBuilder.WithDescription), BindingFlags.Public | BindingFlags.Instance);
 
@@ -27,7 +27,7 @@ public class ObsoleteApiTests
         Assert.NotNull(obsolete);
         Assert.False(obsolete.IsError);
         Assert.Contains("RFC 9457", obsolete.Message);
-        Assert.Contains("4.0.0", obsolete.Message);
+        Assert.DoesNotMatch(@"\d+\.\d+\.\d+", obsolete.Message); // feature 015: no future version
         Assert.Contains(replacement, obsolete.Message);
     }
 }
