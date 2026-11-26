@@ -24,17 +24,17 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>2.0.0</Version>
+		<Version>3.0.0</Version>
 		<PackageReleaseNotes>https://github.com/gustavorviana/Viana.Results/blob/main/src/Viana.Results.Mvc/CHANGELOG.md</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Viana.Results\Viana.Results.csproj" />
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<ProjectReference Include="..\Viana.Results\Viana.Results.csproj"/>
+		<FrameworkReference Include="Microsoft.AspNetCore.App"/>
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include=".\README.md" Pack="true" PackagePath="\" />
+		<None Include=".\README.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 
 </Project>
