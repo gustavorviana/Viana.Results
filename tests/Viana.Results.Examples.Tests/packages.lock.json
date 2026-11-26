@@ -42,9 +42,9 @@
       },
       "xunit.runner.visualstudio": {
         "type": "Direct",
-        "requested": "[2.5.3, )",
-        "resolved": "2.5.3",
-        "contentHash": "HFFL6O+QLEOfs555SqHii48ovVa4CqGYanY+B32BjLpPptdE+wEJmCFNXlLHdEOD5LYeayb9EroaUpydGpcybg=="
+        "requested": "[2.8.2, )",
+        "resolved": "2.8.2",
+        "contentHash": "vm1tbfXhFmjFMUmS4M0J0ASXz3/U5XvXBa6DOQUL3fEz4Vt6YPhv+ESCarx6M6D+9kJkJYZKCNvJMas1+nVfmQ=="
       },
       "Microsoft.AspNetCore.TestHost": {
         "type": "Transitive",
@@ -455,23 +455,23 @@
       "viana.results.aspnetcore": {
         "type": "Project",
         "dependencies": {
-          "Viana.Results": "[2.0.0, )"
+          "Viana.Results": "[3.0.0, )"
         }
       },
       "viana.results.examples.shared": {
         "type": "Project",
         "dependencies": {
-          "Viana.Results": "[2.0.0, )",
+          "Viana.Results": "[3.0.0, )",
           "Viana.Results.AspNetCore": "[1.0.0, )",
-          "Viana.Results.Mvc": "[2.0.0, )",
-          "Viana.Results.OpenApi": "[1.0.0, )"
+          "Viana.Results.Mvc": "[3.0.0, )",
+          "Viana.Results.OpenApi": "[2.0.0, )"
         }
       },
       "viana.results.mediators": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[8.0.0, )",
-          "Viana.Results": "[2.0.0, )"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[8.0.2, )",
+          "Viana.Results": "[3.0.0, )"
         }
       },
       "viana.results.mediators.example": {
@@ -480,23 +480,23 @@
           "Microsoft.AspNetCore.OpenApi": "[10.0.15, )",
           "OpenTelemetry.Exporter.Console": "[1.21.0, )",
           "OpenTelemetry.Extensions.Hosting": "[1.21.0, )",
-          "Scalar.AspNetCore": "[2.14.14, )",
+          "Scalar.AspNetCore": "[2.21.0, )",
           "Viana.Results.Examples.Shared": "[1.0.0, )",
-          "Viana.Results.Mediators": "[1.0.0, )",
-          "Viana.Results.OpenApi": "[1.0.0, )"
+          "Viana.Results.Mediators": "[2.0.0, )",
+          "Viana.Results.OpenApi": "[2.0.0, )"
         }
       },
       "viana.results.mvc": {
         "type": "Project",
         "dependencies": {
-          "Viana.Results": "[2.0.0, )"
+          "Viana.Results": "[3.0.0, )"
         }
       },
       "viana.results.openapi": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.15, )",
-          "Viana.Results": "[2.0.0, )"
+          "Viana.Results": "[3.0.0, )"
         }
       },
       "viana.results.openapi.swashbuckle": {
@@ -504,17 +504,17 @@
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.15, )",
           "Swashbuckle.AspNetCore": "[10.3.1, )",
-          "Viana.Results": "[2.0.0, )",
-          "Viana.Results.OpenApi": "[1.0.0, )"
+          "Viana.Results": "[3.0.0, )",
+          "Viana.Results.OpenApi": "[2.0.0, )"
         }
       },
       "viana.results.scalar": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.15, )",
-          "Scalar.AspNetCore": "[2.14.14, )",
+          "Scalar.AspNetCore": "[2.21.0, )",
           "Viana.Results.Examples.Shared": "[1.0.0, )",
-          "Viana.Results.OpenApi": "[1.0.0, )"
+          "Viana.Results.OpenApi": "[2.0.0, )"
         }
       },
       "viana.results.swagger": {
@@ -522,7 +522,7 @@
         "dependencies": {
           "Swashbuckle.AspNetCore": "[10.3.1, )",
           "Viana.Results.Examples.Shared": "[1.0.0, )",
-          "Viana.Results.OpenApi.Swashbuckle": "[1.1.0, )"
+          "Viana.Results.OpenApi.Swashbuckle": "[2.0.0, )"
         }
       },
       "Microsoft.AspNetCore.OpenApi": {
@@ -536,7 +536,7 @@
       },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "CentralTransitive",
-        "requested": "[8.0.0, )",
+        "requested": "[8.0.1, )",
         "resolved": "10.0.15",
         "contentHash": "7DUIgHeJpBs1RG0hYwWDOImXP03+uPrV5KtyUPxrZsiWadlg95aYijNKCZ2j2UmufQAmN6XEQfx4B/J6TuE7lg==",
         "dependencies": {
@@ -545,7 +545,7 @@
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[8.0.0, )",
+        "requested": "[8.0.2, )",
         "resolved": "10.0.15",
         "contentHash": "KczR2nV7ooeimtZxAawPht/FJUHnX+uoWy7y4pba+iaRQBwUM2NwtiqZg+/FpZDHUf2RkkzveGkhMTWDNzmDUA=="
       },
@@ -570,9 +570,9 @@
       },
       "Scalar.AspNetCore": {
         "type": "CentralTransitive",
-        "requested": "[2.14.14, )",
-        "resolved": "2.14.14",
-        "contentHash": "xNa3MadDudKk7y+0gQPBQihVL+JxGP3KNZHB4Zl2W42ATFIffHHHBjsuyKJ4YPUnnA7NUiHR/diqV/FTZC9dkg=="
+        "requested": "[2.21.0, )",
+        "resolved": "2.21.0",
+        "contentHash": "pDaxW7B1HqQIU5T64Jn1Txn2JKyVqoOvskCAqTb/lffZyUS8hBxhxmOkJum4wbzFmhc2LsKULVQ/4GDHLb7yjQ=="
       },
       "Swashbuckle.AspNetCore": {
         "type": "CentralTransitive",
