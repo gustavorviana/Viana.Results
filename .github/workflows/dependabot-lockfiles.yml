@@ -1,0 +1,58 @@
+name: Dependabot lock files
+
+# Feature 017: Dependabot updates Directory.Packages.props and most packages.lock.json files, but not always all
+# of them (PR #2 missed the benchmarks project), and CI restores in locked mode. On Dependabot NuGet PRs this job
+# regenerates every lock file and pushes the result to the PR branch.
+# - It pushes with the release-please GitHub App token: GITHUB_TOKEN pushes do not start CI again, and on
+#   Dependabot PRs GITHUB_TOKEN is read-only.
+# - Dependabot PRs only see *Dependabot* secrets: RELEASE_APP_CLIENT_ID and RELEASE_APP_PRIVATE_KEY must be added
+#   there too (Settings → Secrets and variables → Dependabot).
+# - The second run (after its own push) finds nothing to change, so it does not loop.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  lockfiles:
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && startsWith(github.head_ref, 'dependabot/nuget/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: App token
+        id: app-token
+        uses: actions/create-github-app-token@f418cff399f7aef4c2f0ad47e25ca7a6abbdd6fc # v3.4.0
+        with:
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ steps.app-token.outputs.token }}
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+          dotnet-version: 8.0.x
+
+      - name: Regenerate lock files
+        run: dotnet restore Viana.Results.slnx --force-evaluate
+
+      - name: Commit and push if changed
+        env:
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- '**/packages.lock.json'; then
+            echo "Lock files are up to date."
+            exit 0
+          fi
+          git config user.name "${APP_SLUG}[bot]"
+          git config user.email "${APP_SLUG}[bot]@users.noreply.github.com"
+          git add -- '**/packages.lock.json'
+          git commit -m "build(deps): regenerate lock files"
+          git push
