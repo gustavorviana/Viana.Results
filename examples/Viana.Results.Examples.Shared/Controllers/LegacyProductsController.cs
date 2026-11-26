@@ -11,7 +11,8 @@ namespace Viana.Results.Examples.Shared.Controllers;
 /// The same read through Viana.Results.Mvc (net6.0+): the action wraps the result in
 /// <see cref="VianaResultAction"/>, which writes it itself. Prefer Viana.Results.AspNetCore on net8.0+
 /// (native ProblemDetails, MVC formatters); keep Viana.Results.Mvc for net6.0 apps or code already using
-/// it. Both packages coexist in one app.
+/// it. Both packages coexist in one app. The action is declared as <c>ActionResult&lt;Result&lt;Product&gt;&gt;</c>
+/// so the Viana OpenAPI declarations apply (a plain <c>IActionResult</c> does not say it returns a result).
 /// </summary>
 [ApiController]
 [Route("api/legacy/products")]
@@ -22,5 +23,5 @@ public class LegacyProductsController(ProductCatalog catalog) : ControllerBase
     [HttpGet("{id:int}", Name = "GetLegacyProduct")]
     [ProducesResponseType<Product>(StatusCodes.Status200OK)]
     [ResponseExample(typeof(ProductNotFoundExample))]
-    public IActionResult Get(int id) => new VianaResultAction(catalog.Get(id));
+    public ActionResult<Result<Product>> Get(int id) => new VianaResultAction(catalog.Get(id));
 }
