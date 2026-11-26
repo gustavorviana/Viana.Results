@@ -42,6 +42,7 @@
 			Added: example providers may return real Viana results (Result&lt;T&gt;, ListResult&lt;T&gt;, PagedResult&lt;T&gt;, failed Result), written like the runtime body; [ResponseExample(typeof(Provider))] without status.
 			Fixed: a documented problem without its own type shows the native RFC 9110 link the runtime sends (about:blank only for statuses without a native default).
 			Same success documentation as Viana.Results.OpenApi: bare Result documented as 204, hand-declared successes replace the inferred one, [WithoutDefaultResult] / WithoutDefaultResult() supported.
+			Fixed: ProblemResult example providers on minimal APIs are documented as problems (via Viana.Results.OpenApi).
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

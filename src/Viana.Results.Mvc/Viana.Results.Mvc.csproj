@@ -31,6 +31,7 @@
 			Improved: bodies are streamed to the response (no intermediate string) and writing stops when the request is aborted. A subclass overriding SerializeToJson keeps working.
 			Fixed: calling AddVianaResultFilter more than once registers the filter once.
 			Results.Ok() without a value now answers 204 with no body (via Viana.Results).
+			Docs: the README shows the package's real API (new VianaResultAction(result)); ToActionResult() belongs to Viana.Results.AspNetCore.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

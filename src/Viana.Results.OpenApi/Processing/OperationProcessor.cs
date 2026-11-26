@@ -489,6 +489,21 @@ internal static class OperationProcessor
             return new ResolvedDeclaration(declaration, result.Status, true, result.Problem, body, writesBody);
         }
 
+        // Feature 012: a ProblemResult example is a problem with its own status (as on controllers), whichever
+        // overload declared it.
+        if (value is ProblemResult problem)
+        {
+            if (declaration.Status is int explicitProblemStatus && explicitProblemStatus != problem.Status)
+                throw new InvalidOperationException(
+                    $"Endpoint '{endpointName}': the declared status {explicitProblemStatus} differs from the example problem status {problem.Status}.");
+
+            return new ResolvedDeclaration(declaration, problem.Status, true, problem, problem, true);
+        }
+
+        if (declaration.IsProblem && hasExample && value != null)
+            throw new InvalidOperationException(
+                $"Endpoint '{endpointName}': problem example provider '{declaration.ExampleProviderType?.Name ?? value.GetType().Name}' must return a Viana result or a ProblemResult.");
+
         return new ResolvedDeclaration(declaration, declaration.Status ?? 200, hasExample, null, value, value != null);
     }
 

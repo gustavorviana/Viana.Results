@@ -35,6 +35,7 @@
 			1.0.0
 			Provides IRequest&lt;T&gt;, IHandler&lt;TRequest, TResponse&gt; and IMediator for a minimal Mediator pattern integrated with Viana.Results.
 			The telemetry status of Results.Ok() without a value is 204 (via Viana.Results).
+			Added: MediatorDiagnostics.DurationBucketBoundaries (seconds-based buckets 0.005 to 10 s), advised on the duration histogram on .NET 9+; on net6.0/net8.0 configure the buckets with an OpenTelemetry View.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

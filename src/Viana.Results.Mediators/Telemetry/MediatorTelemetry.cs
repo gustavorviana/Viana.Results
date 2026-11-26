@@ -17,8 +17,15 @@ internal static class MediatorTelemetry
 
     private static readonly ActivitySource Source = new(MediatorDiagnostics.SourceName, Version);
     private static readonly Meter Meter = new(MediatorDiagnostics.MeterName, Version);
+#if NET9_0_OR_GREATER
+    // Seconds-based buckets (the SDK default boundaries are millisecond-style); an app View still wins.
+    private static readonly Histogram<double> Duration = Meter.CreateHistogram<double>(
+        MediatorDiagnostics.DurationInstrument, "s", "Duration of mediator dispatches.", tags: null,
+        advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MediatorDiagnostics.DurationBucketBoundaries });
+#else
     private static readonly Histogram<double> Duration = Meter.CreateHistogram<double>(
         MediatorDiagnostics.DurationInstrument, "s", "Duration of mediator dispatches.");
+#endif
 
     /// <summary>True when an enabled telemetry kind has a listener (otherwise the fast path is used).</summary>
     public static bool IsActive(MediatorTelemetryOptions options)

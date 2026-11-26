@@ -45,6 +45,7 @@
 			Added: example providers may return real Viana results (Result&lt;T&gt;, ListResult&lt;T&gt;, PagedResult&lt;T&gt;, failed Result), written like the runtime body; [ResponseExample(typeof(Provider))] without status.
 			Fixed: a documented problem without its own type shows the native RFC 9110 link the runtime sends (about:blank only for statuses without a native default).
 			Changed: a bare Result is documented as 204 No Content (no inferred 200, including the one ASP.NET Core infers for minimal APIs); successes declared by hand ([ProducesResponseType], Produces, [ResponseExample], ProducesResult) replace the inferred one, so a [ResponseExample] of a Created result documents 201. Added: [WithoutDefaultResult] and WithoutDefaultResult() (endpoint, group) to drop the inferred success as a last resort. OpenApiOperationProcessor.ClearBodyForBareResult is replaced by ApplyDefaultResult.
+			Fixed: minimal API declarations (ProducesProblemResult / ProducesResult) document IExampleProvider&lt;ProblemResult&gt; providers as problems with their own status, like controllers; a problem provider returning anything else fails document generation with a clear message.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 
