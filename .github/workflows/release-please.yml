@@ -9,12 +9,21 @@ name: Release Please
 on:
   push:
     branches: [main]
+  # Recovery: publish releases that release-please already created (tags and GitHub releases exist) when the
+  # publish job failed. Run it from `main`: versions come from .release-please-manifest.json at that commit.
+  workflow_dispatch:
+    inputs:
+      paths:
+        description: JSON array of package paths to publish (the tags must already exist)
+        required: true
+        default: '["src/Viana.Results","src/Viana.Results.Mvc","src/Viana.Results.Mediators","src/Viana.Results.OpenApi","src/Viana.Results.OpenApi.Swashbuckle","src/Viana.Results.AspNetCore"]'
 
 permissions:
   contents: read
 
 jobs:
   release-please:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     outputs:
@@ -39,7 +48,10 @@ jobs:
 
   publish:
     needs: release-please
-    if: needs.release-please.outputs.releases_created == 'true'
+    # always(): on workflow_dispatch the release-please job is skipped, which would otherwise skip this job too.
+    if: >-
+      always() && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' || needs.release-please.outputs.releases_created == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: nuget
@@ -71,7 +83,7 @@ jobs:
       - name: Pack released packages
         id: pack
         env:
-          PATHS: ${{ needs.release-please.outputs.paths_released }}
+          PATHS: ${{ github.event_name == 'workflow_dispatch' && inputs.paths || needs.release-please.outputs.paths_released }}
         run: |
           set -euo pipefail
           git fetch --tags --force
@@ -82,7 +94,9 @@ jobs:
             NAME=$(basename "$P")
             PROJECT="$P/$NAME.csproj"
             TAG="${COMPONENT}-v${VERSION}"
-            BASELINE=$(git tag --list "${COMPONENT}-v*" --sort=-v:refname | grep -v "^${TAG}$" | head -1 | sed "s/^${COMPONENT}-v//")
+            # `|| true`: a package with no previous release (grep finds nothing) has no baseline; with pipefail,
+            # grep's exit code 1 would otherwise stop the whole step silently.
+            BASELINE=$( (git tag --list "${COMPONENT}-v*" --sort=-v:refname | grep -v "^${TAG}$" || true) | head -1 | sed "s/^${COMPONENT}-v//")
             echo "::group::$NAME $VERSION (tag $TAG, baseline ${BASELINE:-none})"
             dotnet pack "$PROJECT" --configuration Release -p:GeneratePackageOnBuild=false -p:RestoreLockedMode=true \
               -p:ContinuousIntegrationBuild=true -p:VianaValidationProject="$NAME" -p:VianaValidationBaseline="$BASELINE" \
