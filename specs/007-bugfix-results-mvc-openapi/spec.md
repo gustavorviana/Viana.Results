@@ -114,8 +114,8 @@ a public surface limited to what I should use.
 **Why this priority**: Robustness and long-term maintainability; no wrong output today.
 
 **Independent Test**: Register examples twice; both registrations apply. Use an example class with
-constructor dependencies not registered in DI; a clear error names the class. Use an internal helper;
-an obsolete warning announces it becomes internal in 2.0.0.
+constructor dependencies not registered in DI; a clear error names the class. The internal helpers are
+not part of the public API.
 
 **Acceptance Scenarios**:
 
@@ -129,9 +129,9 @@ an obsolete warning announces it becomes internal in 2.0.0.
    example, matching the runtime (I10). (M5)
 4. **Given** a response with examples, **When** the Swashbuckle unwrap step runs, **Then** existing
    examples and media-type settings are preserved. (M6)
-5. **Given** code using the internal helpers (processors, resolver, resolved example, field schema,
-   schema builder internals), **When** compiled, **Then** an obsolete warning says they become internal
-   in `Viana.Results.OpenApi` 2.0.0; behavior unchanged. (M1)
+5. **Given** the OpenAPI package, **When** its public API is listed, **Then** the internal helpers (processors,
+   resolver, resolved example, field schema, schema builder) are not part of it; the generated documents
+   are unchanged. (M1)
 
 ### Edge Cases
 
@@ -160,8 +160,9 @@ an obsolete warning announces it becomes internal in 2.0.0.
 - **FR-010** (B4): `ValueTask`-wrapped return types MUST be handled like `Task`-wrapped ones.
 - **FR-011** (B5): Authorization responses MUST honor anonymous access and minimal API authorization
   requirements.
-- **FR-012** (M1): Internal helper types of the OpenAPI package MUST be marked obsolete with a message
-  that they become internal in `Viana.Results.OpenApi` 2.0.0.
+- **FR-012** (M1): Internal helper types of the OpenAPI package MUST be internal. They were public in
+  `Viana.Results.OpenApi` 1.0.0, which is published (`main`), so this is a breaking change: the package goes to
+  2.0.0 with a "Breaking changes" release-note entry. Decision 2026-11-26: no `[Obsolete]` transition period.
 - **FR-013** (M2): Example registration MUST compose across multiple calls.
 - **FR-014** (M3): Example classes MUST be created with their constructor dependencies when available,
   with a clear error otherwise.
