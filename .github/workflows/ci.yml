@@ -71,7 +71,8 @@ jobs:
             BASELINE=$(git tag --list "${SLUG}-v*" --sort=-v:refname | head -1 | sed "s/^${SLUG}-v//")
             NAME=$(basename "$PROJECT" .csproj)
             echo "::group::$PROJECT (baseline: ${BASELINE:-none})"
-            dotnet pack "$PROJECT" --configuration Release -p:RestoreLockedMode=true               -p:VianaValidationProject="$NAME" -p:VianaValidationBaseline="$BASELINE" -o ./artifacts
+            dotnet pack "$PROJECT" --configuration Release -p:GeneratePackageOnBuild=false -p:RestoreLockedMode=true \
+              -p:VianaValidationProject="$NAME" -p:VianaValidationBaseline="$BASELINE" -o ./artifacts
             echo "::endgroup::"
           done <<'EOF'
           core src/Viana.Results/Viana.Results.csproj

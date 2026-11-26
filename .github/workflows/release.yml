@@ -96,7 +96,7 @@ jobs:
           PROJECT="${{ steps.resolve.outputs.project }}"
           BASELINE=$(git tag --list "${SLUG}-v*" --sort=-v:refname | grep -v "^${GITHUB_REF_NAME}$" | head -1 | sed "s/^${SLUG}-v//")
           # Restores and builds the project so the baseline package is downloaded; the baseline is scoped to it.
-          dotnet pack "$PROJECT" --configuration Release -p:RestoreLockedMode=true -p:ContinuousIntegrationBuild=true \
+          dotnet pack "$PROJECT" --configuration Release -p:GeneratePackageOnBuild=false -p:RestoreLockedMode=true -p:ContinuousIntegrationBuild=true \
             -p:VianaValidationProject="$(basename "$PROJECT" .csproj)" -p:VianaValidationBaseline="$BASELINE" -o ./artifacts
 
       - name: SBOM
