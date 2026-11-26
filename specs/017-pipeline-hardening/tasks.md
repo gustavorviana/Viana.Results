@@ -311,6 +311,22 @@ already uses the new flow. Confirm the branch with the user first.
       they keep the `autorelease: pending` label, which the user should remove, so release-please does not treat
       them as pending releases.
 
+## Phase 12: first publish run failed (2026-11-26)
+
+The first `publish` run, after release PR #20, packed 5 packages and then stopped with exit code 1 before
+AspNetCore. Nothing was pushed to NuGet. Cause: for a package with no previous release, `grep -v` in the
+baseline pipeline outputs nothing and exits 1, and `set -o pipefail` stops the step without a message. Re-running
+the failed job reuses the same workflow code, and a new push releases nothing, because the tags already exist. So
+publishing also needs a manual trigger.
+
+- [X] T039 In `.github/workflows/release-please.yml` (pack step), make the baseline lookup tolerate "no previous
+      tag": `BASELINE=$( (git tag … | grep -v "^${TAG}$" || true) | head -1 | sed …)`. Verified locally under
+      `set -euo pipefail`: AspNetCore gets an empty baseline, core gets 2.0.0, and the script continues.
+- [X] T040 Add `workflow_dispatch` with a `paths` input to `release-please.yml`. The input is a JSON array of package
+      paths, and defaults to all six. The `release-please` job runs only on push. `publish` runs with `always()`,
+      only on `refs/heads/main`, when it is a dispatch or `releases_created == 'true'`, and it takes its paths from
+      the input on dispatch. Document the recovery in `RELEASING.md`.
+
 ## Baselines
 
 Checked on nuget.org (flat-container index) on 2026-11-26. Every baseline exists:

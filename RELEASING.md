@@ -62,6 +62,19 @@ break:
 gh attestation verify Viana.Results.<x>.nupkg -R gustavorviana/Viana.Results
 ```
 
+### If publishing fails after the release was created
+
+release-please has already created the tags and GitHub releases, so a new push releases nothing. Re-running the
+failed job reuses the old workflow code. To recover:
+
+1. fix the cause and merge it into `main` (through `dev`);
+2. in Actions → **Release Please** → **Run workflow**, choose `main` and give the JSON array of the package paths
+   to publish (the default is all six);
+3. approve the run in the `nuget` environment.
+
+Versions come from `.release-please-manifest.json` on `main`, so run it before the next release PR is merged.
+Packages that are already on NuGet are skipped (`--skip-duplicate`).
+
 ## Dependabot
 
 - **Version updates** go to `dev`, at most weekly, 7 days after a version is published (cooldown). Their titles
