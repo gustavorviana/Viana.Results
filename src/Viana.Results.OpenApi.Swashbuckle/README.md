@@ -28,6 +28,7 @@ app.MapGet("/users/{id}", handler)
    .ProducesProblemResult(404, title: "User not found");
 ```
 
-Attributes, extensions and example providers are the same as in `Viana.Results.OpenApi`.
+Attributes, extensions and example providers are the same as in `Viana.Results.OpenApi`. They need an endpoint that
+returns a Viana result.
 
 Examples: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).

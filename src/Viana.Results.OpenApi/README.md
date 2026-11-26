@@ -40,5 +40,6 @@ app.MapGet("/users/{id}", handler)
 ```
 
 A bare `Result` is documented as 204. Endpoints that require authorization get 401/403 automatically.
+Declarations need an endpoint that returns a Viana result (`Task<T>`/`ActionResult<T>` wrappers included).
 
 Examples: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).

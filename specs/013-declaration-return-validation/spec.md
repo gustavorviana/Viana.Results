@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-26
 
-**Status**: Draft
+**Status**: Ready
 
 **Input**: "Viana response declarations on endpoints that do not return a Viana result are handled inconsistently:
 on controllers `[ProblemResult]` and the default result are silently ignored, `[ResponseExample]` problem
