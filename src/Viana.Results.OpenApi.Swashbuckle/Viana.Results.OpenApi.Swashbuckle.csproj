@@ -44,6 +44,7 @@
 			Same success documentation as Viana.Results.OpenApi: bare Result documented as 204, hand-declared successes replace the inferred one, [WithoutDefaultResult] / WithoutDefaultResult() supported.
 			Fixed: ProblemResult example providers on minimal APIs are documented as problems (via Viana.Results.OpenApi).
 			Changed: same return-type validation as Viana.Results.OpenApi (declarations need a Viana result return; class-level ones skip non-result actions with a warning). ProblemResponseOperationFilter takes an optional IServiceProvider for the warning logger.
+			Added: same envelope result documentation as Viana.Results.OpenApi.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

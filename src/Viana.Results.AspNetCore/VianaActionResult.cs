@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -46,7 +48,33 @@ public sealed class VianaActionResult(IResult result) : IActionResult
             return new StatusCodeResult(Result.Status).ExecuteResultAsync(context);
 
         // A null value follows the MVC default for null objects (204 unless TreatNullValueAsNoContent is off).
-        return new ObjectResult(ResultResponseBody.GetBody(Result)) { StatusCode = Result.Status }.ExecuteResultAsync(context);
+        return new ObjectResult(SuccessBody(context.HttpContext.RequestServices)) { StatusCode = Result.Status }.ExecuteResultAsync(context);
+    }
+
+    // Feature 014: envelopes are shaped for System.Text.Json when its output formatter is registered;
+    // with other formatters only (Newtonsoft, XML) the instance itself is written.
+    private object? SuccessBody(IServiceProvider services)
+    {
+        if (!ResultReflections.IsEnvelopeType(Result.GetType()))
+            return ResultResponseBody.GetBody(Result);
+
+        var formatters = services.GetService<IOptions<MvcOptions>>()?.Value.OutputFormatters;
+        if (formatters == null || !HasSystemTextJson(formatters))
+            return ResultResponseBody.GetBody(Result);
+
+        var json = services.GetService<IOptions<JsonOptions>>()?.Value.JsonSerializerOptions ?? System.Text.Json.JsonSerializerOptions.Default;
+        return ResultResponseBody.GetBody(Result, json);
+    }
+
+    // Indexed loop: no enumerator allocation on the response path.
+    private static bool HasSystemTextJson(FormatterCollection<IOutputFormatter> formatters)
+    {
+        for (var i = 0; i < formatters.Count; i++)
+        {
+            if (formatters[i] is SystemTextJsonOutputFormatter)
+                return true;
+        }
+        return false;
     }
 
     private Task WriteProblemAsync(ActionContext context)

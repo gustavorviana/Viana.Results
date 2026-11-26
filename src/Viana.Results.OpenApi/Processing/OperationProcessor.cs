@@ -294,7 +294,7 @@ internal static class OperationProcessor
                     throw new InvalidOperationException(
                         $"Endpoint '{method.DeclaringType?.Name}.{method.Name}': the declared example status {ex.StatusCode} differs from the example result status {result.Status} ({ex.ProviderType.Name}).");
 
-                var body = result.Problem ?? ResultResponseBody.GetBody(result);
+                var body = result.Problem ?? ResultResponseBody.GetBody(result, json);
                 built.Add(new BuiltExample(key, ex, ExampleResolver.Serialize(body, json), result.Problem, result.Status));
                 continue;
             }
@@ -531,6 +531,9 @@ internal static class OperationProcessor
         var d = r.Declaration;
         var registration = new ExampleRegistration(r.Status, d.ExampleProviderType ?? typeof(object), d.Name, d.Summary, null);
         var key = d.Name ?? d.ExampleProviderType?.Name ?? "example";
+        // Feature 014: an envelope body is shaped with the same options the document uses.
+        if (value is IResult envelope && ResultReflections.IsEnvelopeType(envelope.GetType()))
+            value = ResultResponseBody.GetBody(envelope, json);
         return new BuiltExample(key, registration, ExampleResolver.Serialize(value, json), r.Problem, r.Status);
     }
 

@@ -40,7 +40,9 @@ public sealed class VianaHttpResult(Viana.Results.IResult result) : Microsoft.As
         if (!ResultResponseBody.HasBody(Result))
             return HttpResults.StatusCode(Result.Status).ExecuteAsync(httpContext);
 
-        var body = ResultResponseBody.GetBody(Result);
+        var json = httpContext.RequestServices.GetService<IOptions<HttpJsonOptions>>()?.Value.SerializerOptions
+            ?? System.Text.Json.JsonSerializerOptions.Default;
+        var body = ResultResponseBody.GetBody(Result, json);
         if (body == null)
             return HttpResults.NoContent().ExecuteAsync(httpContext);
 

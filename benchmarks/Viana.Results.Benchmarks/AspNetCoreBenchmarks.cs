@@ -23,6 +23,7 @@ public class AspNetCoreBenchmarks
     private IServiceProvider _services = null!;
     private Result<WeatherLike> _success = null!;
     private Result _failure = null!;
+    private PagedResult<WeatherLike> _paged = null!;
 
     [GlobalSetup]
     public void Setup()
@@ -34,6 +35,7 @@ public class AspNetCoreBenchmarks
         _services = services.BuildServiceProvider();
         _success = Results.Ok(new WeatherLike { Date = DateTime.UnixEpoch, TemperatureC = 22, Summary = "Mild" });
         _failure = new ProblemBuilder(404).WithDetail("Not here.").BuildResult();
+        _paged = PagedResult<WeatherLike>.Create(Enumerable.Range(0, 10).Select(i => new WeatherLike { Date = DateTime.UnixEpoch, TemperatureC = i, Summary = "Mild" }).ToList(), 1, 10, 50);
     }
 
     private ActionContext NewContext()
@@ -60,4 +62,13 @@ public class AspNetCoreBenchmarks
 
     [Benchmark]
     public Task MinimalFailure() => new VianaHttpResult(_failure).ExecuteAsync(NewContext().HttpContext);
+
+    [Benchmark]
+    public Task MvcPaged() => new VianaResultAction(_paged).ExecuteResultAsync(NewContext());
+
+    [Benchmark]
+    public Task AspNetCorePaged() => new VianaActionResult(_paged).ExecuteResultAsync(NewContext());
+
+    [Benchmark]
+    public Task MinimalPaged() => new VianaHttpResult(_paged).ExecuteAsync(NewContext().HttpContext);
 }

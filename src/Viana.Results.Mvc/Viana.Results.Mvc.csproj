@@ -32,6 +32,7 @@
 			Fixed: calling AddVianaResultFilter more than once registers the filter once.
 			Results.Ok() without a value now answers 204 with no body (via Viana.Results).
 			Docs: the README shows the package's real API (new VianaResultAction(result)); ToActionResult() belongs to Viana.Results.AspNetCore.
+			Added: envelope results (IEnvelopeResult&lt;T&gt;) are written whole, without status and problem.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

@@ -24,5 +24,13 @@ internal static class SchemaProcessor
 
         schema.Properties?.Remove("status");
         schema.Properties?.Remove("problem");
+
+        // Feature 014: an envelope with extensions writes them at the root, not as a member.
+        if (ResultReflections.IsEnvelopeType(type) && typeof(IHasExtensions).IsAssignableFrom(type))
+        {
+            schema.Properties?.Remove("extensions");
+            if (schema is OpenApiSchema concrete)
+                concrete.AdditionalProperties = new OpenApiSchema();
+        }
     }
 }

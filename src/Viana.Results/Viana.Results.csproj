@@ -36,6 +36,7 @@
 			Changed: problem extension names are case-insensitive (ProblemResult, ProblemBuilder, JSON reading): the same name twice keeps one member with the last value and the first casing.
 			Fixed: empty ProblemResult.Extensions is read-only, like non-empty ones.
 			Changed: Results.Ok() without a value returns status 204 No Content (was 200), the HTTP status of a success without a body. Results.Ok(value) and Results.Ok(string) stay 200; a result built with an explicit status (new Result(200)) keeps it.
+			Added: IEnvelopeResult&lt;T&gt; for results whose whole object is the body (for example a cursor list): every public property is written except Status, Problem and the IHasExtensions container, whose entries go to the root (declared members win). Added: ResultResponseBody.GetBody(result, JsonSerializerOptions), which shapes envelopes with the application options. Changed: IPagedResult&lt;T&gt; is an envelope, so the paged special case is gone; PagedResult output is unchanged.
 		</PackageReleaseNotes>
 	</PropertyGroup>
 

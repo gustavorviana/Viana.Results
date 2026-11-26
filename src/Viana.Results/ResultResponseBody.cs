@@ -1,4 +1,4 @@
-namespace Viana.Results;
+﻿namespace Viana.Results;
 
 /// <summary>
 /// Provides the same logic used to determine the HTTP response body for an <see cref="IResult"/>.
@@ -26,6 +26,10 @@ public static class ResultResponseBody
 		if (result.Status == 204)
 			return null;
 
+		// Feature 014: an envelope is the whole object (shaped by GetBody(result, options) for JSON writers).
+		if (ResultReflections.IsEnvelopeType(result.GetType()))
+			return result;
+
 		var resultData = result as IResultData;
 		var type = result.GetType();
 
@@ -51,6 +55,23 @@ public static class ResultResponseBody
 		if (result.Problem != null)
 			return true;
 
-		return result.Status != 204 && result.GetType().IsGenericType;
+		return result.Status != 204 && (result.GetType().IsGenericType || ResultReflections.IsEnvelopeType(result.GetType()));
+	}
+
+	/// <summary>
+	/// Same as <see cref="GetBody(IResult?)"/>, for writers that serialize with System.Text.Json: an
+	/// <see cref="IEnvelopeResult{T}"/> becomes a JSON object built with <paramref name="options"/>, without
+	/// <see cref="IResult.Status"/>, <see cref="IResult.Problem"/> and the <see cref="IHasExtensions.Extensions"/>
+	/// container (its entries are written at the root; declared members win). Other results are unchanged.
+	/// </summary>
+	/// <param name="result">The result to get the response body for.</param>
+	/// <param name="options">The serializer options the body will be written with.</param>
+	/// <returns>The body to serialize, or null.</returns>
+	public static object? GetBody(IResult? result, System.Text.Json.JsonSerializerOptions options)
+	{
+		var body = GetBody(result);
+		return body != null && ReferenceEquals(body, result) && ResultReflections.IsEnvelopeType(result!.GetType())
+			? EnvelopeBody.Shape(result, options)
+			: body;
 	}
 }

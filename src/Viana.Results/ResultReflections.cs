@@ -1,18 +1,30 @@
-using System;
+﻿using System;
 using System.Linq;
 
 namespace Viana.Results;
 
 internal static class ResultReflections
 {
+    /// <summary>Feature 014: whether <paramref name="type"/> implements <see cref="IEnvelopeResult{T}"/>.</summary>
+#if NET5_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Called with the runtime type of a result instance; the trimmer keeps the interfaces a constructed type implements when those interfaces are used, and IEnvelopeResult<> is referenced here.")]
+#endif
+    public static bool IsEnvelopeType(Type type)
+        => EnvelopeTypes.GetOrAdd(type, static t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnvelopeResult<>)));
+
+    // Hot path (every response): cached per type so GetInterfaces does not allocate per call.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, bool> EnvelopeTypes = new();
+
     /// <summary>
     /// Returns true when the result wrapper should be unwrapped in OpenAPI/MVC payloads
-    /// (i.e. the response body is the inner data rather than the wrapper). <c>PagedResult</c>
-    /// is excluded because it carries metadata (PageNumber/TotalPages) that must remain visible.
+    /// (i.e. the response body is the inner data rather than the wrapper). Envelopes
+    /// (<see cref="IEnvelopeResult{T}"/>, including paged results) are never unwrapped.
     /// </summary>
     public static bool IsUnwrappableType(Type type)
     {
-        if (!typeof(IResultData).IsAssignableFrom(type) ||
+        if (IsEnvelopeType(type) ||
+            !typeof(IResultData).IsAssignableFrom(type) ||
             typeof(IHasExtensions).IsAssignableFrom(type) ||
             !type.IsGenericType)
             return false;
@@ -22,9 +34,6 @@ internal static class ResultReflections
         foreach (var iface in type.GetInterfaces().Where(x => x.IsGenericType))
         {
             var parameter = iface.GetGenericTypeDefinition();
-            if (parameter == typeof(IPagedResult<>))
-                return false;
-
             if (!hasGenericResult && parameter == typeof(IResult<>))
                 hasGenericResult = true;
         }

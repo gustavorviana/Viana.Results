@@ -44,7 +44,7 @@ public class VianaResultAction(IResult result) : ActionResult
         if (!ResultResponseBody.HasBody(result))
             return;
 
-        var body = ResultResponseBody.GetBody(result);
+        var body = ResultResponseBody.GetBody(result, GetJsonSerializerOptions(response));
         response.ContentType = result.Problem != null ? ProblemContentType : ContentType;
 
         var cancellationToken = context.HttpContext.RequestAborted;
