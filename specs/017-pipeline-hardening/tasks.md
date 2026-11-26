@@ -164,7 +164,52 @@ a PR fails the dependency review; no workflow references an action by tag.
       file: enable Settings → Code security → Dependency graph. Add this as the first item of the security step in
       `RELEASING.md`, and note that the workflow needs it.
 
+## Phase 9: dev branch flow and unblocking the first release (2026-11-26)
 
+Context: PR #1 was squash-merged into `main` with a non-conventional title, so release-please found no
+releasable commit and opened no release PR. The user wants to keep squash merges for feature PRs, so the flow
+becomes: feature → squash → `dev` (PR title must be a Conventional Commit) → **merge commit** → `main` →
+release-please. Versions for the first release were approved by the user: core 3.0.0, mvc 3.0.0, mediators
+2.0.0, openapi 2.0.0, openapi-swashbuckle 2.0.0, aspnetcore 1.0.0.
+
+The work starts from `origin/main` (`d5bd902`). The branch name and the push are confirmed with the user first.
+
+- [X] T024 In `release-please-config.json`, add a temporary `"release-as"` to each package with the approved
+      versions (core 3.0.0, mvc 3.0.0, mediators 2.0.0, openapi 2.0.0, openapi-swashbuckle 2.0.0; aspnetcore
+      already has 1.0.0).
+- [X] T025 In each `src/<Project>/CHANGELOG.md`, replace the "Unreleased" seed with a short summary of the
+      changes and the breaking changes for that release (from the 2026-11-26 audit and the package-validation
+      list). This also gives the unblocking commit a change inside every package path. Do not name any other
+      mediator library.
+- [X] T026 Create `.github/workflows/pr-title.yml`, which checks that the titles of PRs targeting `dev` are
+      Conventional Commits:
+      - use `amannn/action-semantic-pull-request` pinned by SHA (a release at least 7 days old), with
+        `permissions: pull-requests: read`;
+      - allowed types: feat, fix, docs, chore, ci, refactor, perf, test, style, build, revert, with an optional
+        scope and `!`;
+      - confirm ⚠️ the action's inputs against its `action.yml`.
+- [X] T027 Update `RELEASING.md` for the dev flow:
+      - feature branches → PR to `dev` → **squash**, with the PR title as a Conventional Commit, checked by
+        `pr-title`;
+      - `dev` → PR to `main` → **merge commit** (never squash), with a free title;
+      - release-please runs on `main`.
+
+      Add the settings:
+      - create `dev` from `main`;
+      - ruleset for `dev`: require a PR, the CI checks and `pr-title`, and allow only squash merges;
+      - ruleset for `main`: allow only merge commits, and accept only PRs from `dev`;
+      - make `dev` the default branch.
+
+      Note how the first release was unblocked (T024) and that the `release-as` entries are removed right after
+      it (T029).
+- [X] T028 Run the local checks (Release build with 0 warnings, tests, `dotnet format --verify-no-changes`), and
+      tell the user how to merge the unblocking PR into `main`: with a `feat!:` title (squash is acceptable for
+      this single PR because its title is conventional).
+- [ ] T029 After the first release PRs are merged and published, remove every `"release-as"` from
+      `release-please-config.json`, so the following versions come from the commits again. This is a follow-up PR
+      through `dev`.
+
+## Baselines
 
 Checked on nuget.org (flat-container index) on 2026-11-26. Every baseline exists:
 
