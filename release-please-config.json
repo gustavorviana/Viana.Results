@@ -5,33 +5,74 @@
     "src/Viana.Results": {
       "release-type": "simple",
       "component": "core",
-      "extra-files": [{ "type": "xml", "path": "Viana.Results.csproj", "xpath": "//Project/PropertyGroup/Version" }]
+      "release-as": "3.0.0",
+      "extra-files": [
+        {
+          "type": "xml",
+          "path": "Viana.Results.csproj",
+          "xpath": "//Project/PropertyGroup/Version"
+        }
+      ]
     },
     "src/Viana.Results.Mvc": {
       "release-type": "simple",
       "component": "mvc",
-      "extra-files": [{ "type": "xml", "path": "Viana.Results.Mvc.csproj", "xpath": "//Project/PropertyGroup/Version" }]
+      "release-as": "3.0.0",
+      "extra-files": [
+        {
+          "type": "xml",
+          "path": "Viana.Results.Mvc.csproj",
+          "xpath": "//Project/PropertyGroup/Version"
+        }
+      ]
     },
     "src/Viana.Results.Mediators": {
       "release-type": "simple",
       "component": "mediators",
-      "extra-files": [{ "type": "xml", "path": "Viana.Results.Mediators.csproj", "xpath": "//Project/PropertyGroup/Version" }]
+      "release-as": "2.0.0",
+      "extra-files": [
+        {
+          "type": "xml",
+          "path": "Viana.Results.Mediators.csproj",
+          "xpath": "//Project/PropertyGroup/Version"
+        }
+      ]
     },
     "src/Viana.Results.OpenApi": {
       "release-type": "simple",
       "component": "openapi",
-      "extra-files": [{ "type": "xml", "path": "Viana.Results.OpenApi.csproj", "xpath": "//Project/PropertyGroup/Version" }]
+      "release-as": "2.0.0",
+      "extra-files": [
+        {
+          "type": "xml",
+          "path": "Viana.Results.OpenApi.csproj",
+          "xpath": "//Project/PropertyGroup/Version"
+        }
+      ]
     },
     "src/Viana.Results.OpenApi.Swashbuckle": {
       "release-type": "simple",
       "component": "openapi-swashbuckle",
-      "extra-files": [{ "type": "xml", "path": "Viana.Results.OpenApi.Swashbuckle.csproj", "xpath": "//Project/PropertyGroup/Version" }]
+      "release-as": "2.0.0",
+      "extra-files": [
+        {
+          "type": "xml",
+          "path": "Viana.Results.OpenApi.Swashbuckle.csproj",
+          "xpath": "//Project/PropertyGroup/Version"
+        }
+      ]
     },
     "src/Viana.Results.AspNetCore": {
       "release-type": "simple",
       "component": "aspnetcore",
       "release-as": "1.0.0",
-      "extra-files": [{ "type": "xml", "path": "Viana.Results.AspNetCore.csproj", "xpath": "//Project/PropertyGroup/Version" }]
+      "extra-files": [
+        {
+          "type": "xml",
+          "path": "Viana.Results.AspNetCore.csproj",
+          "xpath": "//Project/PropertyGroup/Version"
+        }
+      ]
     }
   }
 }

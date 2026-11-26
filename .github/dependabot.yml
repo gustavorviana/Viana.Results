@@ -1,23 +1,40 @@
 # Feature 017: version updates wait 7 days after a release (cooldown), so a malicious or broken version has time
-# to be detected and pulled. Security updates are never delayed by the cooldown.
+# to be detected and pulled. Security updates are never delayed by the cooldown, and they always target the
+# repository's default branch (`target-branch` and the options below apply to version updates only).
 version: 2
 updates:
   - package-ecosystem: nuget
     directory: "/"
+    target-branch: dev
     schedule:
       interval: weekly
     cooldown:
       default-days: 7
+    # PR titles become `build(deps): …`: they pass the `pr-title` check on `dev` and release nothing by themselves.
+    commit-message:
+      prefix: build
+      include: scope
     groups:
       nuget-minor-and-patch:
         update-types: [minor, patch]
+    # The published packages depend on these. A library must depend on the lowest version that works, so major
+    # bumps (for example DependencyInjection 8 → 11, which would force net6/net8 consumers onto the newer line)
+    # are a deliberate decision, not an automatic update.
+    ignore:
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "System.Text.Json"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
+    target-branch: dev
     schedule:
       interval: weekly
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: ci
     groups:
       actions-minor-and-patch:
         update-types: [minor, patch]
