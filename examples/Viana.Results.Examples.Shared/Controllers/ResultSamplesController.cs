@@ -60,6 +60,19 @@ public class ResultSamplesController : ControllerBase
     }
 
     /// <summary>
+    /// <c>IEnvelopeResult&lt;T&gt;</c>: a custom list result with a cursor. The whole object is the body
+    /// (<c>{ data, nextCursor }</c>), at runtime and in the document.
+    /// </summary>
+    /// <param name="after">Id after which the page starts.</param>
+    [HttpGet("cursor")]
+    [ResponseExample(typeof(ProductCursorExample))]
+    public CursorResult<Product> Cursor([FromQuery] int after = 0)
+    {
+        var items = new List<Product> { Sample with { Id = after + 1 }, Sample with { Id = after + 2 } };
+        return new CursorResult<Product>(items, after + 2 < 10 ? $"{after + 2}" : null);
+    }
+
+    /// <summary>
     /// Last resort: the action returns the common <c>IResult</c> but answers two different successes (200 with the
     /// product, or 202 with a reservation). <c>[WithoutDefaultResult]</c> drops the inferred success, and the
     /// successes are documented by hand. Declare <c>IResult</c>, not <c>Result</c>: a <c>Result&lt;T&gt;</c>

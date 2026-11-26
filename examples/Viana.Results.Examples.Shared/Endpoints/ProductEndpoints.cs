@@ -25,6 +25,11 @@ public static class ProductEndpoints
             .WithName("ListMinimalProducts")
             .ProducesResult<Product[]>();
 
+        // Envelope result: the whole CursorResult is the body ({ data, nextCursor }), documented the same way.
+        products.MapGet("/cursor", (ProductCatalog catalog) => new CursorResult<Product>(catalog.List().Take(2).ToList(), "2"))
+            .WithName("CursorMinimalProducts")
+            .ProducesResult<ProductCursorExample>();
+
         products.MapGet("/{id:int}", (int id, ProductCatalog catalog) => catalog.Get(id))
             .WithName("GetMinimalProduct")
             .ProducesResult<ProductExample>()
