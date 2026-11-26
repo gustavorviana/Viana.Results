@@ -3,6 +3,6 @@
   "src/Viana.Results.Mvc": "2.0.0",
   "src/Viana.Results.Mediators": "1.0.0",
   "src/Viana.Results.OpenApi": "1.0.0",
-  "src/Viana.Results.OpenApi.Swashbuckle": "1.1.0",
+  "src/Viana.Results.OpenApi.Swashbuckle": "2.0.0",
   "src/Viana.Results.AspNetCore": "0.0.0"
 }
