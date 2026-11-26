@@ -94,9 +94,9 @@ jobs:
             NAME=$(basename "$P")
             PROJECT="$P/$NAME.csproj"
             TAG="${COMPONENT}-v${VERSION}"
-            # `|| true`: a package with no previous release (grep finds nothing) has no baseline; with pipefail,
-            # grep's exit code 1 would otherwise stop the whole step silently.
-            BASELINE=$( (git tag --list "${COMPONENT}-v*" --sort=-v:refname | grep -v "^${TAG}$" || true) | head -1 | sed "s/^${COMPONENT}-v//")
+            # Baseline = latest stable version on nuget.org lower than the one being released (none if the package
+            # was never published); a re-run after a partial push never compares a package with itself.
+            BASELINE=$(bash .github/scripts/nuget-baseline.sh "$NAME" "$VERSION")
             echo "::group::$NAME $VERSION (tag $TAG, baseline ${BASELINE:-none})"
             dotnet pack "$PROJECT" --configuration Release -p:GeneratePackageOnBuild=false -p:RestoreLockedMode=true \
               -p:ContinuousIntegrationBuild=true -p:VianaValidationProject="$NAME" -p:VianaValidationBaseline="$BASELINE" \
