@@ -10,11 +10,11 @@
       },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Direct",
-        "requested": "[8.0.0, )",
-        "resolved": "8.0.0",
-        "contentHash": "V8S3bsm50ig6JSyrbcJJ8bW2b9QLGouz+G1miK3UTaOWmMtFwNNNzUf4AleyDWUmTrWMLNnFSLEQtxmxgNQnNQ==",
+        "requested": "[8.0.1, )",
+        "resolved": "8.0.1",
+        "contentHash": "BmANAnR5Xd4Oqw7yQ75xOAYODybZQRzdeNucg7kS5wWKd2PNnMdYtJ2Vciy0QLylRmv42DGl5+AFL9izA6F1Rw==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
         }
       },
       "Microsoft.NET.Test.Sdk": {
@@ -40,9 +40,9 @@
       },
       "xunit.runner.visualstudio": {
         "type": "Direct",
-        "requested": "[2.5.3, )",
-        "resolved": "2.5.3",
-        "contentHash": "HFFL6O+QLEOfs555SqHii48ovVa4CqGYanY+B32BjLpPptdE+wEJmCFNXlLHdEOD5LYeayb9EroaUpydGpcybg=="
+        "requested": "[2.8.2, )",
+        "resolved": "2.8.2",
+        "contentHash": "vm1tbfXhFmjFMUmS4M0J0ASXz3/U5XvXBa6DOQUL3fEz4Vt6YPhv+ESCarx6M6D+9kJkJYZKCNvJMas1+nVfmQ=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -108,15 +108,15 @@
       "viana.results.mediators": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[8.0.0, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[8.0.2, )",
           "Viana.Results": "[2.0.0, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[8.0.0, )",
-        "resolved": "8.0.0",
-        "contentHash": "cjWrLkJXK0rs4zofsK4bSdg+jhDLTaxrkXu4gS6Y7MAlCvRyNNgwY/lJi5RDlQOnSZweHqoyvgvbdvQsRIW+hg=="
+        "requested": "[8.0.2, )",
+        "resolved": "8.0.2",
+        "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
     },
     "net8.0": {
@@ -128,11 +128,11 @@
       },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Direct",
-        "requested": "[8.0.0, )",
-        "resolved": "8.0.0",
-        "contentHash": "V8S3bsm50ig6JSyrbcJJ8bW2b9QLGouz+G1miK3UTaOWmMtFwNNNzUf4AleyDWUmTrWMLNnFSLEQtxmxgNQnNQ==",
+        "requested": "[8.0.1, )",
+        "resolved": "8.0.1",
+        "contentHash": "BmANAnR5Xd4Oqw7yQ75xOAYODybZQRzdeNucg7kS5wWKd2PNnMdYtJ2Vciy0QLylRmv42DGl5+AFL9izA6F1Rw==",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
         }
       },
       "Microsoft.NET.Test.Sdk": {
@@ -158,9 +158,9 @@
       },
       "xunit.runner.visualstudio": {
         "type": "Direct",
-        "requested": "[2.5.3, )",
-        "resolved": "2.5.3",
-        "contentHash": "HFFL6O+QLEOfs555SqHii48ovVa4CqGYanY+B32BjLpPptdE+wEJmCFNXlLHdEOD5LYeayb9EroaUpydGpcybg=="
+        "requested": "[2.8.2, )",
+        "resolved": "2.8.2",
+        "contentHash": "vm1tbfXhFmjFMUmS4M0J0ASXz3/U5XvXBa6DOQUL3fEz4Vt6YPhv+ESCarx6M6D+9kJkJYZKCNvJMas1+nVfmQ=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -226,15 +226,15 @@
       "viana.results.mediators": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[8.0.0, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[8.0.2, )",
           "Viana.Results": "[2.0.0, )"
         }
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[8.0.0, )",
-        "resolved": "8.0.0",
-        "contentHash": "cjWrLkJXK0rs4zofsK4bSdg+jhDLTaxrkXu4gS6Y7MAlCvRyNNgwY/lJi5RDlQOnSZweHqoyvgvbdvQsRIW+hg=="
+        "requested": "[8.0.2, )",
+        "resolved": "8.0.2",
+        "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
     }
   }

@@ -20,6 +20,15 @@
           "System.Management": "9.0.5"
         }
       },
+      "Microsoft.Extensions.DependencyInjection": {
+        "type": "Direct",
+        "requested": "[6.0.2, )",
+        "resolved": "6.0.2",
+        "contentHash": "gWUfUZ2ZDvwiVCxsOMComAhG43xstNWWVjV2takUZYRuDSJjO9Q5/b3tfOSkl5mcVwZAL3RZviRj5ZilxHghlw==",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+        }
+      },
       "BenchmarkDotNet.Annotations": {
         "type": "Transitive",
         "resolved": "0.15.8",
@@ -165,7 +174,7 @@
       "viana.results.mediators": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "[8.0.0, )",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "[8.0.2, )",
           "Viana.Results": "[2.0.0, )"
         }
       },
@@ -175,20 +184,11 @@
           "Viana.Results": "[2.0.0, )"
         }
       },
-      "Microsoft.Extensions.DependencyInjection": {
-        "type": "CentralTransitive",
-        "requested": "[8.0.0, )",
-        "resolved": "6.0.0",
-        "contentHash": "k6PWQMuoBDGGHOQTtyois2u4AwyVcIwL2LaSLlTZQm2CYcJ1pxbt6jfAnpWmzENA/wfrYRI/X9DTLoUkE4AsLw==",
-        "dependencies": {
-          "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
-        }
-      },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[8.0.0, )",
-        "resolved": "8.0.0",
-        "contentHash": "cjWrLkJXK0rs4zofsK4bSdg+jhDLTaxrkXu4gS6Y7MAlCvRyNNgwY/lJi5RDlQOnSZweHqoyvgvbdvQsRIW+hg=="
+        "requested": "[8.0.2, )",
+        "resolved": "8.0.2",
+        "contentHash": "3iE7UF7MQkCv1cxzCahz+Y/guQbTqieyxyaWKhrRO91itI9cOKO76OHeQDahqG4MmW5umr3CcCvGmK92lWNlbg=="
       }
     }
   }
