@@ -10,5 +10,7 @@
     <Nullable>enable</Nullable>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Feature 017: every restore records the exact graph (versions and hashes); CI restores in locked mode. -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
 </Project>

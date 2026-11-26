@@ -2,29 +2,120 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
   pull_request:
-    branches: [main]
+    branches: [main, dev]
+
+# Feature 017: least privilege by default; jobs raise only what they need.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
-
+    name: build-and-test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          persist-credentials: false
 
-      - name: Restore
-        run: dotnet restore Viana.Results.slnx
+      - name: Setup .NET (SDK from global.json + net8 runtime)
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+          dotnet-version: 8.0.x
+
+      # Fails if any dependency would resolve differently from the committed packages.lock.json files.
+      - name: Restore (locked)
+        run: dotnet restore Viana.Results.slnx --locked-mode
 
       - name: Build
         run: dotnet build Viana.Results.slnx --configuration Release --no-restore
 
       - name: Test
         run: dotnet test Viana.Results.slnx --configuration Release --no-build --verbosity normal
+
+  # Public API of each package vs its last released version (constitution VII).
+  pack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+          dotnet-version: 8.0.x
+
+      - name: Restore (locked)
+        run: dotnet restore Viana.Results.slnx --locked-mode
+
+      # Each pack restores and builds its project, so the baseline package is downloaded at restore time.
+      # The baseline is scoped to the validated project (see src/Directory.Build.props).
+      - name: Pack with package validation
+        run: |
+          set -euo pipefail
+          while read -r SLUG PROJECT; do
+            BASELINE=$(git tag --list "${SLUG}-v*" --sort=-v:refname | head -1 | sed "s/^${SLUG}-v//")
+            NAME=$(basename "$PROJECT" .csproj)
+            echo "::group::$PROJECT (baseline: ${BASELINE:-none})"
+            dotnet pack "$PROJECT" --configuration Release -p:RestoreLockedMode=true               -p:VianaValidationProject="$NAME" -p:VianaValidationBaseline="$BASELINE" -o ./artifacts
+            echo "::endgroup::"
+          done <<'EOF'
+          core src/Viana.Results/Viana.Results.csproj
+          mvc src/Viana.Results.Mvc/Viana.Results.Mvc.csproj
+          mediators src/Viana.Results.Mediators/Viana.Results.Mediators.csproj
+          openapi src/Viana.Results.OpenApi/Viana.Results.OpenApi.csproj
+          openapi-swashbuckle src/Viana.Results.OpenApi.Swashbuckle/Viana.Results.OpenApi.Swashbuckle.csproj
+          aspnetcore src/Viana.Results.AspNetCore/Viana.Results.AspNetCore.csproj
+          EOF
+
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+          dotnet-version: 8.0.x
+
+      - name: Restore (locked)
+        run: dotnet restore Viana.Results.slnx --locked-mode
+
+      - name: Verify formatting
+        run: dotnet format Viana.Results.slnx --verify-no-changes --no-restore
+
+  # Constitution VI: the core must stay trimming- and Native AOT-compatible.
+  aot-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+
+      - name: Publish (Native AOT)
+        run: dotnet publish tests/Viana.Results.AotSmoke/Viana.Results.AotSmoke.csproj --configuration Release -r linux-x64 -o ./aot
+
+      - name: Run
+        run: ./aot/Viana.Results.AotSmoke

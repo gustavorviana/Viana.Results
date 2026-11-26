@@ -24,16 +24,8 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>2.1.0</Version>
-		<PackageReleaseNotes>
-			Fixed: problem responses use the RFC 9457 media type application/problem+json (was application/json).
-			Fixed: a successful typed result with a null value is written as JSON null (was "{}"); a failure with status 204 keeps its problem body (via Viana.Results 3.0.0).
-			Improved: bodies are streamed to the response (no intermediate string) and writing stops when the request is aborted. A subclass overriding SerializeToJson keeps working.
-			Fixed: calling AddVianaResultFilter more than once registers the filter once.
-			Results.Ok() without a value now answers 204 with no body (via Viana.Results).
-			Docs: the README shows the package's real API (new VianaResultAction(result)); ToActionResult() belongs to Viana.Results.AspNetCore.
-			Added: envelope results (IEnvelopeResult&lt;T&gt;) are written whole, without status and problem.
-		</PackageReleaseNotes>
+		<Version>2.0.0</Version>
+		<PackageReleaseNotes>https://github.com/gustavorviana/Viana.Results/blob/main/src/Viana.Results.Mvc/CHANGELOG.md</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

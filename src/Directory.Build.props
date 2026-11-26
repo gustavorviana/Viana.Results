@@ -1,0 +1,21 @@
+<Project>
+  <!-- Inherit the repository-wide rules (warnings as errors, nullable, NuGet audit, lock files). -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!--
+      Feature 017 (constitution VII): `dotnet pack` compares the public API with the previous released version
+      (passed by CI as -p:PackageValidationBaselineVersion=<last tag>) and fails on unrecorded breaking changes.
+      Intended breaks of a major release are recorded in the project's CompatibilitySuppressions.xml.
+    -->
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <!--
+      The baseline applies only to the project being validated: a global -p:PackageValidationBaselineVersion would
+      also flow to referenced projects (wrong baselines, or versions that do not exist).
+      CI passes -p:VianaValidationProject=<ProjectName> -p:VianaValidationBaseline=<last released version>.
+    -->
+    <!-- Builds without a baseline (normal builds, other projects) do not use the suppressions; that is not an error. -->
+    <ApiCompatPermitUnnecessarySuppressions>true</ApiCompatPermitUnnecessarySuppressions>
+    <PackageValidationBaselineVersion Condition="'$(VianaValidationProject)' == '$(MSBuildProjectName)' and '$(VianaValidationBaseline)' != ''">$(VianaValidationBaseline)</PackageValidationBaselineVersion>
+  </PropertyGroup>
+</Project>
