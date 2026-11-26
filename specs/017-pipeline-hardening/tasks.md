@@ -311,6 +311,39 @@ already uses the new flow. Confirm the branch with the user first.
       they keep the `autorelease: pending` label, which the user should remove, so release-please does not treat
       them as pending releases.
 
+## Phase 12: first publish run failed (2026-11-26)
+
+The first `publish` run, after release PR #20, packed 5 packages and then stopped with exit code 1 before
+AspNetCore. Nothing was pushed to NuGet. Cause: for a package with no previous release, `grep -v` in the
+baseline pipeline outputs nothing and exits 1, and `set -o pipefail` stops the step without a message. Re-running
+the failed job reuses the same workflow code, and a new push releases nothing, because the tags already exist. So
+publishing also needs a manual trigger.
+
+- [X] T039 In `.github/workflows/release-please.yml` (pack step), make the baseline lookup tolerate "no previous
+      tag": `BASELINE=$( (git tag … | grep -v "^${TAG}$" || true) | head -1 | sed …)`. Verified locally under
+      `set -euo pipefail`: AspNetCore gets an empty baseline, core gets 2.0.0, and the script continues.
+- [X] T040 Add `workflow_dispatch` with a `paths` input to `release-please.yml`. The input is a JSON array of package
+      paths, and defaults to all six. The `release-please` job runs only on push. `publish` runs with `always()`,
+      only on `refs/heads/main`, when it is a dispatch or `releases_created == 'true'`, and it takes its paths from
+      the input on dispatch. Document the recovery in `RELEASING.md`.
+
+- [X] T041 Take the package-validation baseline from **nuget.org**, not from git tags. The CI `pack` job of PR
+      `chore/publish-fix` failed with NU1102: the baseline was the latest tag, `core-v3.0.0`, but 3.0.0 is not on
+      NuGet, because its publish failed. A tag without a published package breaks the CI, and later releases too.
+      - In `.github/workflows/ci.yml` (job `pack`), the baseline is the highest **stable** version of the package id
+        on nuget.org (`https://api.nuget.org/v3-flatcontainer/<lowercase id>/index.json`, without `-` prerelease
+        versions, sorted with `sort -V`). If the package is not on nuget.org (404, for example AspNetCore), there is
+        no baseline.
+      - In `.github/workflows/release-please.yml` (job `publish`, pack step), the baseline is the highest stable
+        published version **lower than** the version being released. A re-run after a partial push then never
+        compares a package with itself.
+      - Use `curl -fsS`. A 404 means no baseline. Any other failure stops the job, so a NuGet outage does not
+        silently skip validation.
+      - Verify locally with the same commands: core gets 2.0.0, mvc 2.0.0, mediators 1.0.0, openapi 1.0.0,
+        openapi-swashbuckle 1.1.0, and aspnetcore none. The pack with the existing suppressions must pass.
+      - Update `RELEASING.md` ("Intended breaking changes") to say that the baseline is the latest version
+        published on nuget.org.
+
 ## Baselines
 
 Checked on nuget.org (flat-container index) on 2026-11-26. Every baseline exists:

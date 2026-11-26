@@ -46,8 +46,10 @@ touches the package and uses the `Release-As` footer, for example
 
 ### Intended breaking changes
 
-CI validates each package's public API against its last released version (package validation). For an intended
-break:
+CI validates each package's public API against its latest version **published on nuget.org**, which is what users
+have today (package validation, through `.github/scripts/nuget-baseline.sh`). A git tag whose package is not
+published yet, for example after a failed publish, is not used. The publish job compares against the latest
+published version lower than the one being released. For an intended break:
 
 1. commit it as `feat!:`, with the reason;
 2. record it by running
@@ -61,6 +63,19 @@ break:
 ```bash
 gh attestation verify Viana.Results.<x>.nupkg -R gustavorviana/Viana.Results
 ```
+
+### If publishing fails after the release was created
+
+release-please has already created the tags and GitHub releases, so a new push releases nothing. Re-running the
+failed job reuses the old workflow code. To recover:
+
+1. fix the cause and merge it into `main` (through `dev`);
+2. in Actions → **Release Please** → **Run workflow**, choose `main` and give the JSON array of the package paths
+   to publish (the default is all six);
+3. approve the run in the `nuget` environment.
+
+Versions come from `.release-please-manifest.json` on `main`, so run it before the next release PR is merged.
+Packages that are already on NuGet are skipped (`--skip-duplicate`).
 
 ## Dependabot
 
