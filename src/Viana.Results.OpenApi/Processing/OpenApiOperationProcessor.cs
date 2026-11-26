@@ -9,8 +9,7 @@ namespace Viana.Results.OpenApi.Processing;
 /// <summary>
 /// Operation-level helpers shared by the native OpenAPI transformers and the Swashbuckle filters.
 /// </summary>
-[Obsolete("Internal helper; not meant for direct use.")]
-public static class OpenApiOperationProcessor
+internal static class OpenApiOperationProcessor
 {
     /// <summary>
     /// Documents the success of an endpoint returning a Viana result: a bare <see cref="Result"/> is 204, hand-declared

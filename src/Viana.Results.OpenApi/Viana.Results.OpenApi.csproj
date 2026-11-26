@@ -24,7 +24,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>1.1.0</Version>
+		<Version>2.0.0</Version>
 		<PackageReleaseNotes>
 			Security: updated Microsoft.AspNetCore.OpenApi to 10.0.15, which resolves the high-severity vulnerability in the transitive Microsoft.OpenApi dependency (GHSA-v5pm-xwqc-g5wc); Microsoft.OpenApi now resolves to 2.13.0.
 			Added: ProblemResultAttribute.Detail, documented as the RFC 9457 "detail" member of the problem schema.
@@ -36,7 +36,8 @@
 			Fixed: schema member names are case-insensitive like the runtime (no member silently dropped).
 			Fixed: AddVianaResultExamples composes across multiple calls (options pattern); VianaResultOptions stays resolvable from DI.
 			Fixed: example providers receive constructor dependencies from DI; a clear error names the provider otherwise.
-			Deprecated: OpenApiOperationProcessor, OpenApiDocumentProcessor, OpenApiSchemaProcessor, ResponseExampleResolver, ResolvedExample, ProblemFieldSchema and ProblemResultSchema.AddField/Build/ApplyTo are internal helpers; use the processors through the transformers and filters.
+			Breaking: the helpers OpenApiOperationProcessor, OpenApiDocumentProcessor, OpenApiSchemaProcessor, ResponseExampleResolver, ResolvedExample, ProblemFieldSchema and ProblemResultSchema, public in 1.0.0, are now internal; use the transformers, attributes and extensions.
+			Breaking: OpenApiOperationProcessor.ClearBodyForBareResult was removed (replaced by the default-result documentation).
 			Changed: problem responses are documented like the native ProblemDetails: a shared "VianaProblemDetails" component (type, title, status, detail, instance; optional and nullable) referenced with $ref, plus allOf for extra members; content type application/problem+json only.
 			Changed: one source per status for schema and example: endpoint [ResponseExample] &gt; action [ProblemResult] &gt; controller [ProblemResult] &gt; global example (fallback only); several endpoint examples are merged.
 			Fixed: an action [ProblemResult] now wins over the controller one for the same status.

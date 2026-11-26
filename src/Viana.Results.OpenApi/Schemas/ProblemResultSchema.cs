@@ -13,7 +13,7 @@ namespace Viana.Results.OpenApi.Schemas;
 /// Represents an OpenAPI schema builder for RFC 9457 Problem Details responses.
 /// Produces standardized OpenAPI documentation including default and custom fields.
 /// </summary>
-public class ProblemResultSchema
+internal class ProblemResultSchema
 {
     private readonly List<ProblemField> _schemas = [];
     private readonly JsonSerializerOptions _options;
@@ -80,7 +80,6 @@ public class ProblemResultSchema
     /// </summary>
     /// <param name="field">Field schema definition.</param>
     /// <returns>The current instance for fluent chaining.</returns>
-    [Obsolete("Internal helper; not meant for direct use.")]
     public ProblemResultSchema AddField(ProblemFieldSchema field)
     {
         return AddFieldCore(field.Type, field.Name, field.Description, field.ExampleValue);
@@ -94,7 +93,6 @@ public class ProblemResultSchema
     /// <param name="description">Field description.</param>
     /// <param name="exampleValue">Optional example value.</param>
     /// <returns>The current instance for fluent chaining.</returns>
-    [Obsolete("Internal helper; not meant for direct use.")]
     public ProblemResultSchema AddField(JsonSchemaType type, string name, string description, object? exampleValue = null)
         => AddFieldCore(type, name, description, exampleValue);
 
@@ -122,7 +120,6 @@ public class ProblemResultSchema
     /// <param name="description">Field description.</param>
     /// <param name="exampleValue">Optional example value.</param>
     /// <returns>The current instance for fluent chaining.</returns>
-    [Obsolete("Internal helper; not meant for direct use.")]
     public ProblemResultSchema AddField(Type? type, string name, string description, object? exampleValue = null)
         => AddFieldCore(type, name, description, exampleValue);
 
@@ -187,7 +184,6 @@ public class ProblemResultSchema
     /// Applies this problem schema to the specified OpenAPI responses collection.
     /// </summary>
     /// <param name="responses">OpenAPI responses collection.</param>
-    [Obsolete("Internal helper; not meant for direct use.")]
     public void ApplyTo(OpenApiResponses? responses) => ApplyToCore(responses);
 
     internal void ApplyToCore(OpenApiResponses? responses)
@@ -202,7 +198,6 @@ public class ProblemResultSchema
     /// Builds the final <see cref="OpenApiResponse"/> for the configured status code.
     /// </summary>
     /// <param name="jsonContentTypes">Content types that should receive the schema.</param>
-    [Obsolete("Internal helper; not meant for direct use.")]
     public OpenApiResponse Build(string[] jsonContentTypes) => BuildCore(jsonContentTypes);
 
     internal OpenApiResponse BuildCore(string[] jsonContentTypes)

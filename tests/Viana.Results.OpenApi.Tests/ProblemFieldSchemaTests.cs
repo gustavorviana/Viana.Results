@@ -1,4 +1,3 @@
-#pragma warning disable CS0618 // this file tests the obsolete ProblemFieldSchema
 using Microsoft.OpenApi;
 using Viana.Results.OpenApi.Schemas;
 
@@ -36,4 +35,3 @@ public class ProblemFieldSchemaTests
         Assert.Equal("404", field.GetExampleJsonValue());
     }
 }
-#pragma warning restore CS0618
