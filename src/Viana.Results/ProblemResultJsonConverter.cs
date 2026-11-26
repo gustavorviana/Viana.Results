@@ -11,152 +11,155 @@ namespace Viana.Results;
 /// </summary>
 public sealed class ProblemResultJsonConverter : JsonConverter<ProblemResult>
 {
-	private const string TypeName = "type";
-	private const string TitleName = "title";
-	private const string StatusName = "status";
+    private const string TypeName = "type";
+    private const string TitleName = "title";
+    private const string StatusName = "status";
 
-	/// <summary>
-	/// When true, extension names are written as stored, ignoring the serializer naming policy
-	/// (used by Viana.Results.Mvc to keep its original output).
-	/// </summary>
-	internal bool PreserveExtensionNames { get; set; }
+    /// <summary>
+    /// When true, extension names are written as stored, ignoring the serializer naming policy
+    /// (used by Viana.Results.Mvc to keep its original output).
+    /// </summary>
+    internal bool PreserveExtensionNames { get; set; }
 
-	/// <inheritdoc />
-	public override ProblemResult? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-	{
-		if (reader.TokenType != JsonTokenType.StartObject)
-			throw new JsonException("Expected start of object for ProblemResult.");
+    /// <inheritdoc />
+    public override ProblemResult? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType != JsonTokenType.StartObject)
+            throw new JsonException("Expected start of object for ProblemResult.");
 
-		string? type = null;
-		string? title = null;
-		int? status = null;
-		string? description = null;
-		var extensions = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        string? type = null;
+        string? title = null;
+        int? status = null;
+        string? description = null;
+        var extensions = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
-		while (reader.Read())
-		{
-			if (reader.TokenType == JsonTokenType.EndObject)
-				break;
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.EndObject)
+                break;
 
-			if (reader.TokenType != JsonTokenType.PropertyName)
-				throw new JsonException("Expected property name.");
+            if (reader.TokenType != JsonTokenType.PropertyName)
+                throw new JsonException("Expected property name.");
 
-			var propName = reader.GetString()!;
-			reader.Read();
+            var propName = reader.GetString()!;
+            reader.Read();
 
-			if (propName.Equals(TypeName, StringComparison.OrdinalIgnoreCase))
-				type = reader.GetString();
-			else if (propName.Equals(TitleName, StringComparison.OrdinalIgnoreCase))
-				title = reader.GetString();
-			else if (propName.Equals(StatusName, StringComparison.OrdinalIgnoreCase))
-				status = reader.TokenType == JsonTokenType.Number ? reader.GetInt32() : null;
-			else
-				extensions[propName] = ReadExtensionValue(ref reader, options);
-		}
+            if (propName.Equals(TypeName, StringComparison.OrdinalIgnoreCase))
+                type = reader.GetString();
+            else if (propName.Equals(TitleName, StringComparison.OrdinalIgnoreCase))
+                title = reader.GetString();
+            else if (propName.Equals(StatusName, StringComparison.OrdinalIgnoreCase))
+                status = reader.TokenType == JsonTokenType.Number ? reader.GetInt32() : null;
+            else
+                extensions[propName] = ReadExtensionValue(ref reader, options);
+        }
 
-		// Missing "title"/"type" are defaulted by the ProblemResult constructor (status reason phrase, or "Error" / "about:blank").
-		// Legacy "description" member is still read and kept under the "description" extension key
-		if (extensions.TryGetValue("description", out var descObj))
-		{
-			extensions.Remove("description");
-			description = descObj as string ?? descObj?.ToString();
-		}
+        // Missing "title"/"type" are defaulted by the ProblemResult constructor (status reason phrase, or "Error" / "about:blank").
+        // Legacy "description" member is still read and kept under the "description" extension key
+        if (extensions.TryGetValue("description", out var descObj))
+        {
+            extensions.Remove("description");
+            description = descObj as string ?? descObj?.ToString();
+        }
 
-		return string.IsNullOrEmpty(description)
-			? new ProblemResult(status ?? 500, title ?? string.Empty, type ?? string.Empty, extensions.Count > 0 ? extensions : null)
-			: ProblemResult.CreateWithDescription(status ?? 500, title ?? string.Empty, description, type ?? string.Empty, extensions.Count > 0 ? extensions : null);
-	}
+        return string.IsNullOrEmpty(description)
+            ? new ProblemResult(status ?? 500, title ?? string.Empty, type ?? string.Empty, extensions.Count > 0 ? extensions : null)
+            : ProblemResult.CreateWithDescription(status ?? 500, title ?? string.Empty, description, type ?? string.Empty, extensions.Count > 0 ? extensions : null);
+    }
 
-	/// <inheritdoc />
-	public override void Write(Utf8JsonWriter writer, ProblemResult value, JsonSerializerOptions options)
-	{
-		writer.WriteStartObject();
-		writer.WriteString(TypeName, value.Type);
-		writer.WriteString(TitleName, value.Title);
-		writer.WriteNumber(StatusName, value.Status);
+    /// <inheritdoc />
+    public override void Write(Utf8JsonWriter writer, ProblemResult value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+        writer.WriteString(TypeName, value.Type);
+        writer.WriteString(TitleName, value.Title);
+        writer.WriteNumber(StatusName, value.Status);
 
-		if (value.Extensions != null && value.Extensions.Count > 0)
-		{
-			var policy = PreserveExtensionNames ? null : options.PropertyNamingPolicy;
-			if (policy == null)
-			{
-				foreach (var kv in value.Extensions)
-				{
-					writer.WritePropertyName(kv.Key);
-					WriteExtensionValue(writer, kv.Value, options);
-				}
-			}
-			else
-			{
-				// Names follow the serializer naming policy; names colliding after conversion keep the last value.
-				var converted = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
-				foreach (var kv in value.Extensions)
-					converted[policy.ConvertName(kv.Key)] = kv.Value;
+        if (value.Extensions != null && value.Extensions.Count > 0)
+        {
+            var policy = PreserveExtensionNames ? null : options.PropertyNamingPolicy;
+            if (policy == null)
+            {
+                foreach (var kv in value.Extensions)
+                {
+                    writer.WritePropertyName(kv.Key);
+                    WriteExtensionValue(writer, kv.Value, options);
+                }
+            }
+            else
+            {
+                // Names follow the serializer naming policy; names colliding after conversion keep the last value.
+                var converted = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kv in value.Extensions)
+                    converted[policy.ConvertName(kv.Key)] = kv.Value;
 
-				foreach (var kv in converted)
-				{
-					writer.WritePropertyName(kv.Key);
-					WriteExtensionValue(writer, kv.Value, options);
-				}
-			}
-		}
+                foreach (var kv in converted)
+                {
+                    writer.WritePropertyName(kv.Key);
+                    WriteExtensionValue(writer, kv.Value, options);
+                }
+            }
+        }
 
-		writer.WriteEndObject();
-	}
+        writer.WriteEndObject();
+    }
 
-	private static object? ReadExtensionValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
-	{
-		switch (reader.TokenType)
-		{
-			case JsonTokenType.String:
-				return reader.GetString();
-			case JsonTokenType.Number:
-				if (reader.TryGetInt32(out var i))
-					return i;
-				if (reader.TryGetInt64(out var l))
-					return l;
-				return reader.GetDouble();
-			case JsonTokenType.True:
-			case JsonTokenType.False:
-				return reader.GetBoolean();
-			case JsonTokenType.Null:
-				return null;
-			case JsonTokenType.StartObject:
-			case JsonTokenType.StartArray:
-				return JsonSerializer.Deserialize<JsonElement>(ref reader, options);
-			default:
-				throw new JsonException($"Unexpected token type for extension value: {reader.TokenType}");
-		}
-	}
+    private static object? ReadExtensionValue(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    {
+        switch (reader.TokenType)
+        {
+            case JsonTokenType.String:
+                return reader.GetString();
+            case JsonTokenType.Number:
+                if (reader.TryGetInt32(out var i))
+                    return i;
+                if (reader.TryGetInt64(out var l))
+                    return l;
+                return reader.GetDouble();
+            case JsonTokenType.True:
+            case JsonTokenType.False:
+                return reader.GetBoolean();
+            case JsonTokenType.Null:
+                return null;
+            case JsonTokenType.StartObject:
+            case JsonTokenType.StartArray:
+                // Feature 017: no reflection-based deserialization (Native AOT); same value as before.
+                return JsonElement.ParseValue(ref reader);
+            default:
+                throw new JsonException($"Unexpected token type for extension value: {reader.TokenType}");
+        }
+    }
 
-	private static void WriteExtensionValue(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
-	{
-		if (value == null)
-		{
-			writer.WriteNullValue();
-			return;
-		}
+    private static void WriteExtensionValue(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
+    {
+        if (value == null)
+        {
+            writer.WriteNullValue();
+            return;
+        }
 
-		switch (value)
-		{
-			case string s:
-				writer.WriteStringValue(s);
-				break;
-			case int i:
-				writer.WriteNumberValue(i);
-				break;
-			case long l:
-				writer.WriteNumberValue(l);
-				break;
-			case double d:
-				writer.WriteNumberValue(d);
-				break;
-			case bool b:
-				writer.WriteBooleanValue(b);
-				break;
-			default:
-				JsonSerializer.Serialize(writer, value, value.GetType(), options);
-				break;
-		}
-	}
+        switch (value)
+        {
+            case string s:
+                writer.WriteStringValue(s);
+                break;
+            case int i:
+                writer.WriteNumberValue(i);
+                break;
+            case long l:
+                writer.WriteNumberValue(l);
+                break;
+            case double d:
+                writer.WriteNumberValue(d);
+                break;
+            case bool b:
+                writer.WriteBooleanValue(b);
+                break;
+            default:
+                // Feature 017: metadata comes from the caller's resolver (reflection or source generated), so this
+                // is Native AOT safe; the value is written exactly as before.
+                JsonSerializer.Serialize(writer, value, options.GetTypeInfo(value.GetType()));
+                break;
+        }
+    }
 }

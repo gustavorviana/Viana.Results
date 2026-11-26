@@ -5,8 +5,7 @@
   <Folder Name="/examples/">
     <Project Path="examples/Viana.Results.Examples.Shared/Viana.Results.Examples.Shared.csproj" />
     <Project Path="examples/Viana.Results.Scalar/Viana.Results.Scalar.csproj" />
-    <Project Path="examples/Viana.Results.Swagger/Viana.Results.Swagger.csproj"
-      Id="59880a7f-9ccb-4d2d-abb3-325e557ea51a" />
+    <Project Path="examples/Viana.Results.Swagger/Viana.Results.Swagger.csproj" Id="59880a7f-9ccb-4d2d-abb3-325e557ea51a" />
     <Project Path="examples/Viana.Results.Mediators.Example/Viana.Results.Mediators.Example.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
@@ -21,6 +20,7 @@
     <Project Path="src/Viana.Results/Viana.Results.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Viana.Results.AotSmoke/Viana.Results.AotSmoke.csproj" />
     <Project Path="tests/Viana.Results.AspNetCore.Tests/Viana.Results.AspNetCore.Tests.csproj" />
     <Project Path="tests/Viana.Results.Examples.Tests/Viana.Results.Examples.Tests.csproj" />
     <Project Path="tests/Viana.Results.Mediators.Tests/Viana.Results.Mediators.Tests.csproj" />

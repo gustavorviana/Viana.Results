@@ -21,6 +21,10 @@ internal static class ResultReflections
     /// (i.e. the response body is the inner data rather than the wrapper). Envelopes
     /// (<see cref="IEnvelopeResult{T}"/>, including paged results) are never unwrapped.
     /// </summary>
+#if NET5_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Called with result types; the trimmer keeps the interfaces a used type implements, and IResult<> is referenced here.")]
+#endif
     public static bool IsUnwrappableType(Type type)
     {
         if (IsEnvelopeType(type) ||
@@ -45,6 +49,10 @@ internal static class ResultReflections
     /// Returns the payload type (<c>T</c> in <c>IResult&lt;T&gt;</c>) for the given result type.
     /// For <c>Result&lt;User&gt;</c> returns <c>User</c>; for <c>ListResult&lt;User&gt;</c> returns <c>IReadOnlyList&lt;User&gt;</c>.
     /// </summary>
+#if NET5_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Called with result types; the trimmer keeps the interfaces a used type implements, and IResult<> is referenced here.")]
+#endif
     public static Type? GetDataType(Type type)
     {
         return type.GetInterfaces()
