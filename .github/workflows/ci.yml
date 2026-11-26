@@ -68,8 +68,9 @@ jobs:
         run: |
           set -euo pipefail
           while read -r SLUG PROJECT; do
-            BASELINE=$(git tag --list "${SLUG}-v*" --sort=-v:refname | head -1 | sed "s/^${SLUG}-v//")
             NAME=$(basename "$PROJECT" .csproj)
+            # Baseline = latest stable version published on nuget.org (what users have), not the latest tag.
+            BASELINE=$(bash .github/scripts/nuget-baseline.sh "$NAME")
             echo "::group::$PROJECT (baseline: ${BASELINE:-none})"
             dotnet pack "$PROJECT" --configuration Release -p:GeneratePackageOnBuild=false -p:RestoreLockedMode=true \
               -p:VianaValidationProject="$NAME" -p:VianaValidationBaseline="$BASELINE" -o ./artifacts
