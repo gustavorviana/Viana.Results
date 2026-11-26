@@ -255,6 +255,62 @@ user first.
       `target-branch`, `commit-message`) were checked against the official options reference. With `target-branch`,
       the options do not apply to security updates, which always target the default branch.
 
+## Phase 11: one release PR and one publish run (2026-11-26)
+
+The user found the flow too verbose: one release PR per package, and one `release.yml` run per tag (each run
+restores, builds, tests and asks for its own approval). Decided:
+
+- **one combined release PR** per cycle;
+- **one publish run** per release, inside the release-please workflow, with one approval that publishes every
+  released package.
+
+The CI on PRs and merges stays as it is.
+
+The work goes on `dev` (through a PR), before PR #9 (`dev` → `main`) is merged if possible, so the first release
+already uses the new flow. Confirm the branch with the user first.
+
+- [X] T034 In `release-please-config.json`, set `"separate-pull-requests": false`, so one release PR carries every
+      package that changed, each with its own version and CHANGELOG. Confirm ⚠️ the combined PR title and the
+      tags (still `<component>-v<version>`, one per package) against the release-please manifest docs.
+- [X] T035 Move publishing into `.github/workflows/release-please.yml`.
+      - **`release-please` job:** keep it, and expose the action outputs `releases_created` and `paths_released`
+        (a JSON array of package paths). Confirm ⚠️ these names against googleapis/release-please-action v5,
+        whose `action.yml` declares no outputs.
+      - **`publish` job:**
+        - runs if `releases_created == 'true'`, in `environment: nuget`, with `permissions: contents: write,
+          id-token: write, attestations: write`;
+        - checks out the release commit, with the SDK from `global.json`;
+        - runs a locked restore, a Release build and the tests, once;
+        - for each released path, maps the path to its component and project, finds its previous tag as the
+          baseline, and runs `dotnet pack` with package validation (`-p:GeneratePackageOnBuild=false
+          -p:VianaValidationProject=… -p:VianaValidationBaseline=…`);
+        - generates one SBOM, then attests provenance and the SBOM for all `.nupkg` files;
+        - logs in with `NuGet/login` right before pushing, pushes every package, and uploads each package to its
+          own GitHub release.
+      - All actions are pinned by SHA (the ones already used in `release.yml`).
+- [X] T036 Delete `.github/workflows/release.yml`. Tags no longer start a workflow, and the ancestry check is not
+      needed: release-please creates the tags on `main` itself.
+- [X] T037 Update `RELEASING.md`:
+      - the flow: one release PR, then one publish run with one approval;
+      - **the nuget.org Trusted Publishing policy must name the workflow `release-please.yml`** (it named
+        `release.yml`), with environment `nuget`. The user updates the policy before the first release;
+      - the `nuget` environment's deployment refs: `main`, instead of the `*-v*` tags;
+      - the required checks no longer mention `release.yml`.
+- [X] T038 Validate: every action is pinned by SHA, the workflow logic has no references left to `release.yml`,
+      and the local pack-with-validation commands match the new job. Tell the user the order:
+      1. update the Trusted Publishing policy;
+      2. merge this PR into `dev`;
+      3. merge PR #9 `dev` → `main` (merge commit);
+      4. merge #8;
+      5. review the single release PR and merge it;
+      6. approve the publish run once.
+      **Result (2026-11-26):** `releases_created` and `paths_released` were confirmed in the
+      release-please-action v5 README. A simulation of the publish mapping (path → component → version → project →
+      baseline tag) is correct for all 6 packages, with AspNetCore having no baseline. 0 actions are pinned by tag,
+      and no workflow references `release.yml` any more. The six release PRs (#10–#15) were closed by the user;
+      they keep the `autorelease: pending` label, which the user should remove, so release-please does not treat
+      them as pending releases.
+
 ## Baselines
 
 Checked on nuget.org (flat-container index) on 2026-11-26. Every baseline exists:
