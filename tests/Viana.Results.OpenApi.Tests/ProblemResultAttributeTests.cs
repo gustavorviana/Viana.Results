@@ -18,9 +18,9 @@ public class ProblemResultAttributeTests
         var attr = new ProblemResultAttribute(400);
         Assert.Null(attr.Title);
         Assert.Null(attr.Type);
-        #pragma warning disable CS0618 // exercises the obsolete Description option
+#pragma warning disable CS0618 // exercises the obsolete Description option
         Assert.Null(attr.Description);
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
     }
 
     [Fact]
@@ -30,17 +30,17 @@ public class ProblemResultAttributeTests
         {
             Title = "Validation failed",
             Type = "https://example.com/validation",
-            #pragma warning disable CS0618 // exercises the obsolete Description option
+#pragma warning disable CS0618 // exercises the obsolete Description option
             Description = "One or more fields are invalid."
-            #pragma warning restore CS0618
+#pragma warning restore CS0618
         };
 
         Assert.Equal(422, attr.Status);
         Assert.Equal("Validation failed", attr.Title);
         Assert.Equal("https://example.com/validation", attr.Type);
-        #pragma warning disable CS0618 // exercises the obsolete Description option
+#pragma warning disable CS0618 // exercises the obsolete Description option
         Assert.Equal("One or more fields are invalid.", attr.Description);
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
     }
 
     [Fact]

@@ -28,20 +28,20 @@ public sealed class ProblemResultAttribute(int status) : Attribute
     /// </summary>
     public string? Title { get; set; }
 
-	/// <summary>
-	/// RFC 9457 problem type URI. Defaults to "about:blank" when null or empty.
-	/// </summary>
-	public string? Type { get; set; }
+    /// <summary>
+    /// RFC 9457 problem type URI. Defaults to "about:blank" when null or empty.
+    /// </summary>
+    public string? Type { get; set; }
 
-	/// <summary>
-	/// Optional RFC 9457 "detail" (human-readable explanation specific to this occurrence).
-	/// Documented as a <c>detail</c> string member of the problem schema, with this text as example.
-	/// </summary>
-	public string? Detail { get; set; }
+    /// <summary>
+    /// Optional RFC 9457 "detail" (human-readable explanation specific to this occurrence).
+    /// Documented as a <c>detail</c> string member of the problem schema, with this text as example.
+    /// </summary>
+    public string? Detail { get; set; }
 
-	/// <summary>
-	/// Legacy option. It has no effect on the generated document; use <see cref="Detail"/>.
-	/// </summary>
-	[Obsolete("Description has no effect. Use Detail (RFC 9457 \"detail\") instead.")]
-	public string? Description { get; set; }
+    /// <summary>
+    /// Legacy option. It has no effect on the generated document; use <see cref="Detail"/>.
+    /// </summary>
+    [Obsolete("Description has no effect. Use Detail (RFC 9457 \"detail\") instead.")]
+    public string? Description { get; set; }
 }

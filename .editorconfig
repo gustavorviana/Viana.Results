@@ -1,0 +1,6 @@
+# Feature 017: one line ending everywhere, so `dotnet format --verify-no-changes` gives the same result on
+# Windows and Linux. Only the line ending is set here; code style keeps the SDK defaults.
+root = true
+
+[*]
+end_of_line = lf

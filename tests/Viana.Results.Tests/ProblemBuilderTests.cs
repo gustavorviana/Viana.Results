@@ -35,9 +35,9 @@ public class ProblemBuilderTests
     public void Build_WithDescriptionAndDetail_KeepsBoth()
     {
         var builder = new ProblemBuilder(400).WithDetail("d");
-        #pragma warning disable CS0618 // exercises the obsolete "description" API
+#pragma warning disable CS0618 // exercises the obsolete "description" API
         builder.WithDescription("legacy");
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
 
         var problem = builder.Build();
 
@@ -77,13 +77,13 @@ public class ProblemBuilderTests
     [Fact]
     public void Build_WithTitleTypeDescription_StoresThem()
     {
-        #pragma warning disable CS0618 // exercises the obsolete "description" API
+#pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = new ProblemBuilder(400)
             .WithTitle("Bad Request")
             .WithType("https://example.com/errors/bad-request")
             .WithDescription("Something is off.")
             .Build();
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
 
         Assert.Equal(400, problem.Status);
         Assert.Equal("Bad Request", problem.Title);
@@ -223,9 +223,9 @@ public class ProblemBuilderTests
         Assert.Same(builder, builder.WithTitle("t"));
         Assert.Same(builder, builder.WithType("https://x"));
         Assert.Same(builder, builder.WithStatus(401));
-        #pragma warning disable CS0618 // exercises the obsolete "description" API
+#pragma warning disable CS0618 // exercises the obsolete "description" API
         Assert.Same(builder, builder.WithDescription("d"));
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
         Assert.Same(builder, builder.WithDetail("d2"));
         Assert.Same(builder, builder.WithInstance("/i"));
         Assert.Same(builder, builder.AddExtension("k", "v"));

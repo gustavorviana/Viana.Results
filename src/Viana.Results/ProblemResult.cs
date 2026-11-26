@@ -12,7 +12,7 @@ namespace Viana.Results;
 /// https://datatracker.ietf.org/doc/html/rfc9457
 /// </summary>
 [JsonConverter(typeof(ProblemResultJsonConverter))]
-public sealed class ProblemResult: IHasExtensions
+public sealed class ProblemResult : IHasExtensions
 {
     /// <summary>RFC 9457: problem type URI.</summary>
     public string Type { get; }
