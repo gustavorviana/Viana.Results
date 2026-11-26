@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-26
 
-**Status**: Draft
+**Status**: Ready
 
 **Input**: "Add `IEnvelopeResult<T> : IResult<T>` (no non-generic variant). The body of an envelope result is the
 whole object: every public property except `Status` and `Problem`. When the type implements `IHasExtensions`,
@@ -108,6 +108,10 @@ the schema's properties with the runtime body's members.
 - The application's JSON options (naming policy, converters) apply to the envelope like to any body.
 - Extension values are serialized with their runtime type.
 - Mediator dispatch is not affected. The envelope is only a response shape.
+- The FR-002/FR-003 guarantees hold when the body is written with System.Text.Json: minimal APIs, Mvc, and
+  controllers whose MVC output formatters include the System.Text.Json formatter. With other formatters only
+  (Newtonsoft, XML), the envelope instance is written as-is. To keep `status`/`problem` out there, derive from
+  `Result` or mark those members with `[JsonIgnore]`.
 
 ## Requirements *(mandatory)*
 
@@ -115,8 +119,9 @@ the schema's properties with the runtime body's members.
 
 - **FR-001**: The core MUST expose `IEnvelopeResult<T>`, derived from `IResult<T>`, with XML documentation. There
   is no non-generic variant.
-- **FR-002**: The response body of an envelope result MUST be the object's public properties, excluding
-  `Status`, `Problem` and (when present) `Extensions`, serialized with the application's JSON options.
+- **FR-002**: When written with System.Text.Json, the response body of an envelope result MUST be the object's
+  public properties, excluding `Status`, `Problem` and (when present) `Extensions`, serialized with the
+  application's JSON options (see edge cases for other formatters).
 - **FR-003**: For an envelope that implements `IHasExtensions`, each extension entry MUST be written at the root
   of the body. A declared property MUST win over an extension with the same JSON name.
 - **FR-004**: Problems and 204 MUST behave as for every other result.
@@ -147,7 +152,9 @@ the schema's properties with the runtime body's members.
 - **SC-002**: For every envelope test case, the runtime body and the documented schema have the same members,
   in all packages.
 - **SC-003**: All existing paged-result tests pass without changes to their expected output.
-- **SC-004**: The core keeps its trimming and Native AOT compatibility (the AOT smoke test passes).
+- **SC-004**: The core builds with the trimming and Native AOT analyzers enabled (`IsAotCompatible=true`) and
+  shows no new warning from the code of this feature. The CI AOT smoke test that the constitution requires does
+  not exist yet. It is a separate pending item and not part of this feature.
 
 ## Assumptions
 
@@ -156,3 +163,4 @@ the schema's properties with the runtime body's members.
 - The AOT constraints of the core are handled in the plan. Satellites already serialize with the host options.
 - Nothing is published, so no migration guide is needed.
 - Spec 013 is independent. Envelope results are Viana results for its rules.
+- Reading envelopes (deserializing a response into a `CursorResult` on the client) is out of scope.

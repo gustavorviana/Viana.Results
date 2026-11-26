@@ -46,6 +46,19 @@ public PagedResult<Product> Page(int page, int size)
     => PagedResult<Product>.Create(items, page, size, total);              // { data, pageNumber, totalPages }
 ```
 
+### Your own list result (envelope)
+
+```csharp
+public sealed class CursorResult<T>(IReadOnlyList<T> data, string? nextCursor) : IEnvelopeResult<IReadOnlyList<T>>
+{
+    public int Status => 200;
+    public ProblemResult? Problem => null;
+    public IReadOnlyList<T> Data => data;
+    public string? NextCursor => nextCursor;
+}
+// body: { "data": [...], "nextCursor": "abc" }
+```
+
 ### Richer problems
 
 ```csharp
