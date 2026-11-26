@@ -2,6 +2,14 @@
 
 Versions are managed by release-please from Conventional Commits.
 
+## [3.0.0](https://github.com/gustavorviana/Viana.Results/compare/mvc-v3.0.0...mvc-v3.0.0) (2026-11-26)
+
+
+### Bug Fixes
+
+* **ci:** publish packages without a previous release ([#22](https://github.com/gustavorviana/Viana.Results/issues/22)) ([9af93e9](https://github.com/gustavorviana/Viana.Results/commit/9af93e92860b1ed2e019fcd5d1ade4821ba6e8f1))
+* **ci:** publish packages without a previous release ([#22](https://github.com/gustavorviana/Viana.Results/issues/22)) ([442eb12](https://github.com/gustavorviana/Viana.Results/commit/442eb12f3c45479388946299b023254705befb10))
+
 ## [3.0.0](https://github.com/gustavorviana/Viana.Results/compare/mvc-v2.0.0...mvc-v3.0.0) (2026-11-26)
 
 
