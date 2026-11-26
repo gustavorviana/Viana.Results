@@ -13,9 +13,9 @@
       },
       "Scalar.AspNetCore": {
         "type": "Direct",
-        "requested": "[2.14.14, )",
-        "resolved": "2.14.14",
-        "contentHash": "xNa3MadDudKk7y+0gQPBQihVL+JxGP3KNZHB4Zl2W42ATFIffHHHBjsuyKJ4YPUnnA7NUiHR/diqV/FTZC9dkg=="
+        "requested": "[2.21.0, )",
+        "resolved": "2.21.0",
+        "contentHash": "pDaxW7B1HqQIU5T64Jn1Txn2JKyVqoOvskCAqTb/lffZyUS8hBxhxmOkJum4wbzFmhc2LsKULVQ/4GDHLb7yjQ=="
       },
       "Microsoft.OpenApi": {
         "type": "Transitive",
@@ -28,29 +28,29 @@
       "viana.results.aspnetcore": {
         "type": "Project",
         "dependencies": {
-          "Viana.Results": "[2.0.0, )"
+          "Viana.Results": "[3.0.0, )"
         }
       },
       "viana.results.examples.shared": {
         "type": "Project",
         "dependencies": {
-          "Viana.Results": "[2.0.0, )",
+          "Viana.Results": "[3.0.0, )",
           "Viana.Results.AspNetCore": "[1.0.0, )",
-          "Viana.Results.Mvc": "[2.0.0, )",
-          "Viana.Results.OpenApi": "[1.0.0, )"
+          "Viana.Results.Mvc": "[3.0.0, )",
+          "Viana.Results.OpenApi": "[2.0.0, )"
         }
       },
       "viana.results.mvc": {
         "type": "Project",
         "dependencies": {
-          "Viana.Results": "[2.0.0, )"
+          "Viana.Results": "[3.0.0, )"
         }
       },
       "viana.results.openapi": {
         "type": "Project",
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "[10.0.15, )",
-          "Viana.Results": "[2.0.0, )"
+          "Viana.Results": "[3.0.0, )"
         }
       }
     }
