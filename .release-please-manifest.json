@@ -1,5 +1,5 @@
 {
-  "src/Viana.Results": "2.0.0",
+  "src/Viana.Results": "3.0.0",
   "src/Viana.Results.Mvc": "2.0.0",
   "src/Viana.Results.Mediators": "1.0.0",
   "src/Viana.Results.OpenApi": "1.0.0",
