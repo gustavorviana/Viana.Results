@@ -27,16 +27,16 @@ feature/x ──squash──► dev ──merge commit──► main ──► r
 
    A commit that touches `src/Viana.Results.Mediators/` only releases Mediators. Changes to root files
    (`Directory.*.props`, workflows) release nothing on their own.
-2. **Release PRs.** On every push to `main`, release-please opens or updates one release PR per package. The PR
-   carries the new `<Version>`, the `CHANGELOG.md` entry and the GitHub release notes.
-3. **Merge a release PR.** release-please creates the tag `<component>-v<version>` and the GitHub release. The
-   components are `core`, `mvc`, `mediators`, `openapi`, `openapi-swashbuckle` and `aspnetcore`.
-4. **Publish.** The tag starts `release.yml`, which:
-   - checks that the tag is on `main`, and that it matches `<Version>`;
-   - runs build, tests and package validation;
-   - waits for approval in the `nuget` environment;
+2. **One release PR.** On every push to `main`, release-please opens or updates a single release PR that carries
+   every package that changed, each with its new `<Version>` and `CHANGELOG.md` entry.
+3. **Merge the release PR.** release-please creates one `<component>-v<version>` tag and GitHub release per
+   package. The components are `core`, `mvc`, `mediators`, `openapi`, `openapi-swashbuckle` and `aspnetcore`.
+4. **Publish, in one run.** The `publish` job of `release-please.yml` then runs once for the whole release:
+   - waits for one approval in the `nuget` environment;
+   - runs the locked restore, build and tests once;
+   - packs each released package, with package validation against its previous release;
    - attests provenance and the SBOM;
-   - pushes to NuGet with Trusted Publishing.
+   - pushes every package to NuGet with Trusted Publishing, and attaches them to their GitHub releases.
 
 ### Shipping a dependency-only fix
 
@@ -84,10 +84,12 @@ gh attestation verify Viana.Results.<x>.nupkg -R gustavorviana/Viana.Results
 These settings live in GitHub and nuget.org, not in files.
 
 1. **nuget.org Trusted Publishing.** On nuget.org, open the username menu, then Trusted Publishing. Add a policy with
-   owner `gustavorviana`, repository `Viana.Results`, workflow `release.yml` and environment `nuget`.
+   owner `gustavorviana`, repository `Viana.Results`, workflow **`release-please.yml`** and environment `nuget`.
+   If a policy for `release.yml` exists (the earlier flow), change it to `release-please.yml`, or publishing
+   fails to authenticate.
 2. **Secret `NUGET_USER`.** Set it to your nuget.org profile name, not the email.
 3. **Environment `nuget`.** In Settings → Environments, create it with yourself as a required reviewer, and allow
-   only the `*-v*` tags as deployment refs.
+   only the `main` branch as deployment ref (publishing runs on the push to `main`, not on a tag).
 4. **GitHub App for release-please.** Create a private App with these permissions: Contents read/write and Pull
    requests read/write. Install it on this repository only. Add the secrets `RELEASE_APP_CLIENT_ID` and
    `RELEASE_APP_PRIVATE_KEY` twice:
