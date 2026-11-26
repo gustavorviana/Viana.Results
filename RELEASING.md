@@ -46,8 +46,10 @@ touches the package and uses the `Release-As` footer, for example
 
 ### Intended breaking changes
 
-CI validates each package's public API against its last released version (package validation). For an intended
-break:
+CI validates each package's public API against its latest version **published on nuget.org**, which is what users
+have today (package validation, through `.github/scripts/nuget-baseline.sh`). A git tag whose package is not
+published yet, for example after a failed publish, is not used. The publish job compares against the latest
+published version lower than the one being released. For an intended break:
 
 1. commit it as `feat!:`, with the reason;
 2. record it by running
