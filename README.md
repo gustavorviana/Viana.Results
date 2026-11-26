@@ -1,125 +1,54 @@
 # Viana.Results
 
-A .NET library for standardized operation responses using the **Result** pattern,
-with first-class support for collections, pagination, a lightweight **Mediator**,
-**ASP.NET Core MVC** integration, and **OpenAPI** documentation (native
-`Microsoft.AspNetCore.OpenApi` and `Swashbuckle.AspNetCore`).
+Result pattern for .NET: return `Result`/`Result<T>` from your code and get the right HTTP status, RFC 9457
+problem details and an accurate OpenAPI document.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI](https://github.com/gustavorviana/Viana.Results/actions/workflows/ci.yml/badge.svg)](https://github.com/gustavorviana/Viana.Results/actions/workflows/ci.yml)
 
----
-
 ## Packages
 
-Pick only what you need — every package ships independently.
-
-| Package | NuGet | Downloads | Targets |
-|---|---|---|---|
-| **Viana.Results** — core types (`Result`, `Result<T>`, `ListResult<T>`, `PagedResult<T>`, `ProblemBuilder`) | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.svg)](https://www.nuget.org/packages/Viana.Results) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.svg)](https://www.nuget.org/packages/Viana.Results) | `netstandard2.0`, `net5.0`, `net8.0`, `net10.0` |
-| **Viana.Results.Mediators** — minimal Mediator with `Activity` telemetry | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.Mediators.svg)](https://www.nuget.org/packages/Viana.Results.Mediators) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.Mediators.svg)](https://www.nuget.org/packages/Viana.Results.Mediators) | `netstandard2.0`, `net5.0`, `net6.0`, `net8.0`, `net10.0` |
-| **Viana.Results.AspNetCore** — `Result → IActionResult` through the native pipeline (ProblemDetails, MVC formatters) + global filter | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.AspNetCore.svg)](https://www.nuget.org/packages/Viana.Results.AspNetCore) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.AspNetCore.svg)](https://www.nuget.org/packages/Viana.Results.AspNetCore) | `net8.0`, `net10.0` |
-| **Viana.Results.Mvc** — `Result → ActionResult` + global `IResult` filter (net6.0 and existing apps) | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.Mvc.svg)](https://www.nuget.org/packages/Viana.Results.Mvc) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.Mvc.svg)](https://www.nuget.org/packages/Viana.Results.Mvc) | `net6.0`, `net8.0`, `net10.0` |
-| **Viana.Results.OpenApi** — native `Microsoft.AspNetCore.OpenApi` transformers (no Swashbuckle) | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.OpenApi.svg)](https://www.nuget.org/packages/Viana.Results.OpenApi) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.OpenApi.svg)](https://www.nuget.org/packages/Viana.Results.OpenApi) | `net10.0` |
-| **Viana.Results.OpenApi.Swashbuckle** — `SwaggerGen` filters for the same OpenAPI output | [![NuGet](https://img.shields.io/nuget/v/Viana.Results.OpenApi.Swashbuckle.svg)](https://www.nuget.org/packages/Viana.Results.OpenApi.Swashbuckle) | [![Downloads](https://img.shields.io/nuget/dt/Viana.Results.OpenApi.Swashbuckle.svg)](https://www.nuget.org/packages/Viana.Results.OpenApi.Swashbuckle) | `net10.0` |
-
-Both OpenAPI packages produce an identical OpenAPI document — pick the one
-that matches the pipeline you already use.
-
----
-
-## Install
-
-```bash
-# Core (required by every other package)
-dotnet add package Viana.Results
-
-# Optional, mix and match:
-dotnet add package Viana.Results.Mediators
-dotnet add package Viana.Results.AspNetCore           # ASP.NET Core (net8.0+), native ProblemDetails
-dotnet add package Viana.Results.Mvc                  # ASP.NET Core MVC on net6.0 / existing apps
-dotnet add package Viana.Results.OpenApi              # native AddOpenApi pipeline
-dotnet add package Viana.Results.OpenApi.Swashbuckle  # SwaggerGen pipeline
-```
-
----
+| Package | Use it for | Targets |
+|---|---|---|
+| [Viana.Results](src/Viana.Results/README.md) | Core types (`Result`, `Result<T>`, `ListResult<T>`, `PagedResult<T>`) | `netstandard2.0`, `net8.0`, `net10.0` |
+| [Viana.Results.AspNetCore](src/Viana.Results.AspNetCore/README.md) | Controllers and minimal APIs with native ProblemDetails | `net8.0`, `net10.0` |
+| [Viana.Results.Mvc](src/Viana.Results.Mvc/README.md) | MVC on net6.0 / existing apps | `net6.0`, `net8.0`, `net10.0` |
+| [Viana.Results.Mediators](src/Viana.Results.Mediators/README.md) | Small mediator with traces and metrics | `netstandard2.0`, `net6.0`, `net8.0`, `net10.0` |
+| [Viana.Results.OpenApi](src/Viana.Results.OpenApi/README.md) | OpenAPI with `AddOpenApi()` (Scalar, etc.) | `net10.0` |
+| [Viana.Results.OpenApi.Swashbuckle](src/Viana.Results.OpenApi.Swashbuckle/README.md) | OpenAPI with `SwaggerGen` | `net10.0` |
 
 ## Quick start
 
-```csharp
-using Viana.Results;
+```bash
+dotnet add package Viana.Results
+dotnet add package Viana.Results.AspNetCore
+```
 
+```csharp
 public Result<User> GetUser(int id)
 {
     var user = repository.Find(id);
     if (user is null)
-        return Results.NotFound("User not found"); // 404 + ProblemDetails
+        return Results.NotFound("User not found"); // 404 + problem details
 
-    return user; // implicit conversion → Result<User>
+    return user; // 200 with the user
 }
 ```
 
-In an ASP.NET Core controller, with `Viana.Results.AspNetCore`:
-
 ```csharp
-using Viana.Results.AspNetCore;
+builder.Services.AddControllers().AddVianaResultFilter();
 
 [HttpGet("{id}")]
-public Task<IActionResult> Get(int id) =>
-    _service.GetUserAsync(id).ToActionResult();
+public Result<User> Get(int id) => _service.GetUser(id);
 ```
 
-Or register the global filter once and return `IResult` directly from actions:
-
-```csharp
-services.AddControllers().AddVianaResultFilter();
-```
-
-```csharp
-[HttpGet("{id}")]
-public async Task<IResult> Get(int id) => await _service.GetUserAsync(id);
-```
-
----
-
-## Documentation
-
-Each package has its own README with full API surface, registration, and
-examples:
-
-- [Viana.Results](src/Viana.Results/README.md) — core result types, `Results` factory, `ProblemBuilder`
-- [Viana.Results.Mediators](src/Viana.Results.Mediators/README.md) — `IRequest<T>`, `IHandler<,>`, DI registration, Activity tags
-- [Viana.Results.AspNetCore](src/Viana.Results.AspNetCore/README.md) — `ToActionResult()`, `AddVianaResultFilter()`, native ProblemDetails interop
-- [Viana.Results.Mvc](src/Viana.Results.Mvc/README.md) — `VianaResultAction`, `VianaResultFilter`
-- [Viana.Results.OpenApi](src/Viana.Results.OpenApi/README.md) — native OpenAPI transformers, `[ProblemResult]`, `[ResponseExample]`
-
-Runnable examples (catalog API with controllers, minimal APIs, Scalar, Swagger, and a mediator app with
-OpenTelemetry): see [`examples/README.md`](examples/README.md).
-- [Viana.Results.OpenApi.Swashbuckle](src/Viana.Results.OpenApi.Swashbuckle/README.md) — same surface for `SwaggerGen`
-
----
+Runnable examples: [examples](examples/README.md).
 
 ## Contributing
 
-Issues and pull requests are welcome at
-[`gustavorviana/Viana.Results`](https://github.com/gustavorviana/Viana.Results).
-
-### Zero warnings
-
-Every project in this repository builds with warnings treated as errors (see
-[`Directory.Build.props`](Directory.Build.props)), locally and in CI:
-
-- Compiler, nullable, XML documentation and analyzer warnings fail the build.
-- NuGet vulnerability advisories (direct and transitive) fail the build. Fix them by upgrading the
-  package in [`Directory.Packages.props`](Directory.Packages.props), never by suppressing the warning.
-- Suppressions (`NoWarn`, `#pragma warning disable`, `[SuppressMessage]`, `!` to silence a real
-  null flow) must target a single warning code, use the narrowest possible scope, carry an inline
-  comment explaining why, and be approved in review.
-
-### Benchmarks
-
-Hot-path changes must include before/after benchmark results. See
-[`benchmarks/README.md`](benchmarks/README.md).
+Issues and pull requests are welcome. The build treats warnings as errors
+([Directory.Build.props](Directory.Build.props)), and hot-path changes need before/after
+[benchmarks](benchmarks/README.md).
 
 ## License
 
