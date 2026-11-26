@@ -62,6 +62,23 @@ break:
 gh attestation verify Viana.Results.<x>.nupkg -R gustavorviana/Viana.Results
 ```
 
+## Dependabot
+
+- **Version updates** go to `dev`, at most weekly, 7 days after a version is published (cooldown). Their titles
+  are `build(deps): …` (NuGet) and `ci(deps): …` (Actions). They pass `pr-title` and release nothing by
+  themselves.
+- **Security updates** are never delayed and always target the default branch.
+- **Majors ignored**: `Microsoft.Extensions.*` and `System.Text.Json`. The published packages depend on them, and a
+  library must depend on the lowest version that works. Raising them would force consumers (for example
+  Mediators on net6/net8) onto a newer package line, so it is a deliberate change. To decline a proposed major,
+  comment `@dependabot ignore this major version` on its PR.
+- **Lock files**: `dependabot-lockfiles.yml` regenerates every `packages.lock.json` on Dependabot NuGet PRs and
+  pushes the result, because Dependabot sometimes misses projects. It needs the App secrets as Dependabot secrets
+  (settings step 4).
+- **If a Dependabot PR still fails**:
+  - for NU1004, run `dotnet restore Viana.Results.slnx --force-evaluate` locally and push the lock files;
+  - for a real break, close the PR with `@dependabot ignore this version`, or fix the code in a PR to `dev`.
+
 ## One-time settings (follow in this order)
 
 These settings live in GitHub and nuget.org, not in files.
@@ -73,7 +90,10 @@ These settings live in GitHub and nuget.org, not in files.
    only the `*-v*` tags as deployment refs.
 4. **GitHub App for release-please.** Create a private App with these permissions: Contents read/write and Pull
    requests read/write. Install it on this repository only. Add the secrets `RELEASE_APP_CLIENT_ID` and
-   `RELEASE_APP_PRIVATE_KEY`.
+   `RELEASE_APP_PRIVATE_KEY` twice:
+   - under Settings → Secrets and variables → **Actions**, for release-please;
+   - under Settings → Secrets and variables → **Dependabot**, for the lock-file workflow on Dependabot PRs,
+     which cannot read Actions secrets.
 5. **Branches and rulesets.**
    - Create `dev` from `main`, and make `dev` the default branch, so new PRs target it.
    - In Settings → General → Pull Requests, allow both "squash merging" and "merge commits". The rulesets below

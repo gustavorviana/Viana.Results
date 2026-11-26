@@ -209,6 +209,52 @@ The work starts from `origin/main` (`d5bd902`). The branch name and the push are
       `release-please-config.json`, so the following versions come from the commits again. This is a follow-up PR
       through `dev`.
 
+## Phase 10: Dependabot follow-ups (2026-11-26)
+
+The first Dependabot run confirmed that it updates `Directory.Packages.props` and the lock files, and that the
+7-day cooldown works. It also showed three gaps:
+
+- it did not regenerate `benchmarks/Viana.Results.Benchmarks/packages.lock.json`, so PR #2 failed with NU1004
+  (reproduced locally);
+- it proposed major bumps of library-facing packages (#4 and #5: `Microsoft.Extensions.DependencyInjection(.Abstractions)`
+  8 → 11), which would force consumers of Mediators on net6/net8 onto the .NET 11 package line. The user decided
+  to close #4 and #5;
+- its PRs target `main`, with titles like "Bump …".
+
+The work goes on `chore/first-release` before its PR is opened, or on `dev` once it exists. Confirm with the
+user first.
+
+- [X] T030 In `.github/dependabot.yml`, for the `nuget` ecosystem:
+      - add `target-branch: dev`, to take effect once `dev` exists;
+      - add `commit-message: { prefix: "build", include: "scope" }`, so the titles become `build(deps): …`, which
+        passes `pr-title` and releases nothing by itself;
+      - add `ignore` rules with `update-types: ["version-update:semver-major"]` for `Microsoft.Extensions.*` and
+        `System.Text.Json`, which the published packages depend on. Security updates are not affected by
+        `ignore` on version updates. Confirm ⚠️ against the Dependabot options reference.
+
+      For `github-actions`: add `target-branch: dev` and `commit-message: { prefix: "ci" }`.
+- [X] T031 Create `.github/workflows/dependabot-lockfiles.yml` (option a):
+      - trigger on `pull_request` (opened, synchronize, reopened), run only when
+        `github.event.pull_request.user.login == 'dependabot[bot]'`, with `permissions: contents: read`;
+      - check out the PR head with an App token (`actions/create-github-app-token`, the same App as release-please,
+        with Contents write), so the push triggers CI again. `GITHUB_TOKEN` pushes do not start workflows;
+      - pin the SDK from `global.json`, run `dotnet restore Viana.Results.slnx --force-evaluate`, and if any
+        `packages.lock.json` changed, commit `build(deps): regenerate lock files` and push to the PR branch;
+      - all actions pinned by SHA and at least 7 days old;
+      - Dependabot PRs cannot read regular Actions secrets, so the App secrets must also be added as **Dependabot
+        secrets**. Document this in `RELEASING.md`. Confirm ⚠️.
+- [X] T032 In `RELEASING.md`, add the Dependabot section: the App secrets as Dependabot secrets, the
+      lock-file workflow, the majors ignored for library-facing packages and why, and how to handle a Dependabot
+      PR that still fails.
+- [X] T033 Validate: YAML parses, every action is pinned by SHA, and the local build and tests are green. Tell the
+      user how to re-run PR #2 after the workflow lands (comment `@dependabot recreate` or push), and how to close
+      #4 and #5 with `@dependabot ignore this major version`.
+      **Result (2026-11-26):** all actions are pinned by SHA, and the locked restore, the Release build (0
+      warnings) and the tests pass. The YAML was not checked with a parser locally, because installing one was not
+      allowed; GitHub validates the workflows on push. The Dependabot options (`ignore` with `update-types`,
+      `target-branch`, `commit-message`) were checked against the official options reference. With `target-branch`,
+      the options do not apply to security updates, which always target the default branch.
+
 ## Baselines
 
 Checked on nuget.org (flat-container index) on 2026-11-26. Every baseline exists:
