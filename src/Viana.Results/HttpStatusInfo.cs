@@ -94,4 +94,22 @@ public class HttpStatusInfo
     {
         return httpCodes.TryGetValue(code, out var message) ? message : "Unknown";
     }
+
+    /// <summary>
+    /// Gets the standard reason phrase of a status code, excluding placeholder entries (306, 418).
+    /// </summary>
+    /// <param name="code">The HTTP status code.</param>
+    /// <param name="phrase">The reason phrase when found; otherwise an empty string.</param>
+    /// <returns><see langword="true"/> when a usable reason phrase exists.</returns>
+    internal static bool TryGetReasonPhrase(int code, out string phrase)
+    {
+        if (code != 306 && code != 418 && httpCodes.TryGetValue(code, out var message))
+        {
+            phrase = message;
+            return true;
+        }
+
+        phrase = string.Empty;
+        return false;
+    }
 }

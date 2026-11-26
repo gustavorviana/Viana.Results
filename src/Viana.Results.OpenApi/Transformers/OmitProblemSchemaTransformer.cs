@@ -14,7 +14,7 @@ public sealed class OmitProblemSchemaTransformer : IOpenApiSchemaTransformer
     /// <inheritdoc />
     public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
     {
-        OpenApiSchemaProcessor.OmitProblemFields(schema, context.JsonTypeInfo.Type);
+        SchemaProcessor.OmitProblemFields(schema, context.JsonTypeInfo.Type);
         return Task.CompletedTask;
     }
 }

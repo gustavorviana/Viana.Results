@@ -1,83 +1,40 @@
 ## Viana.Results.Mvc
 
-Extensions to integrate `Viana.Results` with **ASP.NET Core MVC**, allowing you to
-convert `Result` into `ActionResult` and use a global filter to format responses.
+Returns Viana results from ASP.NET Core MVC on net6.0 and existing apps. On net8.0+, prefer
+[Viana.Results.AspNetCore](https://github.com/gustavorviana/Viana.Results/tree/main/src/Viana.Results.AspNetCore).
 
----
-
-### NuGet package
-
-```bash id="3h0peu"
+```bash
 dotnet add package Viana.Results.Mvc
 ```
 
-### Supported frameworks
+Targets: `net6.0`, `net8.0`, `net10.0`.
 
-* `net6.0`
-* `net8.0`
-* `net10.0`
+### Global filter
 
----
-
-### Converting `Result` to `ActionResult`
-
-```csharp id="l37j1a"
-using Microsoft.AspNetCore.Mvc;
-using Viana.Results;
+```csharp
 using Viana.Results.Mvc;
 
-[ApiController]
-[Route("api/[controller]")]
-public class UsersController : ControllerBase
-{
-    private readonly IUserService _userService;
-
-    public UsersController(IUserService userService)
-    {
-        _userService = userService;
-    }
-
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(int id)
-    {
-        var result = await _userService.GetUserByIdAsync(id);
-
-        // Converts Result to ActionResult with the appropriate status code
-        return result.ToActionResult();
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CreateUser(CreateUserDto dto)
-    {
-        var result = await _userService.CreateAsync(dto);
-        return result.ToActionResult();
-    }
-}
-```
-
----
-
-### Global filter (`VianaResultFilter`)
-
-```csharp id="c6qq2u"
-using Microsoft.Extensions.DependencyInjection;
-using Viana.Results.Mvc;
-using Viana.Results.Mvc.Filters;
-
-// Registers VianaResultFilter so that IResult is converted into JSON responses
 services.AddControllers().AddVianaResultFilter();
 
-// Or manual registration:
-services.AddControllers(options =>
-{
-    options.Filters.Add<VianaResultFilter>();
-});
-
-// Now you can return IResult directly
 [HttpGet]
 public async Task<IResult> GetUsers()
 {
     var users = await _userService.GetAllAsync();
-    return users; // Will be automatically formatted
+    return users;
 }
 ```
+
+### Wrapping a `Result` in an `ActionResult`
+
+```csharp
+[HttpGet("{id}")]
+public async Task<IActionResult> GetUser(int id)
+{
+    var result = await _userService.GetUserByIdAsync(id);
+    return new VianaResultAction(result);
+}
+```
+
+Failures are written as `application/problem+json`. `Results.Ok()` without a value answers 204.
+
+Examples: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).

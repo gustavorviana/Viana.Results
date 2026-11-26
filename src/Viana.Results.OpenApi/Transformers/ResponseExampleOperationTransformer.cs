@@ -29,11 +29,23 @@ public sealed class ResponseExampleOperationTransformer : IOpenApiOperationTrans
     }
 
     /// <inheritdoc />
-    public Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
+    public async Task TransformAsync(OpenApiOperation operation, OpenApiOperationTransformerContext context, CancellationToken cancellationToken)
     {
+        var json = _httpJson.Value.SerializerOptions;
         var method = TransformerHelper.GetMethodInfo(context.Description);
+        var scope = EndpointScope.From(context.Description.ActionDescriptor, _services);
         if (method != null)
-            OpenApiOperationProcessor.ApplyResponseExamples(operation, method, _httpJson.Value.SerializerOptions, _services, _options);
-        return Task.CompletedTask;
+            OperationProcessor.ApplyResponseExamples(operation, method, json, _services, _options, scope);
+
+        // Minimal API declarations (ProducesResult / ProducesProblemResult): async end to end.
+        await OperationProcessor.ApplyEndpointDeclarationsAsync(
+            operation,
+            context.Description.ActionDescriptor?.EndpointMetadata,
+            json,
+            _services,
+            async type => await context.GetOrCreateSchemaAsync(type, null, cancellationToken).ConfigureAwait(false),
+            $"{context.Description.HttpMethod} /{context.Description.RelativePath}",
+            method,
+            scope).ConfigureAwait(false);
     }
 }

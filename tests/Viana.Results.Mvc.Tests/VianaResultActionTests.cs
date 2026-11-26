@@ -7,8 +7,6 @@ using System.Text.Json;
 
 namespace Viana.Results.Mvc.Tests;
 
-internal enum SampleEnum { None, First, Second }
-
 public class VianaResultActionTests
 {
     private static ActionContext CreateActionContext(IServiceProvider? requestServices = null)
@@ -43,7 +41,9 @@ public class VianaResultActionTests
     [Fact]
     public async Task ExecuteResultAsync_WithProblem_SetsStatusCodeAndWritesProblemJson()
     {
+#pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(422, "Validation Error", "Invalid input");
+#pragma warning restore CS0618
         var result = new Result(problem);
         var action = new VianaResultAction(result);
         var context = CreateActionContext();
@@ -51,7 +51,7 @@ public class VianaResultActionTests
         await action.ExecuteResultAsync(context);
 
         Assert.Equal(422, context.HttpContext.Response.StatusCode);
-        Assert.Equal("application/json", context.HttpContext.Response.ContentType);
+        Assert.Equal("application/problem+json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
         Assert.Equal(422, json.RootElement.GetProperty("status").GetInt32());
@@ -128,7 +128,9 @@ public class VianaResultActionTests
     [Fact]
     public async Task ExecuteResultAsync_ListResult_WithProblem_SetsStatusCodeAndWritesProblemJson()
     {
+#pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(400, "Bad Request", "Invalid list request");
+#pragma warning restore CS0618
         ListResult<string> result = problem;
         var action = new VianaResultAction(result);
         var context = CreateActionContext();
@@ -136,7 +138,7 @@ public class VianaResultActionTests
         await action.ExecuteResultAsync(context);
 
         Assert.Equal(400, context.HttpContext.Response.StatusCode);
-        Assert.Equal("application/json", context.HttpContext.Response.ContentType);
+        Assert.Equal("application/problem+json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
         Assert.Equal(400, json.RootElement.GetProperty("status").GetInt32());
@@ -167,7 +169,9 @@ public class VianaResultActionTests
     [Fact]
     public async Task ExecuteResultAsync_PagedResult_WithProblem_SetsStatusCodeAndWritesProblemJson()
     {
+#pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = ProblemResult.WithDescription(404, "Not Found", "Page not found");
+#pragma warning restore CS0618
         PagedResult<int> result = problem;
         var action = new VianaResultAction(result);
         var context = CreateActionContext();
@@ -175,7 +179,7 @@ public class VianaResultActionTests
         await action.ExecuteResultAsync(context);
 
         Assert.Equal(404, context.HttpContext.Response.StatusCode);
-        Assert.Equal("application/json", context.HttpContext.Response.ContentType);
+        Assert.Equal("application/problem+json", context.HttpContext.Response.ContentType);
         var body = ReadResponseBody(context);
         var json = JsonDocument.Parse(body);
         Assert.Equal(404, json.RootElement.GetProperty("status").GetInt32());
@@ -218,7 +222,7 @@ public class VianaResultActionTests
 
         await action.ExecuteResultAsync(context);
 
-        Assert.Equal(200, context.HttpContext.Response.StatusCode);
+        Assert.Equal(204, context.HttpContext.Response.StatusCode);
         var body = ReadResponseBody(context);
         Assert.Empty(body);
     }
@@ -328,5 +332,63 @@ public class VianaResultActionTests
         var body = ReadResponseBody(context);
         Assert.Contains("Data", body);
         Assert.DoesNotContain("Status", body);
+    }
+
+    [Fact]
+    public async Task ExecuteResultAsync_RequestAborted_CompletesWithoutBody()
+    {
+        var action = new VianaResultAction(Results.Ok(new { Id = 1 }));
+        var context = CreateActionContext();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        context.HttpContext.RequestAborted = cts.Token;
+
+        await action.ExecuteResultAsync(context);
+
+        Assert.Equal(string.Empty, ReadResponseBody(context));
+    }
+
+    private sealed class CustomSerializationAction(IResult result) : VianaResultAction(result)
+    {
+        protected override string SerializeToJson(HttpResponse response, object? value) => "{\"custom\":true}";
+    }
+
+    [Fact]
+    public async Task ExecuteResultAsync_SubclassOverridingSerializeToJson_IsHonored()
+    {
+        var action = new CustomSerializationAction(Results.Ok(new { Id = 1 }));
+        var context = CreateActionContext();
+
+        await action.ExecuteResultAsync(context);
+
+        Assert.Equal("{\"custom\":true}", ReadResponseBody(context));
+    }
+
+    [Fact]
+    public async Task ExecuteResultAsync_SuccessWithNullValue_WritesJsonNull()
+    {
+        var action = new VianaResultAction(new Result<Dictionary<string, int>>((Dictionary<string, int>?)null));
+        var context = CreateActionContext();
+
+        await action.ExecuteResultAsync(context);
+
+        Assert.Equal("null", ReadResponseBody(context));
+        Assert.Equal("application/json", context.HttpContext.Response.ContentType);
+    }
+
+    [Fact]
+    public async Task ExecuteResultAsync_CamelCaseOptions_KeepsExtensionNamesAsStored()
+    {
+        var services = new ServiceCollection();
+        services.Configure<JsonOptions>(o => o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase);
+        var problem = new ProblemResult(400, "Bad Request", "about:blank", new Dictionary<string, object?> { ["TraceId"] = "t" });
+        var action = new VianaResultAction(new Result(problem));
+        var context = CreateActionContext(services.BuildServiceProvider());
+
+        await action.ExecuteResultAsync(context);
+
+        var body = ReadResponseBody(context);
+        Assert.Contains("\"TraceId\":\"t\"", body);
+        Assert.DoesNotContain("\"traceId\"", body);
     }
 }

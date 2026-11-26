@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
 using Viana.Results.OpenApi.Processing;
 
 namespace Viana.Results.OpenApi.Swashbuckle.Filters;
@@ -12,14 +13,20 @@ namespace Viana.Results.OpenApi.Swashbuckle.Filters;
 public class ProblemResponseOperationFilter : IOperationFilter
 {
     private readonly IOptions<JsonOptions> _httpJson;
+    private readonly IServiceProvider? _services;
 
     /// <summary>Initializes the filter.</summary>
-    public ProblemResponseOperationFilter(IOptions<JsonOptions> httpJson)
+    public ProblemResponseOperationFilter(IOptions<JsonOptions> httpJson, IServiceProvider? services = null)
     {
         _httpJson = httpJson;
+        _services = services;
     }
 
     /// <inheritdoc />
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        => OpenApiOperationProcessor.ApplyProblemResultAttributes(operation, context.MethodInfo, _httpJson.Value.SerializerOptions);
+        => OperationProcessor.ApplyProblemResultAttributes(
+            operation,
+            context.MethodInfo,
+            _httpJson.Value.SerializerOptions,
+            EndpointScope.From(context.ApiDescription.ActionDescriptor, _services));
 }

@@ -1,144 +1,76 @@
 # Releasing
 
-This document describes how to publish a new version of any package in this
-repository to [nuget.org](https://www.nuget.org).
+Versions are decided by [release-please](https://github.com/googleapis/release-please) from Conventional Commits.
+Never edit `<Version>` by hand.
 
-Releases are driven by **git tags**. Pushing a tag with the right format
-triggers the [`release.yml`](.github/workflows/release.yml) workflow, which
-validates, builds, packs, publishes to NuGet, and creates a GitHub Release
-with the `.nupkg` / `.snupkg` attached.
+## Flow
 
----
+1. **Commit with Conventional Commits.** The package is decided by the folder the commit touches:
 
-## One-time setup
+   | Commit | Bump |
+   |---|---|
+   | `fix: …` | patch |
+   | `feat: …` | minor |
+   | `feat!: …` or a `BREAKING CHANGE:` footer | major |
 
-1. Create a NuGet API key at <https://www.nuget.org/account/apikeys> with
-   scope limited to the five package IDs:
-   - `Viana.Results`
-   - `Viana.Results.Mediators`
-   - `Viana.Results.Mvc`
-   - `Viana.Results.OpenApi`
-   - `Viana.Results.OpenApi.Swashbuckle`
-2. Add the key to the repo: **Settings → Secrets and variables → Actions →
-   New repository secret** → name it `NUGET_API_KEY`.
+   A commit that touches `src/Viana.Results.Mediators/` only releases Mediators. Changes to root files
+   (`Directory.*.props`, workflows) release nothing on their own.
+2. **Release PRs.** On every push to `main`, release-please opens or updates one release PR per package. The PR
+   carries the new `<Version>`, the `CHANGELOG.md` entry and the GitHub release notes.
+3. **Merge a release PR.** release-please creates the tag `<component>-v<version>` and the GitHub release. The
+   components are `core`, `mvc`, `mediators`, `openapi`, `openapi-swashbuckle` and `aspnetcore`.
+4. **Publish.** The tag starts `release.yml`, which:
+   - checks that the tag is on `main`, and that it matches `<Version>`;
+   - runs build, tests and package validation;
+   - waits for approval in the `nuget` environment;
+   - attests provenance and the SBOM;
+   - pushes to NuGet with Trusted Publishing.
 
-That's it — the workflow uses `secrets.GITHUB_TOKEN` (provided automatically)
-for the GitHub Release step.
+### Shipping a dependency-only fix
 
----
+A dependency update in `Directory.Packages.props` releases nothing by itself. To ship it, add a commit that
+touches the package and uses the `Release-As` footer, for example
+`fix(mediators): ship the updated dependency` with `Release-As: 1.0.1`.
 
-## Tag convention
+### Intended breaking changes
 
-Tags follow the format `<slug>-v<semver>`:
+CI validates each package's public API against its last released version (package validation). For an intended
+break:
 
-| Tag prefix | Package |
-|---|---|
-| `core-v*` | `Viana.Results` |
-| `mediators-v*` | `Viana.Results.Mediators` |
-| `mvc-v*` | `Viana.Results.Mvc` |
-| `openapi-v*` | `Viana.Results.OpenApi` |
-| `openapi-swashbuckle-v*` | `Viana.Results.OpenApi.Swashbuckle` |
+1. commit it as `feat!:`, with the reason;
+2. record it by running
+   `dotnet pack <project> -p:VianaValidationProject=<ProjectName> -p:VianaValidationBaseline=<last> -p:ApiCompatGenerateSuppressionFile=true`
+   and committing the generated `CompatibilitySuppressions.xml`. The baseline is scoped to that project
+   (`src/Directory.Build.props`), so referenced projects are not validated against the wrong version;
+3. delete that file after the major is released.
 
-Examples: `core-v2.1.0`, `mediators-v1.0.0`, `openapi-swashbuckle-v1.2.3`.
-
----
-
-## Releasing a package
-
-1. **Bump `<Version>`** in the target `.csproj` (e.g.
-   `src/Viana.Results/Viana.Results.csproj`).
-2. **Update `<PackageReleaseNotes>`** in the same `.csproj` to describe the
-   new version. These notes become both the NuGet release notes (shown on
-   nuget.org) and the GitHub Release body.
-3. Commit and push to `main`:
-   ```bash
-   git add src/Viana.Results/Viana.Results.csproj
-   git commit -m "Viana.Results 2.1.0"
-   git push
-   ```
-4. Wait for [CI](.github/workflows/ci.yml) to pass on `main`.
-5. Create and push the tag:
-   ```bash
-   git tag core-v2.1.0
-   git push origin core-v2.1.0
-   ```
-6. Watch the [Release workflow](../../actions/workflows/release.yml) run.
-   When it finishes you'll see the package on nuget.org and a new GitHub
-   Release in the repo.
-
-To release multiple packages at once, push several tags in one shot — each
-runs independently and in parallel:
+### Verifying a published package
 
 ```bash
-git tag mvc-v2.1.0
-git tag openapi-v1.1.0
-git push --tags
+gh attestation verify Viana.Results.<x>.nupkg -R gustavorviana/Viana.Results
 ```
 
----
+## One-time settings (follow in this order)
 
-## What the workflow validates
+These settings live in GitHub and nuget.org, not in files.
 
-Before publishing anything, [`release.yml`](.github/workflows/release.yml)
-runs these checks. Any failure aborts the release **before** anything is
-pushed to NuGet:
-
-1. **Tag format** — must match a known slug (`core-v*`, `mediators-v*`,
-   `mvc-v*`, `openapi-v*`, `openapi-swashbuckle-v*`).
-2. **Version match** — the version in the tag must equal `<Version>` in
-   the target `.csproj` (read via `dotnet msbuild -getProperty:Version`).
-3. **Release notes present** — `<PackageReleaseNotes>` must be non-empty.
-4. **Tests pass** — `dotnet test` runs over the whole solution.
-
-NuGet push uses `--skip-duplicate`, so re-running the workflow on the same
-tag is safe and idempotent.
-
----
-
-## Troubleshooting
-
-**`Tag version (X.Y.Z) does not match csproj <Version> (A.B.C)`**
-
-You bumped the tag but forgot to bump (or commit) the `.csproj`. Fix:
-
-```bash
-git tag -d <bad-tag>                 # delete the local tag
-git push origin :refs/tags/<bad-tag> # delete the remote tag
-# edit the csproj, commit, then re-tag with the right version
-```
-
-**`<PackageReleaseNotes> is empty`**
-
-Add release notes to the `.csproj` and re-tag. Same cleanup as above.
-
-**`Response status code does not indicate success: 403 (Forbidden)`**
-
-`NUGET_API_KEY` is missing, expired, or doesn't have permission for that
-package ID. Generate a new key (scoped to all five package IDs) and update
-the secret.
-
-**Tag pushed but nothing happened**
-
-Check that the tag matches a configured prefix in
-[`release.yml`](.github/workflows/release.yml) under `on.push.tags`. Tags
-that don't match are silently ignored.
-
-**Need to re-publish a tag**
-
-Just re-run the failed workflow from the Actions UI. NuGet push is
-idempotent (`--skip-duplicate`); the GitHub Release step will fail if a
-release already exists for that tag — delete the existing release first if
-you really need to recreate it.
-
----
-
-## Versioning
-
-This repo follows [Semantic Versioning](https://semver.org/). Each package
-versions independently — bumping the core does not require bumping the
-others, and vice versa.
-
-- **MAJOR** — breaking API or wire-format change. Document it clearly in
-  `<PackageReleaseNotes>` with a `BREAKING:` prefix.
-- **MINOR** — backwards-compatible feature additions.
-- **PATCH** — backwards-compatible bug fixes.
+1. **nuget.org Trusted Publishing.** On nuget.org, open the username menu, then Trusted Publishing. Add a policy with
+   owner `gustavorviana`, repository `Viana.Results`, workflow `release.yml` and environment `nuget`.
+2. **Secret `NUGET_USER`.** Set it to your nuget.org profile name, not the email.
+3. **Environment `nuget`.** In Settings → Environments, create it with yourself as a required reviewer, and allow
+   only the `*-v*` tags as deployment refs.
+4. **GitHub App for release-please.** Create a private App with these permissions: Contents read/write and Pull
+   requests read/write. Install it on this repository only. Add the secrets `RELEASE_APP_CLIENT_ID` and
+   `RELEASE_APP_PRIVATE_KEY`.
+5. **Rulesets.**
+   - `main`: require a PR, require the checks `build-and-test (ubuntu-latest)`, `build-and-test (windows-latest)`,
+     `pack`, `format`, `aot-smoke`, `analyze` (CodeQL) and `dependency-review`, and block force pushes and
+     deletion. Add `dev` the same way when the dev flow starts.
+   - Tags `*-v*`: only the release-please App and admins can create them, and nobody can update or delete them.
+6. **Security.**
+   - Enable the **dependency graph** (Settings → Code security). The `dependency-review` workflow needs it and
+     fails with `Forbidden` without it. On a private repository it also needs GitHub Advanced Security.
+   - Enable secret scanning with push protection and Dependabot alerts.
+   - In Settings → Actions, set the default workflow permissions to "Read repository contents".
+7. **Publish one release with the new flow.**
+8. **Only then revoke the old NuGet API key** on nuget.org, and delete the `NUGET_API_KEY` secret.

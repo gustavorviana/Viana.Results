@@ -1,0 +1,14 @@
+<Project>
+  <!-- Inherit the repository-wide rules (warnings as errors, nullable, NuGet audit). -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!--
+      Justified exception (constitution: Technical Constraints; spec FR-005):
+      CS1591 (missing XML comment for publicly visible member) is allowed in examples only.
+      Examples are not published and are not consumed as API. The XML docs file is still
+      generated to feed OpenAPI descriptions, but full documentation coverage is not required.
+    -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+</Project>

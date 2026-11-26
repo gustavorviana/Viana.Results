@@ -13,9 +13,9 @@ namespace Viana.Results.OpenApi.Schemas;
 /// Represents an OpenAPI schema builder for RFC 9457 Problem Details responses.
 /// Produces standardized OpenAPI documentation including default and custom fields.
 /// </summary>
-public class ProblemResultSchema
+internal class ProblemResultSchema
 {
-    private readonly List<ProblemFieldSchema> _schemas = [];
+    private readonly List<ProblemField> _schemas = [];
     private readonly JsonSerializerOptions _options;
     private readonly string _title;
 
@@ -33,7 +33,7 @@ public class ProblemResultSchema
     public ProblemResultSchema(JsonSerializerOptions options, ProblemResult result) : this(options, result.Status, result.Type, result.Title)
     {
         foreach (var extension in result.Extensions)
-            AddField(GetType(extension.Value?.GetType()), extension.Key, "", extension.Value);
+            AddFieldCore(GetType(extension.Value?.GetType()), extension.Key, "", extension.Value);
     }
 
     /// <summary>
@@ -50,13 +50,14 @@ public class ProblemResultSchema
         _title = string.IsNullOrEmpty(title) ? GetDefaultDescription(status) : title;
         if (string.IsNullOrEmpty(type))
             type = ResultTypes.GetOrDefault(status);
+        type = NativeProblemTypes.Resolve(type, status); // FR-011: document what the runtime sends
 
         Status = status;
 
         _schemas.AddRange([
-            new ProblemFieldSchema(JsonSchemaType.Integer, "status", "RFC 9457: HTTP status code", status),
-            new ProblemFieldSchema(JsonSchemaType.String, "type", "RFC 9457: problem type URI", type),
-            new ProblemFieldSchema(JsonSchemaType.String, "title", "RFC 9457: short, human-readable summary", _title)
+            new ProblemField(JsonSchemaType.Integer, "status", "RFC 9457: HTTP status code", status),
+            new ProblemField(JsonSchemaType.String, "type", "RFC 9457: problem type URI", type),
+            new ProblemField(JsonSchemaType.String, "title", "RFC 9457: short, human-readable summary", _title)
         ]);
     }
 
@@ -68,7 +69,10 @@ public class ProblemResultSchema
     /// <returns>A configured <see cref="ProblemResultSchema"/>.</returns>
     public static ProblemResultSchema FromAttribute(JsonSerializerOptions options, ProblemResultAttribute attribute)
     {
-        return new ProblemResultSchema(options, attribute.Status, attribute.Type, attribute.Title);
+        var schema = new ProblemResultSchema(options, attribute.Status, attribute.Type, attribute.Title);
+        if (!string.IsNullOrEmpty(attribute.Detail))
+            schema.AddFieldCore(JsonSchemaType.String, "detail", "RFC 9457: human-readable explanation specific to this occurrence", attribute.Detail);
+        return schema;
     }
 
     /// <summary>
@@ -78,8 +82,7 @@ public class ProblemResultSchema
     /// <returns>The current instance for fluent chaining.</returns>
     public ProblemResultSchema AddField(ProblemFieldSchema field)
     {
-        _schemas.Add(field);
-        return this;
+        return AddFieldCore(field.Type, field.Name, field.Description, field.ExampleValue);
     }
 
     /// <summary>
@@ -91,8 +94,21 @@ public class ProblemResultSchema
     /// <param name="exampleValue">Optional example value.</param>
     /// <returns>The current instance for fluent chaining.</returns>
     public ProblemResultSchema AddField(JsonSchemaType type, string name, string description, object? exampleValue = null)
+        => AddFieldCore(type, name, description, exampleValue);
+
+    // Names are case-insensitive like the runtime (I10): an existing name is updated in place,
+    // keeping the first casing; the last type/description/example wins.
+    internal ProblemResultSchema AddFieldCore(JsonSchemaType type, string name, string description, object? exampleValue = null)
     {
-        _schemas.Add(new ProblemFieldSchema(type, name, description, exampleValue));
+        // Extension names follow the application naming policy, like the runtime (FR-018); RFC members are fixed.
+        if (!IsBaseMember(name))
+            name = _options.PropertyNamingPolicy?.ConvertName(name) ?? name;
+
+        var index = _schemas.FindIndex(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (index >= 0)
+            _schemas[index] = new ProblemField(type, _schemas[index].Name, description, exampleValue);
+        else
+            _schemas.Add(new ProblemField(type, name, description, exampleValue));
         return this;
     }
 
@@ -105,10 +121,10 @@ public class ProblemResultSchema
     /// <param name="exampleValue">Optional example value.</param>
     /// <returns>The current instance for fluent chaining.</returns>
     public ProblemResultSchema AddField(Type? type, string name, string description, object? exampleValue = null)
-    {
-        _schemas.Add(new ProblemFieldSchema(GetType(type), name, description, exampleValue));
-        return this;
-    }
+        => AddFieldCore(type, name, description, exampleValue);
+
+    internal ProblemResultSchema AddFieldCore(Type? type, string name, string description, object? exampleValue = null)
+        => AddFieldCore(GetType(type), name, description, exampleValue);
 
     private JsonSchemaType GetType(Type? type)
     {
@@ -168,25 +184,23 @@ public class ProblemResultSchema
     /// Applies this problem schema to the specified OpenAPI responses collection.
     /// </summary>
     /// <param name="responses">OpenAPI responses collection.</param>
-    public void ApplyTo(OpenApiResponses? responses)
+    public void ApplyTo(OpenApiResponses? responses) => ApplyToCore(responses);
+
+    internal void ApplyToCore(OpenApiResponses? responses)
     {
         if (responses == null) return;
 
-        var jsonTypes = responses
-            .Select(x => x.Value)
-            .SelectMany(x => x.Content ?? new Dictionary<string, OpenApiMediaType>())
-            .Select(x => x.Key)
-            .Where(x => x.Contains("json", StringComparison.OrdinalIgnoreCase) || string.Equals(x, "text/plain", StringComparison.OrdinalIgnoreCase))
-            .ToArray();
-
-        responses[Status.ToString()] = Build(jsonTypes);
+        // Problem responses are documented with the RFC 9457 media type only (FR-016).
+        responses[Status.ToString()] = BuildCore([ProblemContentType]);
     }
 
     /// <summary>
     /// Builds the final <see cref="OpenApiResponse"/> for the configured status code.
     /// </summary>
     /// <param name="jsonContentTypes">Content types that should receive the schema.</param>
-    public OpenApiResponse Build(string[] jsonContentTypes)
+    public OpenApiResponse Build(string[] jsonContentTypes) => BuildCore(jsonContentTypes);
+
+    internal OpenApiResponse BuildCore(string[] jsonContentTypes)
     {
         var apiTypes = new Dictionary<string, OpenApiMediaType>();
         foreach (var type in jsonContentTypes)
@@ -205,28 +219,42 @@ public class ProblemResultSchema
 
     private JsonNode? BuildNode()
     {
-        return $"{{{string.Join(",", _schemas.Select(x => x.GetExampleJsonField()))}}}";
+        // A real JSON object: numbers/booleans keep their type and text is escaped by the serializer.
+        var node = new JsonObject();
+        foreach (var field in _schemas)
+            node[field.Name] = field.ExampleValue is null ? null : JsonSerializer.SerializeToNode(field.ExampleValue, field.ExampleValue.GetType(), _options);
+        return node;
     }
 
+    internal const string ProblemContentType = "application/problem+json";
+
+    private static bool IsBaseMember(string name) => Array.Exists(ProblemSchemaRegistry.BaseMembers, m => string.Equals(m, name, StringComparison.OrdinalIgnoreCase));
+
+    // Native-like base members (FR-013) plus this response's extra members; the document step replaces
+    // it with the shared component (FR-017).
     private IOpenApiSchema CreateSchema()
     {
-        var properties = new Dictionary<string, IOpenApiSchema>(StringComparer.OrdinalIgnoreCase);
+        var schema = ProblemSchemaRegistry.CreateBaseSchema();
+        var properties = new Dictionary<string, IOpenApiSchema>(schema.Properties!, StringComparer.OrdinalIgnoreCase);
+        var extras = new Dictionary<string, IOpenApiSchema>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var extension in _schemas)
-            properties.TryAdd(extension.Name, extension.ToOpenApi());
-
-        return new OpenApiSchema
+        foreach (var field in _schemas)
         {
-            Type = JsonSchemaType.Object,
-            Properties = properties
-        };
+            if (IsBaseMember(field.Name))
+                continue;
+            var member = field.ToOpenApi();
+            properties[field.Name] = member;
+            extras[field.Name] = member;
+        }
+
+        schema.Properties = properties;
+        ProblemSchemaRegistry.Register(schema, extras);
+        return schema;
     }
 
     private static string GetDefaultDescription(int statusCode)
     {
-        if (ResultMessages.TryGet(statusCode, out var description) && !string.IsNullOrEmpty(description))
-            return description;
-
-        return "Internal Server Error";
+        // Same default as the runtime ProblemResult title (feature 002): reason phrase, or "Error".
+        return HttpStatusInfo.TryGetReasonPhrase(statusCode, out var phrase) ? phrase : "Error";
     }
 }

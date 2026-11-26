@@ -3,7 +3,6 @@
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
-		<Nullable>enable</Nullable>
 
 		<!-- NuGet package metadata -->
 		<PackageId>Viana.Results.OpenApi.Swashbuckle</PackageId>
@@ -26,11 +25,7 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<Version>1.1.0</Version>
-		<PackageReleaseNotes>
-			Targets Swashbuckle.AspNetCore 10.x (post Microsoft.OpenApi 3.x breaking change) only.
-			Fixed Result&lt;T&gt;, ListResult&lt;T&gt; and PagedResult&lt;T&gt; OpenAPI schema mapping so the response shows the actual payload schema instead of the wrapper.
-			Added [ResponseExample] attribute and IExampleProvider&lt;T&gt; for typed response examples (method/class/global precedence), backed by shared processors in Viana.Results.OpenApi.
-		</PackageReleaseNotes>
+		<PackageReleaseNotes>https://github.com/gustavorviana/Viana.Results/blob/main/src/Viana.Results.OpenApi.Swashbuckle/CHANGELOG.md</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>

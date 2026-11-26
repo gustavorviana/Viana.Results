@@ -15,7 +15,7 @@ public sealed class ProblemBuilder
     private string? _title;
     private string? _type;
     private string? _description;
-    private readonly Dictionary<string, object?> _extensions = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, object?> _extensions = new(StringComparer.OrdinalIgnoreCase); // case-insensitive names (last value wins)
 
     /// <summary>Initializes a new builder for the given HTTP status code.</summary>
     /// <param name="status">RFC 9457 HTTP status code (e.g. 400, 404, 422, 500).</param>
@@ -49,6 +49,7 @@ public sealed class ProblemBuilder
     /// Sets the optional human-readable description. Stored under the "description" key
     /// in <see cref="ProblemResult.Extensions"/>.
     /// </summary>
+    [Obsolete("\"description\" is not an RFC 9457 member. Use ProblemBuilder.WithDetail (RFC 9457 \"detail\") instead.")]
     public ProblemBuilder WithDescription(string? description)
     {
         _description = description;
@@ -112,11 +113,24 @@ public sealed class ProblemBuilder
     /// <summary>Builds the immutable <see cref="ProblemResult"/> from the accumulated state.</summary>
     public ProblemResult Build()
     {
-        return ProblemResult.WithDescription(
+        return ProblemResult.CreateWithDescription(
             status: _status,
             title: _title ?? string.Empty,
             description: _description,
             type: _type ?? "about:blank",
             extensions: _extensions.Count > 0 ? _extensions : null);
     }
+
+    /// <summary>
+    /// Builds the <see cref="ProblemResult"/> and returns it inside a failed <see cref="Result"/>,
+    /// whose status is the problem status.
+    /// </summary>
+    public Result BuildResult() => new Result(Build());
+
+    /// <summary>
+    /// Builds the <see cref="ProblemResult"/> and returns it inside a failed <see cref="Result{TValue}"/>
+    /// (no value), whose status is the problem status.
+    /// </summary>
+    /// <typeparam name="T">The value type of the result.</typeparam>
+    public Result<T> BuildResult<T>() => new Result<T>(Build());
 }

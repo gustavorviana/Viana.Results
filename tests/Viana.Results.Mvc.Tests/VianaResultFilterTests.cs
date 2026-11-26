@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Viana.Results.Mvc.Filters;
 
 namespace Viana.Results.Mvc.Tests;
@@ -76,5 +78,22 @@ public class VianaResultFilterTests
         var filter = new VianaResultFilter();
 
         filter.OnResultExecuted(context);
+    }
+
+    [Fact]
+    public void AddVianaResultFilter_CalledTwice_RegistersFilterOnce()
+    {
+        var services = new ServiceCollection();
+        var builder = services.AddControllers();
+
+        builder.AddVianaResultFilter();
+        builder.AddVianaResultFilter();
+
+        using var provider = services.BuildServiceProvider();
+        var filters = provider.GetRequiredService<IOptions<MvcOptions>>().Value.Filters
+            .OfType<ServiceFilterAttribute>()
+            .Where(f => f.ServiceType == typeof(VianaResultFilter));
+        Assert.Single(filters);
+        Assert.Single(services, d => d.ServiceType == typeof(VianaResultFilter));
     }
 }

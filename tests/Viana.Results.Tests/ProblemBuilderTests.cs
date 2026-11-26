@@ -3,24 +3,87 @@ namespace Viana.Results.Tests;
 public class ProblemBuilderTests
 {
     [Fact]
+    public void BuildResult_ReturnsFailureHoldingTheBuiltProblem()
+    {
+        var builder = new ProblemBuilder(404).WithDetail("x").WithType("https://example.com/p");
+
+        var result = builder.BuildResult();
+        var problem = builder.Build();
+
+        Assert.NotNull(result.Problem);
+        Assert.Equal(404, result.Status);
+        Assert.Equal(problem.Status, result.Problem.Status);
+        Assert.Equal(problem.Title, result.Problem.Title);
+        Assert.Equal(problem.Type, result.Problem.Type);
+        Assert.Equal(problem.Extensions, result.Problem.Extensions);
+        Assert.Equal("x", result.Problem.Extensions["detail"]);
+    }
+
+    [Fact]
+    public void BuildResultTyped_ReturnsTypedFailureWithoutValue()
+    {
+        Result<int> result = new ProblemBuilder(409).WithDetail("dup").BuildResult<int>();
+
+        Assert.NotNull(result.Problem);
+        Assert.Equal(409, result.Status);
+        Assert.Equal("Conflict", result.Problem.Title);
+        Assert.Equal("dup", result.Problem.Extensions["detail"]);
+        Assert.Equal(0, ((IResultData)result).Data);
+    }
+
+    [Fact]
+    public void Build_WithDescriptionAndDetail_KeepsBoth()
+    {
+        var builder = new ProblemBuilder(400).WithDetail("d");
+#pragma warning disable CS0618 // exercises the obsolete "description" API
+        builder.WithDescription("legacy");
+#pragma warning restore CS0618
+
+        var problem = builder.Build();
+
+        Assert.Equal("d", problem.Extensions["detail"]);
+        Assert.Equal("legacy", problem.Extensions["description"]);
+    }
+
+    [Fact]
     public void Build_WithStatusOnly_PopulatesDefaults()
     {
         var problem = new ProblemBuilder(404).Build();
 
         Assert.Equal(404, problem.Status);
-        Assert.Equal("Error", problem.Title);
+        Assert.Equal("Not Found", problem.Title);
         Assert.Equal("about:blank", problem.Type);
         Assert.Empty(problem.Extensions);
     }
 
     [Fact]
+    public void Build_WithStatus409Only_TitleIsConflict()
+    {
+        Assert.Equal("Conflict", new ProblemBuilder(409).Build().Title);
+    }
+
+    [Fact]
+    public void Build_WithExplicitTitle_KeepsIt()
+    {
+        Assert.Equal("Custom", new ProblemBuilder(404).WithTitle("Custom").Build().Title);
+    }
+
+    [Fact]
+    public void Build_WithUnknownStatus_FallsBackToError()
+    {
+        Assert.Equal("Error", new ProblemBuilder(499).Build().Title);
+    }
+
+    [Fact]
     public void Build_WithTitleTypeDescription_StoresThem()
     {
+#pragma warning disable CS0618 // exercises the obsolete "description" API
         var problem = new ProblemBuilder(400)
             .WithTitle("Bad Request")
             .WithType("https://example.com/errors/bad-request")
             .WithDescription("Something is off.")
             .Build();
+#pragma warning restore CS0618
 
         Assert.Equal(400, problem.Status);
         Assert.Equal("Bad Request", problem.Title);
@@ -160,10 +223,34 @@ public class ProblemBuilderTests
         Assert.Same(builder, builder.WithTitle("t"));
         Assert.Same(builder, builder.WithType("https://x"));
         Assert.Same(builder, builder.WithStatus(401));
+#pragma warning disable CS0618 // exercises the obsolete "description" API
         Assert.Same(builder, builder.WithDescription("d"));
+#pragma warning restore CS0618
         Assert.Same(builder, builder.WithDetail("d2"));
         Assert.Same(builder, builder.WithInstance("/i"));
         Assert.Same(builder, builder.AddExtension("k", "v"));
         Assert.Same(builder, builder.AddExtensions(new Dictionary<string, object?>()));
+    }
+
+    [Fact]
+    public void AddExtension_NamesDifferingByCase_LastValueWinsFirstCasingKept()
+    {
+        var problem = new ProblemBuilder(400).AddExtension("errorCode", "E1").AddExtension("ErrorCode", "E2").Build();
+
+        var single = Assert.Single(problem.Extensions);
+        Assert.Equal("errorCode", single.Key);
+        Assert.Equal("E2", single.Value);
+    }
+
+    [Fact]
+    public void AddExtensions_NamesDifferingByCase_FollowSameRule()
+    {
+        var problem = new ProblemBuilder(400)
+            .AddExtensions(new[] { new KeyValuePair<string, object?>("errorCode", "E1"), new KeyValuePair<string, object?>("ERRORCODE", "E2") })
+            .Build();
+
+        var single = Assert.Single(problem.Extensions);
+        Assert.Equal("errorCode", single.Key);
+        Assert.Equal("E2", single.Value);
     }
 }

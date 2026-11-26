@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Viana.Results\Viana.Results.csproj" />
+    <ProjectReference Include="..\..\src\Viana.Results.Mvc\Viana.Results.Mvc.csproj" />
+    <ProjectReference Include="..\..\src\Viana.Results.AspNetCore\Viana.Results.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\Viana.Results.Mediators\Viana.Results.Mediators.csproj" />
+  </ItemGroup>
+
+</Project>

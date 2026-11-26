@@ -1,18 +1,34 @@
-using System;
+﻿using System;
 using System.Linq;
 
 namespace Viana.Results;
 
 internal static class ResultReflections
 {
+    /// <summary>Feature 014: whether <paramref name="type"/> implements <see cref="IEnvelopeResult{T}"/>.</summary>
+#if NET5_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Called with the runtime type of a result instance; the trimmer keeps the interfaces a constructed type implements when those interfaces are used, and IEnvelopeResult<> is referenced here.")]
+#endif
+    public static bool IsEnvelopeType(Type type)
+        => EnvelopeTypes.GetOrAdd(type, static t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnvelopeResult<>)));
+
+    // Hot path (every response): cached per type so GetInterfaces does not allocate per call.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, bool> EnvelopeTypes = new();
+
     /// <summary>
     /// Returns true when the result wrapper should be unwrapped in OpenAPI/MVC payloads
-    /// (i.e. the response body is the inner data rather than the wrapper). <c>PagedResult</c>
-    /// is excluded because it carries metadata (PageNumber/TotalPages) that must remain visible.
+    /// (i.e. the response body is the inner data rather than the wrapper). Envelopes
+    /// (<see cref="IEnvelopeResult{T}"/>, including paged results) are never unwrapped.
     /// </summary>
+#if NET5_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Called with result types; the trimmer keeps the interfaces a used type implements, and IResult<> is referenced here.")]
+#endif
     public static bool IsUnwrappableType(Type type)
     {
-        if (!typeof(IResultData).IsAssignableFrom(type) ||
+        if (IsEnvelopeType(type) ||
+            !typeof(IResultData).IsAssignableFrom(type) ||
             typeof(IHasExtensions).IsAssignableFrom(type) ||
             !type.IsGenericType)
             return false;
@@ -22,9 +38,6 @@ internal static class ResultReflections
         foreach (var iface in type.GetInterfaces().Where(x => x.IsGenericType))
         {
             var parameter = iface.GetGenericTypeDefinition();
-            if (parameter == typeof(IPagedResult<>))
-                return false;
-
             if (!hasGenericResult && parameter == typeof(IResult<>))
                 hasGenericResult = true;
         }
@@ -36,6 +49,10 @@ internal static class ResultReflections
     /// Returns the payload type (<c>T</c> in <c>IResult&lt;T&gt;</c>) for the given result type.
     /// For <c>Result&lt;User&gt;</c> returns <c>User</c>; for <c>ListResult&lt;User&gt;</c> returns <c>IReadOnlyList&lt;User&gt;</c>.
     /// </summary>
+#if NET5_0_OR_GREATER
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("Trimming", "IL2070",
+        Justification = "Called with result types; the trimmer keeps the interfaces a used type implements, and IResult<> is referenced here.")]
+#endif
     public static Type? GetDataType(Type type)
     {
         return type.GetInterfaces()
@@ -48,14 +65,20 @@ internal static class ResultReflections
         if (type is null)
             return false;
 
-        var underlying = Nullable.GetUnderlyingType(type);
+        type = Nullable.GetUnderlyingType(type) ?? type;
 
-        type = underlying ?? type;
-        return underlying != null ||
+        // Simple values only; any other struct is a structured DTO and is unwrapped like a class.
+        return type.IsPrimitive ||
             type.IsEnum ||
-            type.IsValueType ||
+            type == typeof(decimal) ||
             type == typeof(string) ||
+            type == typeof(DateTime) ||
+            type == typeof(DateTimeOffset) ||
+            type == typeof(TimeSpan) ||
+            type == typeof(Guid) ||
             type == typeof(Uri) ||
-            type == typeof(Version);
+            type == typeof(Version) ||
+            type.FullName == "System.DateOnly" ||
+            type.FullName == "System.TimeOnly";
     }
 }

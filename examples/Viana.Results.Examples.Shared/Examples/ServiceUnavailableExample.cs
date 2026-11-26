@@ -2,13 +2,17 @@ using Viana.Results.OpenApi;
 
 namespace Viana.Results.Examples.Shared.Examples;
 
+/// <summary>
+/// Inventory dependency down (503), as a <see cref="ProblemResult"/> provider with an explicit problem type and
+/// extensions. Works on controllers ([ResponseExample]) and minimal APIs (ProducesProblemResult) alike.
+/// </summary>
 public sealed class ServiceUnavailableExample : IExampleProvider<ProblemResult>
 {
-    public ProblemResult GetExample() => ProblemResult.WithDescription(
+    public ProblemResult GetExample() => ProblemResult.WithDetail(
         status: 503,
-        title: "Service Unavailable",
-        description: "Downstream forecast provider is unreachable. Retry in a few seconds.",
-        type: "https://api.example.com/errors/service-unavailable",
+        title: "Inventory unavailable",
+        detail: "The inventory service did not answer. Retry in a few seconds.",
+        type: "https://api.example.com/errors/inventory-unavailable",
         extensions: new Dictionary<string, object?>
         {
             ["retryAfterSeconds"] = 5,

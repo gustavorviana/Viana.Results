@@ -2,11 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,8 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Viana.Results\Viana.Results.csproj" />
+    <ProjectReference Include="..\..\src\Viana.Results.AspNetCore\Viana.Results.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\Viana.Results.Mvc\Viana.Results.Mvc.csproj" />
-    <ProjectReference Include="..\..\src\Viana.Results.Mediators\Viana.Results.Mediators.csproj" />
     <ProjectReference Include="..\..\src\Viana.Results.OpenApi\Viana.Results.OpenApi.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Viana.Results.OpenApi;
 
@@ -20,9 +22,9 @@ public static class ServiceCollectionExtensions
     {
         if (configure == null) throw new ArgumentNullException(nameof(configure));
 
-        var options = new VianaResultOptions();
-        configure(options);
-        services.AddSingleton(options);
+        // Composes across calls (options pattern); VianaResultOptions stays resolvable directly.
+        services.Configure(configure);
+        services.TryAddSingleton(sp => sp.GetRequiredService<IOptions<VianaResultOptions>>().Value);
         return services;
     }
 }

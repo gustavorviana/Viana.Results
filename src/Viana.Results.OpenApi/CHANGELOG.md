@@ -1,0 +1,31 @@
+# Changelog
+
+Versions are managed by release-please from Conventional Commits. The entries below were written
+before release-please was adopted (feature 017) and are not yet released.
+
+## Unreleased (since Viana.Results.OpenApi 1.0.0)
+
+- Security: updated Microsoft.AspNetCore.OpenApi to 10.0.15, which resolves the high-severity vulnerability in the transitive Microsoft.OpenApi dependency (GHSA-v5pm-xwqc-g5wc); Microsoft.OpenApi now resolves to 2.13.0.
+- Added: ProblemResultAttribute.Detail, documented as the RFC 9457 "detail" member of the problem schema.
+- Deprecated: ProblemResultAttribute.Description (it had no effect). Use Detail.
+- Fixed: examples generated from [ProblemResult] are JSON objects with typed values (numbers/booleans no longer quoted, text correctly escaped).
+- Fixed: the documented default problem title is the status reason phrase, matching the runtime (e.g. 404 "Not Found").
+- Fixed: ValueTask<T> return types are handled like Task<T>.
+- Fixed: 401/403 responses honor [AllowAnonymous] and are added for minimal API endpoints using RequireAuthorization().
+- Fixed: schema member names are case-insensitive like the runtime (no member silently dropped).
+- Fixed: AddVianaResultExamples composes across multiple calls (options pattern); VianaResultOptions stays resolvable from DI.
+- Fixed: example providers receive constructor dependencies from DI; a clear error names the provider otherwise.
+- Breaking: the helpers OpenApiOperationProcessor, OpenApiDocumentProcessor, OpenApiSchemaProcessor, ResponseExampleResolver, ResolvedExample, ProblemFieldSchema and ProblemResultSchema, public in 1.0.0, are now internal; use the transformers, attributes and extensions.
+- Breaking: OpenApiOperationProcessor.ClearBodyForBareResult was removed (replaced by the default-result documentation).
+- Changed: problem responses are documented like the native ProblemDetails: a shared "VianaProblemDetails" component (type, title, status, detail, instance; optional and nullable) referenced with $ref, plus allOf for extra members; content type application/problem+json only.
+- Changed: one source per status for schema and example: endpoint [ResponseExample] > action [ProblemResult] > controller [ProblemResult] > global example (fallback only); several endpoint examples are merged.
+- Fixed: an action [ProblemResult] now wins over the controller one for the same status.
+- Changed: extension member names follow the application JSON naming policy, like the runtime.
+- Added: ProducesResult / ProducesProblemResult for minimal API endpoints (data type, example class, inline result, problem metadata), read by both OpenAPI pipelines.
+- Added: example providers may return real Viana results (Result<T>, ListResult<T>, PagedResult<T>, failed Result), written like the runtime body; [ResponseExample(typeof(Provider))] without status.
+- Fixed: a documented problem without its own type shows the native RFC 9110 link the runtime sends (about:blank only for statuses without a native default).
+- Changed: a bare Result is documented as 204 No Content (no inferred 200, including the one ASP.NET Core infers for minimal APIs); successes declared by hand ([ProducesResponseType], Produces, [ResponseExample], ProducesResult) replace the inferred one, so a [ResponseExample] of a Created result documents 201. Added: [WithoutDefaultResult] and WithoutDefaultResult() (endpoint, group) to drop the inferred success as a last resort. OpenApiOperationProcessor.ClearBodyForBareResult is replaced by ApplyDefaultResult.
+- Fixed: minimal API declarations (ProducesProblemResult / ProducesResult) document IExampleProvider<ProblemResult> providers as problems with their own status, like controllers; a problem provider returning anything else fails document generation with a clear message.
+- Changed: Viana declarations require a Viana result return (directly or in Task<T>, ValueTask<T> or ActionResult<T>). ProducesResult / ProducesProblemResult / WithoutDefaultResult on a minimal API, or [ProblemResult] / [ResponseExample] / [WithoutDefaultResult] on an action, that does not return one fail document generation. On a controller class they apply to the result actions only; the others are skipped with a warning (category Viana.Results.OpenApi), and a controller with no result action fails. Global examples apply to result endpoints only. ActionResult<Result<T>> actions now receive the declarations; inherited actions read the class attributes of the derived controller.
+- Added: envelope results are documented with their own members (no status, problem or extensions; additionalProperties when the type has extensions), and their examples equal the runtime body.
+- Fixed: 401/403 and problem examples are documented on operations without responses. Obsolete messages name the replacement without a version.

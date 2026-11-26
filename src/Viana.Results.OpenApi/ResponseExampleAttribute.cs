@@ -16,6 +16,15 @@ namespace Viana.Results.OpenApi;
 public sealed class ResponseExampleAttribute : Attribute
 {
     /// <summary>
+    /// Declares an example whose status comes from the provider's result (the provider returns a Viana
+    /// <see cref="IResult"/>, e.g. <c>IExampleProvider&lt;Result&lt;User&gt;&gt;</c>). <see cref="StatusCode"/> is 0.
+    /// </summary>
+    /// <param name="providerType">The example provider type.</param>
+    public ResponseExampleAttribute(Type providerType) : this(0, providerType)
+    {
+    }
+
+    /// <summary>
     /// Initializes a new instance pairing a status code with an <see cref="IExampleProvider{T}"/> type.
     /// </summary>
     /// <param name="statusCode">The HTTP status code (e.g. 200, 400, 404, 500).</param>
@@ -30,6 +39,7 @@ public sealed class ResponseExampleAttribute : Attribute
     }
 
     /// <summary>HTTP status code this example is associated with.</summary>
+    /// <remarks>0 means "taken from the provider result" (constructor without status).</remarks>
     public int StatusCode { get; }
 
     /// <summary>The provider type implementing <see cref="IExampleProvider{T}"/>.</summary>

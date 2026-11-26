@@ -12,5 +12,5 @@ public class OmitProblemSchemaFilter : ISchemaFilter
 {
     /// <inheritdoc />
     public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
-        => OpenApiSchemaProcessor.OmitProblemFields(schema, context.Type);
+        => SchemaProcessor.OmitProblemFields(schema, context.Type);
 }

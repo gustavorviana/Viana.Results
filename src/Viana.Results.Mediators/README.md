@@ -1,128 +1,53 @@
 ## Viana.Results.Mediators
 
-A simple **Mediator** pattern implementation integrated with `Viana.Results`,
-allowing orchestration of *requests* and *handlers* returning `Result`.
-
----
-
-### NuGet package
+Small, fast mediator: requests go to handlers that return a Viana `Result`, with built-in traces and metrics.
 
 ```bash
 dotnet add package Viana.Results.Mediators
 ```
 
-### Supported frameworks
+Targets: `netstandard2.0` (no telemetry), `net6.0`, `net8.0`, `net10.0`.
 
-* `netstandard2.0`
-* `net5.0`
-* `net6.0`
-* `net8.0`
-* `net10.0`
-
----
-
-### Defining Request and Handler
+### Request and handler
 
 ```csharp
-using Viana.Results;
-using Viana.Results.Mediators;
-
-// Request
-public class GetUserByIdRequest : IRequest<Result<User>>
+public class GetUser : IRequest<Result<User>>
 {
-    public int UserId { get; set; }
+    public int Id { get; set; }
 }
 
-// Handler
-public class GetUserByIdHandler : IHandler<GetUserByIdRequest, Result<User>>
+public class GetUserHandler(IUserRepository repository) : IHandler<GetUser, Result<User>>
 {
-    private readonly IUserRepository _repository;
-
-    public GetUserByIdHandler(IUserRepository repository)
+    public async Task<Result<User>> Handle(GetUser request, CancellationToken cancellationToken = default)
     {
-        _repository = repository;
-    }
-
-    public async Task<Result<User>> Handle(
-        GetUserByIdRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        var user = await _repository.GetByIdAsync(request.UserId, cancellationToken);
-
-        if (user == null)
-            return Results.NotFound("User not found");
-
-        return user; // Implicit conversion to Result<User>
+        var user = await repository.FindAsync(request.Id, cancellationToken);
+        return user is null ? Results.NotFound("User not found") : user;
     }
 }
 ```
 
----
-
-### Registering the Mediator
+### Register and send
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
-using Viana.Results.Mediators;
+services.AddMediator(typeof(GetUserHandler).Assembly);
 
-public class Startup
-{
-    public void ConfigureServices(IServiceCollection services)
-    {
-        // Registers the mediator and all handlers from an assembly
-        services.AddMediator(typeof(GetUserByIdHandler).Assembly);
-
-        // Or from multiple assemblies
-        services.AddMediator(
-            typeof(GetUserByIdHandler).Assembly,
-            typeof(AnotherHandler).Assembly
-        );
-    }
-}
+var result = await mediator.SendAsync(new GetUser { Id = 42 });
 ```
 
----
+Handlers are registered as scoped. To use another lifetime, register the handler yourself before calling
+`AddMediator`.
 
-### Usage in a Controller (with MVC)
+### Telemetry (OpenTelemetry)
 
 ```csharp
-using Microsoft.AspNetCore.Mvc;
-using Viana.Results;
-using Viana.Results.Mediators;
-using Viana.Results.Mvc;
-
-[ApiController]
-[Route("api/[controller]")]
-public class UsersController : ControllerBase
-{
-    private readonly IMediator _mediator;
-
-    public UsersController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetUser(int id)
-    {
-        var request = new GetUserByIdRequest { UserId = id };
-        var result = await _mediator.SendAsync(request);
-
-        // ASP.NET Core integration (Viana.Results.Mvc)
-        return result.ToActionResult();
-    }
-}
+builder.Services.AddOpenTelemetry()
+    .WithTracing(t => t
+        .AddSource("Microsoft.AspNetCore")           // needed so mediator spans are kept
+        .AddSource(MediatorDiagnostics.SourceName))
+    .WithMetrics(m => m.AddMeter(MediatorDiagnostics.MeterName));
 ```
 
----
+Each dispatch creates a `Mediator.Send {Request}` span and records the `viana.mediator.request.duration`
+histogram, in seconds. Use `o.Telemetry.ExceptionDetails` to choose how much exception data is recorded.
 
-### Telemetry and Activity (.NET 8+)
-
-In .NET 8+, the `IMediator` automatically creates an `Activity` to improve
-observability, including tags such as:
-
-* `request.type`
-* `result.type`
-* `handler.type`
-* `result.success`
-* `result.statusCode`
+Examples: [examples](https://github.com/gustavorviana/Viana.Results/tree/main/examples).

@@ -10,7 +10,7 @@ namespace Viana.Results.OpenApi.Schemas;
 /// <param name="Name">The field name.</param>
 /// <param name="Description">The human-readable description of the field.</param>
 /// <param name="ExampleValue">Optional example value used in the generated example payload.</param>
-public record ProblemFieldSchema(JsonSchemaType Type, string Name, string Description, object? ExampleValue = null)
+internal record ProblemFieldSchema(JsonSchemaType Type, string Name, string Description, object? ExampleValue = null)
 {
     /// <summary>
     /// Converts this field definition into an <see cref="OpenApiSchema"/> instance.

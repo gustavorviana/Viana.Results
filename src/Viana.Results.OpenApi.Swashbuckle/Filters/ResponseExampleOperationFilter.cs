@@ -29,5 +29,21 @@ public sealed class ResponseExampleOperationFilter : IOperationFilter
 
     /// <inheritdoc />
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
-        => OpenApiOperationProcessor.ApplyResponseExamples(operation, context.MethodInfo, _httpJson.Value.SerializerOptions, _services, _options);
+    {
+        var json = _httpJson.Value.SerializerOptions;
+        var scope = EndpointScope.From(context.ApiDescription.ActionDescriptor, _services);
+        OperationProcessor.ApplyResponseExamples(operation, context.MethodInfo, json, _services, _options, scope);
+
+        // Minimal API declarations: Swashbuckle's schema generator is synchronous, so a synchronous filter
+        // covers both GetSwagger and GetSwaggerAsync without waiting on asynchronous code.
+        OperationProcessor.ApplyEndpointDeclarations(
+            operation,
+            context.ApiDescription.ActionDescriptor?.EndpointMetadata,
+            json,
+            _services,
+            type => context.SchemaGenerator.GenerateSchema(type, context.SchemaRepository),
+            $"{context.ApiDescription.HttpMethod} /{context.ApiDescription.RelativePath}",
+            context.MethodInfo,
+            scope);
+    }
 }

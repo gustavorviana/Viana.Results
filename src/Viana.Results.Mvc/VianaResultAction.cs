@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Concurrent;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -38,13 +41,40 @@ public class VianaResultAction(IResult result) : ActionResult
         response.StatusCode = result.Status;
         WriteHeaders(response);
 
-        var body = ResultResponseBody.GetBody(result);
-        if (body == null)
+        if (!ResultResponseBody.HasBody(result))
             return;
 
-        response.ContentType = ContentType;
-        await response.WriteAsync(SerializeToJson(response, body));
+        var body = ResultResponseBody.GetBody(result, GetJsonSerializerOptions(response));
+        response.ContentType = result.Problem != null ? ProblemContentType : ContentType;
+
+        var cancellationToken = context.HttpContext.RequestAborted;
+        if (cancellationToken.IsCancellationRequested)
+            return;
+
+        try
+        {
+            if (OverridesSerializeToJson(GetType()))
+            {
+                await response.WriteAsync(SerializeToJson(response, body), cancellationToken);
+                return;
+            }
+
+            await JsonSerializer.SerializeAsync(response.Body, body, body?.GetType() ?? typeof(object), GetJsonSerializerOptions(response), cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The client went away: stop writing silently.
+        }
     }
+
+    /// <summary>RFC 9457 media type used for problem responses.</summary>
+    private const string ProblemContentType = "application/problem+json";
+
+    private static readonly ConcurrentDictionary<Type, bool> SerializeOverrides = new();
+
+    // A subclass that overrides SerializeToJson keeps its custom output (legacy string path).
+    private static bool OverridesSerializeToJson(Type type) => SerializeOverrides.GetOrAdd(type, static t =>
+        t.GetMethod(nameof(SerializeToJson), BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(HttpResponse), typeof(object) }, null)?.DeclaringType != typeof(VianaResultAction));
 
     /// <summary>
     /// Writes <see cref="Headers"/> to the response, excluding "content-type" (case-insensitive),
@@ -74,8 +104,22 @@ public class VianaResultAction(IResult result) : ActionResult
 
     private static JsonSerializerOptions GetJsonSerializerOptions(HttpResponse response)
     {
-        return response.HttpContext.RequestServices
+        var options = response.HttpContext.RequestServices
             .GetService<IOptions<JsonOptions>>()?.Value?.JsonSerializerOptions
-            ?? new JsonSerializerOptions();
+            ?? DefaultOptions;
+        return LegacyNameOptions.GetValue(options, CreateLegacyNameOptions);
+    }
+
+    private static readonly JsonSerializerOptions DefaultOptions = new();
+
+    // The old MVC package keeps extension names as stored (original rule), even when the core
+    // converter applies the naming policy. Options converters win over the [JsonConverter] on the type.
+    private static readonly ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions> LegacyNameOptions = new();
+
+    private static JsonSerializerOptions CreateLegacyNameOptions(JsonSerializerOptions source)
+    {
+        var copy = new JsonSerializerOptions(source);
+        copy.Converters.Insert(0, new ProblemResultJsonConverter { PreserveExtensionNames = true });
+        return copy;
     }
 }
