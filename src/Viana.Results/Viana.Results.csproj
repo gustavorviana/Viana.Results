@@ -26,15 +26,15 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>2.0.0</Version>
+		<Version>3.0.0</Version>
 		<PackageReleaseNotes>https://github.com/gustavorviana/Viana.Results/blob/main/src/Viana.Results/CHANGELOG.md</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-		<PackageReference Include="System.Text.Json" />
+		<PackageReference Include="System.Text.Json"/>
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include=".\README.md" Pack="true" PackagePath="\" />
+		<None Include=".\README.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 </Project>

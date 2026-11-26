@@ -24,22 +24,22 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<Version>1.1.0</Version>
+		<Version>2.0.0</Version>
 		<PackageReleaseNotes>https://github.com/gustavorviana/Viana.Results/blob/main/src/Viana.Results.OpenApi.Swashbuckle/CHANGELOG.md</PackageReleaseNotes>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-		<PackageReference Include="Swashbuckle.AspNetCore" />
+		<PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
+		<PackageReference Include="Swashbuckle.AspNetCore"/>
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Viana.Results\Viana.Results.csproj" />
-		<ProjectReference Include="..\Viana.Results.OpenApi\Viana.Results.OpenApi.csproj" />
+		<ProjectReference Include="..\Viana.Results\Viana.Results.csproj"/>
+		<ProjectReference Include="..\Viana.Results.OpenApi\Viana.Results.OpenApi.csproj"/>
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include=".\README.md" Pack="true" PackagePath="\" />
+		<None Include=".\README.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 
 </Project>
