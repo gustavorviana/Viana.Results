@@ -23,11 +23,15 @@ internal static class ExampleResolver
     /// <param name="globalExamples">Globally-registered examples (from <see cref="VianaResultOptions"/>).</param>
     /// <returns>Map of status code to the list of examples that should appear under that status.</returns>
     internal static Dictionary<int, List<ExampleRegistration>> Collect(MethodInfo method, IReadOnlyList<GlobalExampleRegistration> globalExamples)
+        => Collect(method, globalExamples, method.DeclaringType);
+
+    /// <summary>Same as above, reading class examples from <paramref name="owner"/> (the controller; null for minimal APIs).</summary>
+    internal static Dictionary<int, List<ExampleRegistration>> Collect(MethodInfo method, IReadOnlyList<GlobalExampleRegistration> globalExamples, Type? owner)
     {
         var byStatus = new Dictionary<int, List<ExampleRegistration>>();
 
         var methodAttrs = method.GetCustomAttributes<ResponseExampleAttribute>(true).ToList();
-        var classAttrs = method.DeclaringType?.GetCustomAttributes<ResponseExampleAttribute>(true).ToList()
+        var classAttrs = owner?.GetCustomAttributes<ResponseExampleAttribute>(true).ToList()
                          ?? new List<ResponseExampleAttribute>();
 
         var methodStatuses = methodAttrs.Select(a => a.StatusCode).ToHashSet();

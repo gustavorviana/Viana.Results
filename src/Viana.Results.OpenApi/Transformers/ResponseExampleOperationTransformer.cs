@@ -33,8 +33,9 @@ public sealed class ResponseExampleOperationTransformer : IOpenApiOperationTrans
     {
         var json = _httpJson.Value.SerializerOptions;
         var method = TransformerHelper.GetMethodInfo(context.Description);
+        var scope = EndpointScope.From(context.Description.ActionDescriptor, _services);
         if (method != null)
-            OperationProcessor.ApplyResponseExamples(operation, method, json, _services, _options);
+            OperationProcessor.ApplyResponseExamples(operation, method, json, _services, _options, scope);
 
         // Minimal API declarations (ProducesResult / ProducesProblemResult): async end to end.
         await OperationProcessor.ApplyEndpointDeclarationsAsync(
@@ -43,6 +44,8 @@ public sealed class ResponseExampleOperationTransformer : IOpenApiOperationTrans
             json,
             _services,
             async type => await context.GetOrCreateSchemaAsync(type, null, cancellationToken).ConfigureAwait(false),
-            $"{context.Description.HttpMethod} /{context.Description.RelativePath}").ConfigureAwait(false);
+            $"{context.Description.HttpMethod} /{context.Description.RelativePath}",
+            method,
+            scope).ConfigureAwait(false);
     }
 }

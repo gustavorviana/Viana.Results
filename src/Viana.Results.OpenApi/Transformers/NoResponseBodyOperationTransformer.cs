@@ -31,7 +31,8 @@ public sealed class NoResponseBodyOperationTransformer : IOpenApiOperationTransf
                 method,
                 context.Description.ActionDescriptor?.EndpointMetadata?.ToList(),
                 _services ?? context.ApplicationServices,
-                $"{context.Description.HttpMethod} /{context.Description.RelativePath}");
+                $"{context.Description.HttpMethod} /{context.Description.RelativePath}",
+                EndpointScope.From(context.Description.ActionDescriptor, _services ?? context.ApplicationServices));
         }
         return Task.CompletedTask;
     }

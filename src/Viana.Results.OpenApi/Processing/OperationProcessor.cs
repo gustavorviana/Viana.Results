@@ -35,20 +35,27 @@ internal static class OperationProcessor
     /// <c>Produces&lt;Result&gt;(200)</c> cannot be told apart from the inferred 200 (same type); declare
     /// <c>Produces(200)</c> or <c>ProducesResult</c> instead.
     /// </remarks>
-    internal static void ApplyDefaultResult(OpenApiOperation operation, MethodInfo method, IReadOnlyList<object>? endpointMetadata, IServiceProvider? services, string endpointName)
+    internal static void ApplyDefaultResult(OpenApiOperation operation, MethodInfo method, IReadOnlyList<object>? endpointMetadata, IServiceProvider? services, string endpointName, EndpointScope? scope = null)
     {
-        var returnType = UnwrapTaskType(method.ReturnType);
-        if (!typeof(IResult).IsAssignableFrom(returnType))
+        var metadata = endpointMetadata ?? Array.Empty<object>();
+        var owner = Owner(method, scope);
+        var returnType = ReturnTypeRules.ResultTypeOf(method.ReturnType);
+        if (returnType == null)
+        {
+            // Feature 013: a minimal API declaring WithoutDefaultResult must return a Viana result.
+            if (IsMinimal(scope) && metadata.OfType<WithoutDefaultResultAttribute>().Any())
+                throw new InvalidOperationException(ReturnTypeRules.MinimalMessage(endpointName, "WithoutDefaultResult", method.ReturnType));
+            ReturnTypeRules.Applies(method, owner, typeof(WithoutDefaultResultAttribute), scope);
             return;
+        }
 
         operation.Responses ??= new OpenApiResponses();
-        var metadata = endpointMetadata ?? Array.Empty<object>();
         var isBare = returnType == typeof(Result);
         var without = metadata.OfType<WithoutDefaultResultAttribute>().Any()
             || method.GetCustomAttribute<WithoutDefaultResultAttribute>(true) != null
-            || method.DeclaringType?.GetCustomAttribute<WithoutDefaultResultAttribute>(true) != null;
+            || owner?.GetCustomAttribute<WithoutDefaultResultAttribute>(true) != null;
 
-        var declared = DeclaredSuccesses(method, metadata, services, endpointName);
+        var declared = DeclaredSuccesses(method, owner, metadata, services, endpointName);
 
         // The response ASP.NET Core inferred from the return type (schema of T for Result<T>).
         var inferredKeys = operation.Responses.Keys.Where(k => IsSuccess(k) && !declared.Statuses.Contains(int.Parse(k))).ToList();
@@ -89,7 +96,7 @@ internal static class OperationProcessor
 
     private sealed record DeclaredSuccess(HashSet<int> Statuses, HashSet<int> Typed, List<(int Status, bool WritesBody)> AttributeExamples);
 
-    private static DeclaredSuccess DeclaredSuccesses(MethodInfo method, IReadOnlyList<object> metadata, IServiceProvider? services, string endpointName)
+    private static DeclaredSuccess DeclaredSuccesses(MethodInfo method, Type? owner, IReadOnlyList<object> metadata, IServiceProvider? services, string endpointName)
     {
         var statuses = new HashSet<int>();
         var typed = new HashSet<int>();
@@ -98,10 +105,10 @@ internal static class OperationProcessor
         // [ProducesResponseType] / Produces(...): the inferred metadata carries the Viana return type itself.
         var produces = metadata.OfType<IProducesResponseTypeMetadata>()
             .Concat(method.GetCustomAttributes(true).OfType<IProducesResponseTypeMetadata>())
-            .Concat(method.DeclaringType?.GetCustomAttributes(true).OfType<IProducesResponseTypeMetadata>() ?? []);
+            .Concat(owner?.GetCustomAttributes(true).OfType<IProducesResponseTypeMetadata>() ?? []);
         // MVC's [ProducesResponseType] exposes its status through IApiResponseMetadataProvider.
         var mvc = method.GetCustomAttributes(true).OfType<IApiResponseMetadataProvider>()
-            .Concat(method.DeclaringType?.GetCustomAttributes(true).OfType<IApiResponseMetadataProvider>() ?? [])
+            .Concat(owner?.GetCustomAttributes(true).OfType<IApiResponseMetadataProvider>() ?? [])
             .Select(p => (p.StatusCode, p.Type));
         foreach (var (status, type) in produces.Select(p => (p.StatusCode, p.Type)).Concat(mvc))
         {
@@ -113,7 +120,7 @@ internal static class OperationProcessor
         }
 
         // [ResponseExample] on the action or its type (globals are fallbacks, not declarations).
-        var byStatus = ExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>());
+        var byStatus = ExampleResolver.Collect(method, Array.Empty<GlobalExampleRegistration>(), owner);
         foreach (var example in byStatus.Values.SelectMany(list => BuildExamples(list, ExampleJson, services, method)))
         {
             if (example.Problem != null || !IsSuccess(example.Status))
@@ -149,14 +156,14 @@ internal static class OperationProcessor
     /// Adds RFC 9457 problem responses for every <see cref="ProblemResultAttribute"/> declared
     /// on the action or its declaring type.
     /// </summary>
-    internal static void ApplyProblemResultAttributes(OpenApiOperation operation, MethodInfo method, JsonSerializerOptions json)
+    internal static void ApplyProblemResultAttributes(OpenApiOperation operation, MethodInfo method, JsonSerializerOptions json, EndpointScope? scope = null)
     {
-        var returnType = UnwrapTaskType(method.ReturnType);
-
-        if (!typeof(IResult).IsAssignableFrom(returnType))
+        var owner = Owner(method, scope);
+        if (!ReturnTypeRules.Applies(method, owner, typeof(ProblemResultAttribute), scope))
             return;
 
-        foreach (var problem in GetProblemAttributes(method))
+        operation.Responses ??= new OpenApiResponses();
+        foreach (var problem in GetProblemAttributes(method, owner))
             ProblemResultSchema.FromAttribute(json, problem).ApplyToCore(operation.Responses);
     }
 
@@ -211,17 +218,23 @@ internal static class OperationProcessor
         MethodInfo method,
         JsonSerializerOptions json,
         IServiceProvider? services,
-        VianaResultOptions? options)
+        VianaResultOptions? options,
+        EndpointScope? scope = null)
     {
+        // Feature 013: declarations need a Viana result return; globals only apply to result endpoints.
+        var owner = Owner(method, scope);
+        if (!ReturnTypeRules.Applies(method, owner, typeof(ResponseExampleAttribute), scope))
+            return;
+
         if (operation.Responses == null || operation.Responses.Count == 0)
             return;
 
         var globals = options?.GlobalExamples ?? Array.Empty<GlobalExampleRegistration>();
-        var byStatus = ExampleResolver.Collect(method, globals);
+        var byStatus = ExampleResolver.Collect(method, globals, owner);
         if (byStatus.Count == 0)
             return;
 
-        var declared = new HashSet<int>(GetProblemAttributes(method).Select(a => a.Status));
+        var declared = new HashSet<int>(GetProblemAttributes(method, owner).Select(a => a.Status));
 
         // Feature 008: providers may return real Viana results; their status (and body) comes from the result,
         // so examples are regrouped by the resolved status (attributes without status use 0 until resolved).
@@ -341,8 +354,11 @@ internal static class OperationProcessor
         JsonSerializerOptions json,
         IServiceProvider? services,
         Func<Type, ValueTask<IOpenApiSchema>> schemaFor,
-        string endpointName)
+        string endpointName,
+        MethodInfo? method = null,
+        EndpointScope? scope = null)
     {
+        EnsureMinimalResultReturn(metadata, method, scope, endpointName);
         var resolved = ResolveDeclarations(metadata, services, endpointName);
         if (resolved.Count == 0)
             return;
@@ -365,8 +381,11 @@ internal static class OperationProcessor
         JsonSerializerOptions json,
         IServiceProvider? services,
         Func<Type, IOpenApiSchema> schemaFor,
-        string endpointName)
+        string endpointName,
+        MethodInfo? method = null,
+        EndpointScope? scope = null)
     {
+        EnsureMinimalResultReturn(metadata, method, scope, endpointName);
         var resolved = ResolveDeclarations(metadata, services, endpointName);
         if (resolved.Count > 0)
             BuildDeclarations(operation, resolved, json, schemaFor);
@@ -515,17 +534,34 @@ internal static class OperationProcessor
         return new BuiltExample(key, registration, ExampleResolver.Serialize(value, json), r.Problem, r.Status);
     }
 
+    // Feature 013: controllers read class attributes from the controller (the derived one for inherited actions);
+    // minimal APIs have no class. Without a scope (unit tests), the declaring type is used.
+    private static Type? Owner(MethodInfo method, EndpointScope? scope) => scope == null ? method.DeclaringType : scope.Controller;
+
+    private static bool IsMinimal(EndpointScope? scope) => scope != null && scope.Controller == null;
+
+    private static void EnsureMinimalResultReturn(IEnumerable<object>? metadata, MethodInfo? method, EndpointScope? scope, string endpointName)
+    {
+        if (method == null || !IsMinimal(scope) || ReturnTypeRules.IsResultReturn(method.ReturnType))
+            return;
+
+        var declaration = metadata?.OfType<VianaResponseMetadata>().FirstOrDefault();
+        if (declaration != null)
+            throw new InvalidOperationException(ReturnTypeRules.MinimalMessage(
+                endpointName, declaration.IsProblem ? "ProducesProblemResult" : "ProducesResult", method.ReturnType));
+    }
+
     private static string Describe(int status)
         => HttpStatusInfo.TryGetReasonPhrase(status, out var phrase) ? phrase : "Response";
 
     // FR-015: one attribute per status, the action's wins over the controller's (like native ApiExplorer).
-    private static List<ProblemResultAttribute> GetProblemAttributes(MethodInfo method)
+    private static List<ProblemResultAttribute> GetProblemAttributes(MethodInfo method, Type? owner)
     {
         var attributes = new List<ProblemResultAttribute>(method.GetCustomAttributes<ProblemResultAttribute>(true));
         var statuses = new HashSet<int>(attributes.Select(a => a.Status));
-        if (method.DeclaringType != null)
+        if (owner != null)
         {
-            foreach (var attribute in method.DeclaringType.GetCustomAttributes<ProblemResultAttribute>(true))
+            foreach (var attribute in owner.GetCustomAttributes<ProblemResultAttribute>(true))
             {
                 if (statuses.Add(attribute.Status))
                     attributes.Add(attribute);

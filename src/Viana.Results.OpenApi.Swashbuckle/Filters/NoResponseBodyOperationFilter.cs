@@ -25,5 +25,6 @@ public class NoResponseBodyOperationFilter : IOperationFilter
             context.MethodInfo,
             context.ApiDescription.ActionDescriptor?.EndpointMetadata?.ToList(),
             _services,
-            $"{context.ApiDescription.HttpMethod} /{context.ApiDescription.RelativePath}");
+            $"{context.ApiDescription.HttpMethod} /{context.ApiDescription.RelativePath}",
+            EndpointScope.From(context.ApiDescription.ActionDescriptor, _services));
 }

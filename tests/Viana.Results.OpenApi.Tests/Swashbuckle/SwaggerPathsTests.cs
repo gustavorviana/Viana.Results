@@ -15,7 +15,8 @@ public class SwaggerPathsTests
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(o => o.AddVianaResultFilters());
         var app = builder.Build();
-        app.MapGet("/users/{id}", (int id) => Microsoft.AspNetCore.Http.Results.Ok())
+        // Feature 013: Viana declarations require a Viana result return.
+        app.MapGet("/users/{id}", (int id) => Results.Ok())
            .ProducesProblemResult(404, title: "User not found");
         await app.StartAsync();
         return app;

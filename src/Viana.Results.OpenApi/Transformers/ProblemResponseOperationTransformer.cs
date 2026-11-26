@@ -27,7 +27,11 @@ public sealed class ProblemResponseOperationTransformer : IOpenApiOperationTrans
     {
         var method = TransformerHelper.GetMethodInfo(context.Description);
         if (method != null)
-            OperationProcessor.ApplyProblemResultAttributes(operation, method, _httpJson.Value.SerializerOptions);
+            OperationProcessor.ApplyProblemResultAttributes(
+                operation,
+                method,
+                _httpJson.Value.SerializerOptions,
+                EndpointScope.From(context.Description.ActionDescriptor, context.ApplicationServices));
         return Task.CompletedTask;
     }
 }
